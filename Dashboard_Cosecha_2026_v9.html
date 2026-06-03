@@ -262,17 +262,60 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
   <section id="kpis">
     <div class="kpi-card" data-accent="green"><span class="kpi-icon">⚖️</span><div class="kpi-label">Total Peso Cosechado</div><div class="kpi-value" id="kpi-peso">—</div><div class="kpi-sub">kg acumulados</div></div>
     <div class="kpi-card" data-accent="teal"><span class="kpi-icon">🍍</span><div class="kpi-label">Total Frutas</div><div class="kpi-value" id="kpi-frutas">—</div><div class="kpi-sub">unidades cosechadas</div></div>
-    <div class="kpi-card" data-accent="blue"><span class="kpi-icon">📦</span><div class="kpi-label">Peso Prom. por Bin</div><div class="kpi-value" id="kpi-avg-peso">—</div><div class="kpi-sub">kg promedio/bin</div></div>
-    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">🗂️</span><div class="kpi-label">Bins Cosechados</div><div class="kpi-value" id="kpi-bins">—</div><div class="kpi-sub">registros activos</div></div>
-    <div class="kpi-card" data-accent="purple"><span class="kpi-icon">👷</span><div class="kpi-label">Cuadrilleros Activos</div><div class="kpi-value" id="kpi-cuad">—</div><div class="kpi-sub">distintos</div></div>
-    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">🗺️</span><div class="kpi-label">Bloques Trabajados</div><div class="kpi-value" id="kpi-bloques">—</div><div class="kpi-sub">bloques únicos</div></div>
-    <div class="kpi-card" data-accent="green"><span class="kpi-icon">🏷️</span><div class="kpi-label">Lotes Ingresados</div><div class="kpi-value" id="kpi-lotes">—</div><div class="kpi-sub" id="kpi-lotes-lista" style="font-size:.62rem;line-height:1.4;margin-top:4px"></div></div>
-    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">🌱</span><div class="kpi-label">Área Total Cosechada</div><div class="kpi-value" id="kpi-area">—</div><div class="kpi-sub">hectáreas (ha)</div></div>
-    <div class="kpi-card" data-accent="blue"><span class="kpi-icon">📊</span><div class="kpi-label">Ratio Frutas/Peso</div><div class="kpi-value" id="kpi-ratio">—</div><div class="kpi-sub">frutas por kg</div></div>
-    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">📅</span><div class="kpi-label">Semanas Activas</div><div class="kpi-value" id="kpi-semanas">—</div><div class="kpi-sub">semanas de cosecha</div></div>
+    <div class="kpi-card" data-accent="blue"><span class="kpi-icon">📅</span><div class="kpi-label">Semanas Activas</div><div class="kpi-value" id="kpi-semanas">—</div><div class="kpi-sub">semanas de cosecha</div></div>
+    <div class="kpi-card" data-accent="green"><span class="kpi-icon">🌿</span><div class="kpi-label">Peso Medio Fruta</div><div class="kpi-value" id="kpi-pm-geren">—</div><div class="kpi-sub">kg por fruta</div></div>
     <div class="kpi-card" data-accent="red"><span class="kpi-icon">💰</span><div class="kpi-label">Costo Total Cuadrillas</div><div class="kpi-value" id="kpi-costo-total" style="font-size:1.3rem">—</div><div class="kpi-sub">COP acumulado</div></div>
-    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚡</span><div class="kpi-label">Costo Promedio / kg</div><div class="kpi-value" id="kpi-costo-kg">—</div><div class="kpi-sub">COP por kilogramo</div></div>
+    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚡</span><div class="kpi-label">Costo / kg</div><div class="kpi-value" id="kpi-costo-kg">—</div><div class="kpi-sub">COP por kilogramo</div></div>
+    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">🌱</span><div class="kpi-label">Área Cosechada</div><div class="kpi-value" id="kpi-area">—</div><div class="kpi-sub">hectáreas (ha)</div></div>
   </section>
+
+
+
+  <!-- SECCION GERENCIAL: GRÁFICAS CLAVE -->
+  <div class="section-header">
+    <div class="section-divider"></div>
+    <span class="sh-icon">📊</span>
+    <h2>Gráficas Clave de Gestión</h2>
+  </div>
+  <div class="charts-grid">
+
+    <!-- G-A: Peso medio semana a semana -->
+    <div class="chart-card full-width">
+      <div class="chart-title">🌿 Peso Medio de Fruta — Semana a Semana <span class="badge">Evolución</span></div>
+      <div class="chart-container tall"><canvas id="chart-geren-pm"></canvas></div>
+    </div>
+
+    <!-- G-B: Peso cosechado semana a semana (ya existe como chart-linea pero lo duplicamos aquí prominente) -->
+    <div class="chart-card full-width">
+      <div class="chart-title">⚖️ Peso Medio de Fruta PC vs SC — Semana a Semana <span class="badge">kg/fruta</span></div>
+      <div class="chart-container tall"><canvas id="chart-geren-peso"></canvas></div>
+    </div>
+
+    <!-- G-C: Costo total cuadrillas semana a semana -->
+    <div class="chart-card full-width">
+      <div class="chart-title">💰 Costo Total Cuadrillas vs Kg Cosechados — Semana a Semana <span class="badge">Doble eje</span></div>
+      <div class="chart-container tall"><canvas id="chart-geren-costo"></canvas></div>
+    </div>
+
+    <!-- G-D: Participación % PC vs SC por semana -->
+    <div class="chart-card full-width">
+      <div class="chart-title">🔀 Participación PC vs SC — Semana a Semana (% del total kg) <span class="badge">Apilado 100%</span></div>
+      <div class="chart-container tall"><canvas id="chart-geren-pcsc-sem"></canvas></div>
+    </div>
+
+    <!-- G-E: Participación PC vs SC dona -->
+    <div class="chart-card full-width">
+      <div class="chart-title">🍩 Participación PC vs SC — Total Acumulado <span class="badge">Dona</span></div>
+      <div class="chart-container" style="height:340px;display:flex;align-items:center;justify-content:center;position:relative">
+        <canvas id="chart-geren-pcsc-dona"></canvas>
+        <div id="pcsc-dona-center" style="position:absolute;text-align:center;pointer-events:none">
+          <div style="font-size:1.1rem;font-weight:700;font-family:var(--font-mono);color:var(--text-primary)" id="pcsc-dona-total">—</div>
+          <div style="font-size:.65rem;color:var(--text-secondary)">kg totales</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <!-- SECCION GF: GRUPOS FORZA -->
   <div class="section-header">
@@ -364,8 +407,13 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
       <div class="chart-container"><canvas id="chart-pm-semana"></canvas></div>
     </div>
     <div class="chart-card full-width">
-      <div class="chart-title">📦 Distribución Peso Medio (Histograma) <span class="badge">Frecuencia</span></div>
-      <div class="chart-container"><canvas id="chart-pm-histo"></canvas></div>
+      <div class="chart-title">🚜 Indicadores de Campo — Cosecha <span class="badge">Operacional</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:4px 0">
+        <div class="kpi-card" data-accent="purple" style="margin:0"><span class="kpi-icon">👷</span><div class="kpi-label">Cuadrilleros Activos</div><div class="kpi-value" id="kpi-cuad">—</div><div class="kpi-sub">distintos</div></div>
+        <div class="kpi-card" data-accent="teal" style="margin:0"><span class="kpi-icon">🗺️</span><div class="kpi-label">Bloques Trabajados</div><div class="kpi-value" id="kpi-bloques">—</div><div class="kpi-sub">bloques únicos</div></div>
+        <div class="kpi-card" data-accent="blue" style="margin:0"><span class="kpi-icon">📊</span><div class="kpi-label">Ratio Frutas/Peso</div><div class="kpi-value" id="kpi-ratio">—</div><div class="kpi-sub">frutas por kg</div></div>
+        <div class="kpi-card" data-accent="green" style="margin:0"><span class="kpi-icon">🏷️</span><div class="kpi-label">Lotes Ingresados</div><div class="kpi-value" id="kpi-lotes">—</div><div class="kpi-sub" id="kpi-lotes-lista" style="font-size:.6rem;line-height:1.4;margin-top:3px"></div></div>
+      </div>
     </div>
   </div>
 
@@ -419,10 +467,7 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     <h2>Análisis de Producción por Semana, Bloque y Cuadrillero</h2>
   </div>
   <div class="charts-grid">
-    <div class="chart-card full-width">
-      <div class="chart-title">📈 Peso Cosechado por Semana <span class="badge">Línea temporal</span></div>
-      <div class="chart-container tall"><canvas id="chart-linea"></canvas></div>
-    </div>
+
     <div class="chart-card">
       <div class="chart-title">🍩 Distribución por Tipo de Cosecha <span class="badge">Dona</span></div>
       <div class="chart-container" style="position:relative;display:flex;align-items:center;justify-content:center">
@@ -441,14 +486,8 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
       <div class="chart-title">🗺️ Peso por Bloque (Top 20) <span class="badge">Barras verticales</span></div>
       <div class="chart-container tall"><canvas id="chart-bloque"></canvas></div>
     </div>
-    <div class="chart-card full-width">
-      <div class="chart-title">📅 Evolución Diaria de Bins Cosechados <span class="badge">Apiladas</span></div>
-      <div class="chart-container tall"><canvas id="chart-diario"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">🔵 Frutas vs. Peso por Bin <span class="badge">Scatter</span></div>
-      <div class="chart-container tall"><canvas id="chart-scatter"></canvas></div>
-    </div>
+
+
     <div class="chart-card">
       <div class="chart-title">🌸 Floración por Desarrollo <span class="badge">Agrupado</span></div>
       <div class="chart-container"><canvas id="chart-flor"></canvas></div>
@@ -467,7 +506,9 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     </div>
   </div>
 
-  <!-- TABLA DETALLE -->
+
+
+    <!-- TABLA DETALLE -->
   <div class="section-header">
     <div class="section-divider"></div>
     <span class="sh-icon">📋</span>
@@ -9335,6 +9376,82 @@ Boleta;Bloque;Desarrollo;GrupoForza;Bin;Fecha;Frutas;Peso;PesoMedio;Floracion;Cu
 49471;SC174123;SC;;82 verde;31/05/2026;940;1129;1.2011;Inducción;YESID ALCIRIA VERGARA;6;11;6.5;Mecánica;Tractor;22;17;0.4148;BARRIDA
 49471;SC174123;SC;;52 verde;31/05/2026;864;1127;1.3044;Inducción;YESID ALCIRIA VERGARA;6;11;6.5;Mecánica;Tractor;22;17;0.4148;JERONIMO MARTINS COLOMBIA SAS
 49471;SC174123;SC;;11 verde;31/05/2026;806;724;0.8983;Inducción;YESID ALCIRIA VERGARA;6;11;6.5;Mecánica;Tractor;22;17;0.4148;BARRIDA
+49300;SC193523;SC;GF0226;132 verde;2/06/2026;1154;949;0.8224;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49300;SC193523;SC;GF0226;77 verde;2/06/2026;1184;902;0.7618;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49300;SC193523;SC;GF0226;137 verde;2/06/2026;1020;977;0.9578;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49300;SC193523;SC;GF0226;131 verde;2/06/2026;1010;1012;1.002;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49350;PC742425;PC;GF0226;136 verde;2/06/2026;444;809;1.8221;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3232;BARRIDA
+49350;PC743325;PC;GF0226;136 verde;2/06/2026;230;419;1.8217;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3063;BARRIDA
+49350;PC743325;PC;GF0226;66 verde;2/06/2026;60;80;1.3333;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3063;BARRIDA
+49350;PC743625;PC;GF0226;66 verde;2/06/2026;758;1013;1.3364;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.0949;BARRIDA
+49427;PC730225;PC;GF1426;55 verde;2/06/2026;726;1116;1.5372;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49427;PC730225;PC;GF1426;37 verde;2/06/2026;720;1076;1.4944;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49427;PC730225;PC;GF1426;120 verde;2/06/2026;700;1064;1.52;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49427;PC730225;PC;GF1426;52 verde;2/06/2026;724;1060;1.4641;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49428;PC730225;PC;GF1426;12 verde;2/06/2026;690;1137;1.6478;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49428;PC730225;PC;GF1426;130 verde;2/06/2026;700;1099;1.57;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49428;PC730225;PC;GF1426;46 verde;2/06/2026;666;1123;1.6862;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49428;PC730225;PC;GF1426;84 verde;2/06/2026;716;1116;1.5587;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
+49479;SC173123;SC;GF0226;151 verde;2/06/2026;1040;961;0.924;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.165;BARRIDA
+49479;SC173123;SC;GF0226;11 verde;2/06/2026;694;773;1.1138;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.165;BARRIDA
+49479;SC173723;SC;GF0226;11 verde;2/06/2026;254;283;1.1142;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
+49479;SC173723;SC;GF0226;95 verde;2/06/2026;888;1051;1.1836;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
+49480;SC173723;SC;GF0226;21 verde;2/06/2026;924;1064;1.1515;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
+49480;SC173723;SC;GF0226;13 verde;2/06/2026;1000;1016;1.016;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
+49480;SC173723;SC;GF0226;16 verde;2/06/2026;354;360;1.0169;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
+49480;SC172223;SC;GF0226;16 verde;2/06/2026;422;429;1.0166;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0152;BARRIDA
+49481;SC172023;SC;GF0226;16 verde;2/06/2026;224;228;1.0179;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0801;BARRIDA
+49481;SC172023;SC;GF0226;16 verde;2/06/2026;952;981;1.0305;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0801;BARRIDA
+49481;SC172023;SC;GF0226;147 verde;2/06/2026;636;763;1.1997;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0801;BARRIDA
+49481;SC171023;SC;GF0226;147 verde;2/06/2026;250;300;1.2;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0135;BARRIDA
+49482;SC171023;SC;GF0226;71 verde;2/06/2026;284;248;0.8732;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0135;BARRIDA
+49482;SC170823;SC;GF0226;71 verde;2/06/2026;800;700;0.875;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0342;BARRIDA
+49482;SC170823;SC;GF0226;26 verde;2/06/2026;138;106;0.7681;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0342;BARRIDA
+49482;SC170323;SC;GF0226;26 verde;2/06/2026;1028;789;0.7675;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
+49483;SC170323;SC;GF0226;41 verde;2/06/2026;1160;907;0.7819;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
+49483;SC170323;SC;GF0226;57 verde;2/06/2026;1162;890;0.7659;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
+49483;SC170323;SC;GF0226;117 verde;2/06/2026;398;313;0.7864;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
+49483;SC170523;SC;GF0226;117 verde;2/06/2026;732;577;0.7883;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0444;BARRIDA
+49519;PC742825;PC;GF0326;69 verde;2/06/2026;780;1199;1.5372;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
+49519;PC742825;PC;GF0326;57 verde;2/06/2026;724;1179;1.6285;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
+49519;PC742825;PC;GF0326;18 verde;2/06/2026;718;1171;1.6309;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
+49519;PC742825;PC;GF0326;27 verde;2/06/2026;704;1144;1.625;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
+49520;PC742825;PC;GF0326;41 verde;2/06/2026;732;1155;1.5779;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
+49520;PC742825;PC;GF0326;90 verde;2/06/2026;740;1171;1.5824;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
+49520;PC742525;PC;GF0326;33 verde;2/06/2026;760;1306;1.7184;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
+49520;PC742525;PC;GF0326;142 verde;2/06/2026;708;1229;1.7359;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
+49521;PC742525;PC;GF0326;117 verde;2/06/2026;704;1159;1.6463;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
+49521;PC742525;PC;GF0326;119 verde;2/06/2026;660;1213;1.8379;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
+49521;PC742525;PC;GF0326;24 verde;2/06/2026;686;1228;1.7901;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
+49521;PC742825;PC;GF0326;53 verde;2/06/2026;710;1228;1.7296;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;ALMACENES EXITO S.A.
+49522;PC742825;PC;GF0326;89 verde;2/06/2026;710;1203;1.6944;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;BARRIDA
+49522;PC742825;PC;GF0326;54 verde;2/06/2026;714;1277;1.7885;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;BARRIDA
+49551;SC193523;SC;GF0226;88 verde;2/06/2026;1156;960;0.8304;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49551;SC193523;SC;GF0226;78 verde;2/06/2026;1018;1028;1.0098;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49551;SC193523;SC;GF0226;83 verde;2/06/2026;996;1055;1.0592;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49551;SC193523;SC;GF0226;139 verde;2/06/2026;1100;1029;0.9355;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49552;SC193523;SC;GF0226;42 verde;2/06/2026;880;988;1.1227;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49552;SC193523;SC;GF0226;73 verde;2/06/2026;924;1075;1.1634;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49552;SC193523;SC;GF0226;18 verde;2/06/2026;884;971;1.0984;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49552;SC193523;SC;GF0226;27 verde;2/06/2026;892;923;1.0348;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
+49553;SC193623;SC;GF0226;16 verde;2/06/2026;1042;930;0.8925;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.6059;BARRIDA
+49553;SC193623;SC;GF0226;53 verde;2/06/2026;1060;941;0.8877;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.6059;BARRIDA
+49601;PC740325;PC;GF0226;36 verde;2/06/2026;308;377;1.224;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.2252;BARRIDA
+49601;PC740125;PC;GF0226;36 verde;2/06/2026;576;704;1.2222;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3146;BARRIDA
+49601;PC740125;PC;GF0226;48 verde;2/06/2026;358;511;1.4274;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3146;BARRIDA
+49601;PC741025;PC;GF0326;48 verde;2/06/2026;440;629;1.4295;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
+49602;PC743625;PC;GF0226;81 verde;2/06/2026;412;615;1.4927;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.0949;BARRIDA
+49602;PC740325;PC;GF0226;81 verde;2/06/2026;328;489;1.4909;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.2252;BARRIDA
+49602;PC740225;PC;GF0226;81 verde;2/06/2026;36;54;1.5;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3094;BARRIDA
+49602;PC742425;PC;GF0226;146 verde;2/06/2026;708;1197;1.6907;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3232;BARRIDA
+49603;PC743625;PC;GF0226;103 verde;2/06/2026;750;1134;1.512;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.0949;BARRIDA
+49603;PC740125;PC;GF0226;82 verde;2/06/2026;794;1153;1.4521;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3146;BARRIDA
+49603;PC741025;PC;GF0326;145 verde;2/06/2026;664;1215;1.8298;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
+49603;PC741025;PC;GF0326;123 verde;2/06/2026;682;1212;1.7771;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
+49604;PC741025;PC;GF0326;17 verde;2/06/2026;752;1185;1.5758;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
+49604;PC741025;PC;GF0326;99 verde;2/06/2026;770;1093;1.4195;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
+49604;PC741025;PC;GF0326;109 verde;2/06/2026;502;704;1.4024;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
+49604;PC741025;PC;GF0326;153 verde;2/06/2026;354;452;1.2768;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
 `;
 
 // === PARSEO ===
@@ -9500,8 +9617,7 @@ function updateKPIs() {
   const bins = filteredData.length;
   countUp(document.getElementById('kpi-peso'), tp);
   countUp(document.getElementById('kpi-frutas'), tf);
-  countUp(document.getElementById('kpi-avg-peso'), bins>0?tp/bins:0);
-  countUp(document.getElementById('kpi-bins'), bins);
+
   document.getElementById('kpi-cuad').textContent = new Set(filteredData.map(r=>r['Cuadrillero'])).size;
   document.getElementById('kpi-bloques').textContent = new Set(filteredData.map(r=>r['Bloque'])).size;
   const lotesSet = [...new Set(filteredData.map(r=>r['LOTE']).filter(Boolean))].sort((a,b)=>parseInt(a)-parseInt(b));
@@ -9520,6 +9636,10 @@ function updateKPIs() {
   document.getElementById('kpi-area').textContent = totalArea > 0 ? totalArea.toLocaleString('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
   document.getElementById('kpi-ratio').textContent = tp>0?fmtDec(tf/tp):'—';
   document.getElementById('kpi-semanas').textContent = new Set(filteredData.map(r=>r._semana)).size;
+  // Peso medio gerencial
+  const pmVals = filteredData.map(r=>r._pesoMedio).filter(v=>v>0);
+  const pmAvg = pmVals.length ? pmVals.reduce((s,v)=>s+v,0)/pmVals.length : 0;
+  document.getElementById('kpi-pm-geren').textContent = pmAvg > 0 ? fmtDec(pmAvg) : '—';
   // Costos
   const costoTotal = calcTotalCosto();
   document.getElementById('kpi-costo-total').textContent = costoTotal > 0 ? fmtCOP(costoTotal) : '—';
@@ -9633,17 +9753,7 @@ function updatePesoMedio() {
   });
   charts.pmSemana.update('none');
 
-  // Histograma
-  const step = 0.1, min = 0.5, max = 3.5;
-  const buckets = [];
-  for (let v=min; v<max; v+=step) buckets.push({lo:v, hi:v+step, count:0});
-  vals.forEach(v => {
-    const idx = Math.floor((v - min) / step);
-    if (idx >= 0 && idx < buckets.length) buckets[idx].count++;
-  });
-  charts.pmHisto.data.labels = buckets.map(b=>b.lo.toFixed(1));
-  charts.pmHisto.data.datasets[0].data = buckets.map(b=>b.count);
-  charts.pmHisto.update('none');
+
 }
 
 function initPesoMedio() {
@@ -9656,14 +9766,7 @@ function initPesoMedio() {
     }
   });
 
-  charts.pmHisto = new Chart(document.getElementById('chart-pm-histo').getContext('2d'), {
-    type:'bar',
-    data:{labels:[],datasets:[{label:'Frecuencia',data:[],backgroundColor:'rgba(52,152,219,0.65)',borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{...TOOLTIP_STYLE,callbacks:{title:items=>`Peso medio ${items[0].label} – ${(parseFloat(items[0].label)+0.1).toFixed(1)} kg`,label:ctx=>` ${fmtNum(ctx.parsed.y)} bins`}}},
-      scales:{x:{ticks:{color:'#95a5a6',maxRotation:45,font:{size:9}},grid:{display:false},title:{display:true,text:'kg/fruta',color:'#95a5a6'}},y:{ticks:{color:'#95a5a6'},grid:{color:GRID_COLOR},title:{display:true,text:'N° Bins',color:'#95a5a6'}}}
-    }
-  });
+
 }
 
 // ── FRUTAS POR PERSONA + COSTOS ──
@@ -9797,27 +9900,7 @@ function initFPP() {
   });
 }
 
-// ── G1: LÍNEA PESO POR SEMANA ──
-function initChartLinea() {
-  charts.linea = new Chart(document.getElementById('chart-linea').getContext('2d'), {
-    type:'line',
-    data:{labels:[],datasets:[
-      {label:'Manual',data:[],fill:true,borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.15)',tension:0.4,pointRadius:4,pointHoverRadius:7},
-      {label:'Mecánica',data:[],fill:true,borderColor:'#f39c12',backgroundColor:'rgba(243,156,18,0.15)',tension:0.4,pointRadius:4,pointHoverRadius:7}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#ecf0f1'}},tooltip:{...TOOLTIP_STYLE}},
-      scales:{x:{ticks:{color:'#95a5a6'},grid:{color:GRID_COLOR}},y:{ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID_COLOR}}}
-    }
-  });
-}
-function updateChartLinea() {
-  const sems = [...new Set(filteredData.map(r=>r._semana))].sort((a,b)=>a-b);
-  charts.linea.data.labels = sems.map(s=>`S${s}`);
-  charts.linea.data.datasets[0].data = sems.map(s=>filteredData.filter(r=>r._semana===s&&r['TipoCosecha']==='Manual').reduce((a,r)=>a+r._peso,0));
-  charts.linea.data.datasets[1].data = sems.map(s=>filteredData.filter(r=>r._semana===s&&r['TipoCosecha']==='Mecánica').reduce((a,r)=>a+r._peso,0));
-  charts.linea.update('none');
-}
+
 
 // ── G2: DONA TIPO ──
 function initChartDona() {
@@ -9883,54 +9966,9 @@ function updateChartBloque() {
   charts.bloque.update('none');
 }
 
-// ── G5: DIARIO ──
-function initChartDiario() {
-  charts.diario = new Chart(document.getElementById('chart-diario').getContext('2d'), {
-    type:'bar',
-    data:{labels:[],datasets:[
-      {label:'Inducción',data:[],backgroundColor:'rgba(46,204,113,0.75)',borderRadius:2},
-      {label:'Natural',data:[],backgroundColor:'rgba(26,188,156,0.75)',borderRadius:2}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#ecf0f1'}},tooltip:{...TOOLTIP_STYLE,callbacks:{title:i=>`Fecha: ${i[0].label}`,afterBody:i=>{const t=filteredData.filter(r=>fmtDate(r._date)===i[0].label).length;return [`Total: ${t} bins`];}}}},
-      scales:{x:{stacked:true,ticks:{color:'#95a5a6',maxRotation:45,font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#95a5a6'},grid:{color:GRID_COLOR}}}
-    }
-  });
-}
-function updateChartDiario() {
-  const aI={},aN={};
-  filteredData.forEach(r=>{const d=fmtDate(r._date);if(!d)return;if(r['Floracion']==='Inducción')aI[d]=(aI[d]||0)+1;else aN[d]=(aN[d]||0)+1;});
-  const dates=[...new Set([...Object.keys(aI),...Object.keys(aN)])].sort();
-  charts.diario.data.labels=dates;
-  charts.diario.data.datasets[0].data=dates.map(d=>aI[d]||0);
-  charts.diario.data.datasets[1].data=dates.map(d=>aN[d]||0);
-  charts.diario.update('none');
-}
 
-// ── G6: SCATTER ──
-function initChartScatter() {
-  charts.scatter = new Chart(document.getElementById('chart-scatter').getContext('2d'), {
-    type:'scatter',
-    data:{datasets:[
-      {label:'Manual',data:[],backgroundColor:'rgba(52,152,219,0.5)',pointRadius:3,pointHoverRadius:6},
-      {label:'Mecánica',data:[],backgroundColor:'rgba(243,156,18,0.5)',pointRadius:3,pointHoverRadius:6},
-      {label:'Tendencia',data:[],type:'line',borderColor:'rgba(231,76,60,0.8)',borderDash:[5,5],borderWidth:1.5,pointRadius:0,fill:false}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#ecf0f1',filter:i=>i.datasetIndex<2}},tooltip:{...TOOLTIP_STYLE,callbacks:{label:ctx=>{if(ctx.datasetIndex===2)return null;const r=ctx.raw;return [` Frutas: ${fmtNum(r.x)}`,` Peso: ${fmtNum(r.y)} kg`];}}}},
-      scales:{x:{ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID_COLOR},title:{display:true,text:'Frutas',color:'#95a5a6'}},y:{ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID_COLOR},title:{display:true,text:'Peso (kg)',color:'#95a5a6'}}}
-    }
-  });
-}
-function updateChartScatter() {
-  let data=filteredData.filter(r=>r._frutas>0&&r._peso>0);
-  if(data.length>2000){const sampled=[];const step=data.length/2000;for(let i=0;i<2000;i++)sampled.push(data[Math.floor(i*step)]);data=sampled;}
-  charts.scatter.data.datasets[0].data=data.filter(r=>r['TipoCosecha']==='Manual').map(r=>({x:r._frutas,y:r._peso}));
-  charts.scatter.data.datasets[1].data=data.filter(r=>r['TipoCosecha']==='Mecánica').map(r=>({x:r._frutas,y:r._peso}));
-  const reg=linReg(data.map(r=>({x:r._frutas,y:r._peso})));
-  if(reg){const xs=data.map(r=>r._frutas);const xmn=Math.min(...xs),xmx=Math.max(...xs);charts.scatter.data.datasets[2].data=[{x:xmn,y:reg.m*xmn+reg.b},{x:xmx,y:reg.m*xmx+reg.b}];}
-  charts.scatter.update('none');
-}
+
+
 
 // ── G7: FLOR ──
 function initChartFlor() {
@@ -10056,6 +10094,186 @@ function exportCSV() {
   a.download='cosecha_filtrado.csv';a.click();
 }
 
+// === GRÁFICAS GERENCIALES ===
+function initGerenCharts() {
+  const TOOLTIP = {backgroundColor:'rgba(15,25,35,0.95)',borderColor:'#2ecc71',borderWidth:1,titleColor:'#ecf0f1',bodyColor:'#95a5a6'};
+  const GRID = 'rgba(255,255,255,0.05)';
+
+  // G-A: Peso medio por semana
+  charts.gerenPm = new Chart(document.getElementById('chart-geren-pm').getContext('2d'), {
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Peso Medio (kg/fruta)',data:[],borderColor:'#2ecc71',backgroundColor:'rgba(46,204,113,0.12)',fill:true,tension:0.4,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#2ecc71',borderWidth:2.5,spanGaps:true},
+      {label:'Manual',data:[],borderColor:'#3498db',backgroundColor:'transparent',tension:0.4,pointRadius:3,borderDash:[4,3],spanGaps:true},
+      {label:'Mecánica',data:[],borderColor:'#f39c12',backgroundColor:'transparent',tension:0.4,pointRadius:3,borderDash:[4,3],spanGaps:true}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'}}},tooltip:{...TOOLTIP,callbacks:{label:ctx=>` ${fmtDec(ctx.parsed.y)} kg/fruta`}}},
+      scales:{x:{ticks:{color:'#95a5a6'},grid:{color:GRID}},y:{ticks:{color:'#95a5a6',callback:v=>v.toFixed(2)},grid:{color:GRID},title:{display:true,text:'kg / fruta',color:'#95a5a6'}}}
+    }
+  });
+
+  // G-B: Peso medio PC vs SC por semana
+  charts.gerenPeso = new Chart(document.getElementById('chart-geren-peso').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[
+      {label:'PC',data:[],backgroundColor:'rgba(52,152,219,0.75)',borderRadius:4,borderSkipped:false},
+      {label:'SC',data:[],backgroundColor:'rgba(155,89,182,0.75)',borderRadius:4,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'}}},
+        tooltip:{...TOOLTIP,callbacks:{
+          title:items=>`Semana ${items[0].label}`,
+          label:ctx=>` ${ctx.dataset.label}: ${fmtDec(ctx.parsed.y)} kg/fruta`
+        }}},
+      scales:{
+        x:{ticks:{color:'#95a5a6'},grid:{color:GRID}},
+        y:{ticks:{color:'#95a5a6',callback:v=>v.toFixed(2)},grid:{color:GRID},
+          title:{display:true,text:'kg / fruta (peso medio)',color:'#95a5a6'}}
+      }
+    }
+  });
+
+  // G-C: Costo cuadrillas + Kg cosechados por semana (doble eje)
+  charts.gerenCosto = new Chart(document.getElementById('chart-geren-costo').getContext('2d'), {
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Costo COP',data:[],borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,0.12)',fill:true,tension:0.4,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#e74c3c',borderWidth:2.5,yAxisID:'yCosto'},
+      {label:'Kg Cosechados',data:[],borderColor:'#2ecc71',backgroundColor:'rgba(46,204,113,0.08)',fill:false,tension:0.4,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#2ecc71',borderWidth:2.5,borderDash:[6,3],yAxisID:'yKg'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'},padding:16}},
+        tooltip:{...TOOLTIP,callbacks:{
+          label:ctx=>ctx.datasetIndex===0
+            ? ` Costo: ${fmtCOP(ctx.parsed.y)}`
+            : ` Kg: ${fmtNum(Math.round(ctx.parsed.y))} kg`
+        }}
+      },
+      scales:{
+        x:{ticks:{color:'#95a5a6',font:{size:11}},grid:{color:GRID}},
+        yCosto:{position:'left',ticks:{color:'#e74c3c',callback:v=>fmtCOP(v)},grid:{color:GRID},title:{display:true,text:'Costo COP',color:'#e74c3c'}},
+        yKg:{position:'right',ticks:{color:'#2ecc71',callback:v=>fmtNum(v)},grid:{display:false},title:{display:true,text:'Kg cosechados',color:'#2ecc71'}}
+      }
+    }
+  });
+
+  // G-D: PC vs SC % participación por semana (barras apiladas 100%)
+  charts.gerenPcscSem = new Chart(document.getElementById('chart-geren-pcsc-sem').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[
+      {label:'PC',data:[],backgroundColor:'rgba(52,152,219,0.85)',borderRadius:0,borderSkipped:false},
+      {label:'SC',data:[],backgroundColor:'rgba(155,89,182,0.85)',borderRadius:0,borderSkipped:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk',size:12},padding:16}},
+        tooltip:{...TOOLTIP,callbacks:{
+          title:items=>`Semana ${items[0].label}`,
+          label:ctx=>{
+            const idx=ctx.dataIndex;
+            const pc=ctx.chart.data.datasets[0].data[idx]||0;
+            const sc=ctx.chart.data.datasets[1].data[idx]||0;
+            const t=pc+sc;
+            const pct=t>0?(ctx.parsed.y/t*100).toFixed(1):0;
+            return ` ${ctx.dataset.label}: ${fmtNum(Math.round(ctx.parsed.y))} kg — ${pct}%`;
+          },
+          afterBody:items=>{
+            const idx=items[0].dataIndex;
+            const pc=items[0].chart.data.datasets[0].data[idx]||0;
+            const sc=items[0].chart.data.datasets[1].data[idx]||0;
+            return [`Total semana: ${fmtNum(Math.round(pc+sc))} kg`];
+          }
+        }}
+      },
+      scales:{
+        x:{stacked:true,ticks:{color:'#95a5a6',font:{size:11}},grid:{display:false}},
+        y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID},title:{display:true,text:'kg cosechados',color:'#95a5a6'}}
+      }
+    }
+  });
+
+  // G-E: PC vs SC dona total
+  charts.gerenPcscDona = new Chart(document.getElementById('chart-geren-pcsc-dona').getContext('2d'), {
+    type:'doughnut',
+    data:{labels:['PC','SC'],datasets:[{data:[0,0],backgroundColor:['#3498db','#9b59b6'],borderColor:'#1a2535',borderWidth:4,hoverOffset:14}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{
+        legend:{position:'right',labels:{color:'#ecf0f1',font:{family:'Space Grotesk',size:14},padding:24,
+          generateLabels:chart=>{const d=chart.data;const t=d.datasets[0].data.reduce((a,b)=>a+b,0);
+            return d.labels.map((l,i)=>({text:`${l}  ${fmtNum(Math.round(d.datasets[0].data[i]))} kg  (${t>0?(d.datasets[0].data[i]/t*100).toFixed(1):0}%)`,fillStyle:d.datasets[0].backgroundColor[i],strokeStyle:'transparent',index:i}));
+          }
+        }},
+        tooltip:{...TOOLTIP,callbacks:{label:ctx=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return ` ${ctx.label}: ${fmtNum(Math.round(ctx.parsed))} kg — ${t>0?(ctx.parsed/t*100).toFixed(1):0}%`;}}}
+      }
+    }
+  });
+}
+
+function updateGerenCharts() {
+  const sems = [...new Set(filteredData.map(r=>r._semana))].sort((a,b)=>a-b);
+  const labels = sems.map(s=>`S${s}`);
+
+  // G-A: Peso medio por semana
+  const pmAll = sems.map(s=>{const r=filteredData.filter(x=>x._semana===s&&x._pesoMedio>0);return r.length?r.reduce((a,x)=>a+x._pesoMedio,0)/r.length:null;});
+  const pmMan = sems.map(s=>{const r=filteredData.filter(x=>x._semana===s&&x._pesoMedio>0&&x['TipoCosecha']==='Manual');return r.length?r.reduce((a,x)=>a+x._pesoMedio,0)/r.length:null;});
+  const pmMec = sems.map(s=>{const r=filteredData.filter(x=>x._semana===s&&x._pesoMedio>0&&x['TipoCosecha']==='Mecánica');return r.length?r.reduce((a,x)=>a+x._pesoMedio,0)/r.length:null;});
+  charts.gerenPm.data.labels = labels;
+  charts.gerenPm.data.datasets[0].data = pmAll;
+  charts.gerenPm.data.datasets[1].data = pmMan;
+  charts.gerenPm.data.datasets[2].data = pmMec;
+  charts.gerenPm.update('none');
+
+  // G-B: Peso MEDIO de fruta PC vs SC por semana
+  const pmPC = sems.map(s=>{
+    const r=filteredData.filter(x=>x._semana===s&&x['Desarrollo']==='PC'&&x._pesoMedio>0);
+    return r.length ? r.reduce((a,x)=>a+x._pesoMedio,0)/r.length : null;
+  });
+  const pmSC = sems.map(s=>{
+    const r=filteredData.filter(x=>x._semana===s&&x['Desarrollo']==='SC'&&x._pesoMedio>0);
+    return r.length ? r.reduce((a,x)=>a+x._pesoMedio,0)/r.length : null;
+  });
+  charts.gerenPeso.data.labels = labels;
+  charts.gerenPeso.data.datasets[0].data = pmPC;
+  charts.gerenPeso.data.datasets[1].data = pmSC;
+  charts.gerenPeso.update('none');
+  // Keep pesoPC/pesoSC for G-D chart below
+  const pesoPC = sems.map(s=>filteredData.filter(r=>r._semana===s&&r['Desarrollo']==='PC').reduce((a,r)=>a+r._peso,0));
+  const pesoSC = sems.map(s=>filteredData.filter(r=>r._semana===s&&r['Desarrollo']==='SC').reduce((a,r)=>a+r._peso,0));
+
+  // G-C: Costo por semana + Kg totales (doble eje)
+  const costoSem = {};
+  const seen = {};
+  filteredData.forEach(r=>{
+    const key = (r['Cuadrillero']||'') + '||' + r['Fecha'];
+    if(!(key in seen) && r._horas>0 && r._cantPersonas>0){
+      seen[key]=true;
+      const tipo = getTipoFecha(r['Fecha']);
+      const tasa = tipo==='ordinario'?COSTO_ORDINARIO:COSTO_ESPECIAL;
+      costoSem[r._semana] = (costoSem[r._semana]||0) + r._horas*r._cantPersonas*tasa;
+    }
+  });
+  const kgSem = sems.map(s=>filteredData.filter(r=>r._semana===s).reduce((a,r)=>a+r._peso,0));
+  charts.gerenCosto.data.labels = labels;
+  charts.gerenCosto.data.datasets[0].data = sems.map(s=>costoSem[s]||0);
+  charts.gerenCosto.data.datasets[1].data = kgSem;
+  charts.gerenCosto.update('none');
+
+  // G-D: PC vs SC apilado por semana
+  charts.gerenPcscSem.data.labels = labels;
+  charts.gerenPcscSem.data.datasets[0].data = pesoPC;
+  charts.gerenPcscSem.data.datasets[1].data = pesoSC;
+  charts.gerenPcscSem.update('none');
+
+  // G-E: PC vs SC dona
+  const totalPC = filteredData.filter(r=>r['Desarrollo']==='PC').reduce((s,r)=>s+r._peso,0);
+  const totalSC = filteredData.filter(r=>r['Desarrollo']==='SC').reduce((s,r)=>s+r._peso,0);
+  charts.gerenPcscDona.data.datasets[0].data = [totalPC, totalSC];
+  charts.gerenPcscDona.update('none');
+  const pcscTotal = document.getElementById('pcsc-dona-total');
+  if(pcscTotal) pcscTotal.textContent = fmtNum(Math.round(totalPC+totalSC));
+}
+
 // === UPDATE ALL ===
 function updateGFKpis() {
   // Agrupar frutas por GrupoForza
@@ -10090,11 +10308,12 @@ function updateGFKpis() {
 function updateAllCharts() {
   updateKPIs();
   updateGFKpis();
+  updateGerenCharts();
   updateCombos();
   updatePesoMedio();
   calcFPP(); renderFPP();
-  updateChartLinea(); updateChartDona(); updateChartCuad();
-  updateChartBloque(); updateChartDiario(); updateChartScatter();
+  updateChartDona(); updateChartCuad();
+  updateChartBloque();
   updateChartFlor(); updateHeatmap(); updateGauge();
   updateTable();
 }
@@ -10178,15 +10397,13 @@ window.addEventListener('DOMContentLoaded', () => {
   setDateRange();
 
   // Inicializar todos los gráficos
+  initGerenCharts();
   initCombos();
   initPesoMedio();
   initFPP();
-  initChartLinea();
   initChartDona();
   initChartCuad();
   initChartBloque();
-  initChartDiario();
-  initChartScatter();
   initChartFlor();
   setupFilterListeners();
 
