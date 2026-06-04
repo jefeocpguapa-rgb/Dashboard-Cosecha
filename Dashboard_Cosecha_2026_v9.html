@@ -508,7 +508,81 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
 
 
 
-    <!-- TABLA DETALLE -->
+    <!-- SECCION DESPACHOS NATURAL/ADELANTADA -->
+  <div class="section-header">
+    <div class="section-divider" style="background:linear-gradient(180deg,#f39c12,#e74c3c)"></div>
+    <span class="sh-icon">🚚</span>
+    <h2>Despachos Fruta Natural / Adelantada</h2>
+  </div>
+
+  <!-- KPIs despachos -->
+  <div id="desp-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px">
+    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚖️</span><div class="kpi-label">Total Kg Despachados</div><div class="kpi-value" id="desp-kg-total">—</div><div class="kpi-sub">kg acumulados</div></div>
+    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">💵</span><div class="kpi-label">Precio Prom. por Kg</div><div class="kpi-value" id="desp-precio-avg">—</div><div class="kpi-sub">COP promedio</div></div>
+    <div class="kpi-card" data-accent="blue"><span class="kpi-icon">🏪</span><div class="kpi-label">Clientes Atendidos</div><div class="kpi-value" id="desp-clientes">—</div><div class="kpi-sub">distintos</div></div>
+    <div class="kpi-card" data-accent="purple"><span class="kpi-icon">📦</span><div class="kpi-label">Categorías</div><div class="kpi-value" id="desp-cats">—</div><div class="kpi-sub">tipos despachados</div></div>
+    <div class="kpi-card" data-accent="green"><span class="kpi-icon">📅</span><div class="kpi-label">Días con Despacho</div><div class="kpi-value" id="desp-dias">—</div><div class="kpi-sub">fechas activas</div></div>
+  </div>
+
+  <!-- Filtros despachos -->
+  <div style="background:var(--bg-card);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+    <div class="filter-group"><label>Fecha Despacho</label><select id="desp-filter-fecha" style="min-width:160px"><option value="">Todas las fechas</option></select></div>
+    <div class="filter-group"><label>Cliente</label><select id="desp-filter-cliente" style="min-width:180px"><option value="">Todos los clientes</option></select></div>
+    <div class="filter-group"><label>Categoría</label><select id="desp-filter-cat" style="min-width:160px"><option value="">Todas las categorías</option></select></div>
+    <button onclick="resetDespFiltros()" style="background:transparent;border:1px solid var(--accent-yellow);color:var(--accent-yellow);padding:6px 14px;border-radius:6px;font-size:.78rem;cursor:pointer;font-family:var(--font-main);transition:all .2s" onmouseover="this.style.background='var(--accent-yellow)';this.style.color='#0f1923'" onmouseout="this.style.background='transparent';this.style.color='var(--accent-yellow)'">↺ Resetear</button>
+    <div id="desp-counter" style="font-size:.78rem;color:var(--accent-teal);font-family:var(--font-mono);background:rgba(26,188,156,.1);border:1px solid rgba(26,188,156,.2);padding:5px 12px;border-radius:6px;margin-left:auto">— registros</div>
+  </div>
+
+  <!-- Gráficas despachos -->
+  <div class="charts-grid" style="margin-bottom:20px">
+
+    <!-- G-DESP-A: Kg despachados por día y categoría (barras apiladas) -->
+    <div class="chart-card full-width">
+      <div class="chart-title">📅 Kg Despachados por Día — por Categoría <span class="badge">Apilado</span></div>
+      <div class="chart-container tall"><canvas id="chart-desp-dia"></canvas></div>
+    </div>
+
+    <!-- G-DESP-B: Participación por categoría (dona) -->
+    <div class="chart-card">
+      <div class="chart-title">🍩 Participación por Categoría <span class="badge">Dona</span></div>
+      <div class="chart-container"><canvas id="chart-desp-cat"></canvas></div>
+    </div>
+
+    <!-- G-DESP-C: Kg por cliente (barras horizontales) -->
+    <div class="chart-card">
+      <div class="chart-title">🏪 Kg Despachados por Cliente <span class="badge">Ranking</span></div>
+      <div class="chart-container"><canvas id="chart-desp-cliente"></canvas></div>
+    </div>
+
+    <!-- G-DESP-D: Relación proceso vs despacho (fruta que entró vs que salió) -->
+    <div class="chart-card full-width">
+      <div class="chart-title">🔄 Fruta Natural: Fecha Proceso vs Fecha Despacho <span class="badge">Seguimiento</span></div>
+      <div class="chart-container tall"><canvas id="chart-desp-flujo"></canvas></div>
+    </div>
+
+  </div>
+
+  <!-- Tabla despachos -->
+  <div class="chart-card" style="margin-bottom:24px">
+    <div class="chart-title">📋 Detalle de Despachos</div>
+    <div style="overflow-x:auto">
+      <table class="data-table" id="desp-table">
+        <thead><tr>
+          <th>Fecha Proceso</th>
+          <th>Fecha Despacho</th>
+          <th>Cliente</th>
+          <th>Categoría</th>
+          <th>Grupo</th>
+          <th style="text-align:right">Kg Total</th>
+          <th style="text-align:right">Precio COP/kg</th>
+          <th style="text-align:right">Valor Total</th>
+        </tr></thead>
+        <tbody id="desp-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TABLA DETALLE -->
   <div class="section-header">
     <div class="section-divider"></div>
     <span class="sh-icon">📋</span>
@@ -9376,82 +9450,44 @@ Boleta;Bloque;Desarrollo;GrupoForza;Bin;Fecha;Frutas;Peso;PesoMedio;Floracion;Cu
 49471;SC174123;SC;;82 verde;31/05/2026;940;1129;1.2011;Inducción;YESID ALCIRIA VERGARA;6;11;6.5;Mecánica;Tractor;22;17;0.4148;BARRIDA
 49471;SC174123;SC;;52 verde;31/05/2026;864;1127;1.3044;Inducción;YESID ALCIRIA VERGARA;6;11;6.5;Mecánica;Tractor;22;17;0.4148;JERONIMO MARTINS COLOMBIA SAS
 49471;SC174123;SC;;11 verde;31/05/2026;806;724;0.8983;Inducción;YESID ALCIRIA VERGARA;6;11;6.5;Mecánica;Tractor;22;17;0.4148;BARRIDA
-49300;SC193523;SC;GF0226;132 verde;2/06/2026;1154;949;0.8224;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49300;SC193523;SC;GF0226;77 verde;2/06/2026;1184;902;0.7618;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49300;SC193523;SC;GF0226;137 verde;2/06/2026;1020;977;0.9578;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49300;SC193523;SC;GF0226;131 verde;2/06/2026;1010;1012;1.002;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49350;PC742425;PC;GF0226;136 verde;2/06/2026;444;809;1.8221;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3232;BARRIDA
-49350;PC743325;PC;GF0226;136 verde;2/06/2026;230;419;1.8217;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3063;BARRIDA
-49350;PC743325;PC;GF0226;66 verde;2/06/2026;60;80;1.3333;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3063;BARRIDA
-49350;PC743625;PC;GF0226;66 verde;2/06/2026;758;1013;1.3364;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.0949;BARRIDA
-49427;PC730225;PC;GF1426;55 verde;2/06/2026;726;1116;1.5372;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49427;PC730225;PC;GF1426;37 verde;2/06/2026;720;1076;1.4944;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49427;PC730225;PC;GF1426;120 verde;2/06/2026;700;1064;1.52;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49427;PC730225;PC;GF1426;52 verde;2/06/2026;724;1060;1.4641;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49428;PC730225;PC;GF1426;12 verde;2/06/2026;690;1137;1.6478;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49428;PC730225;PC;GF1426;130 verde;2/06/2026;700;1099;1.57;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49428;PC730225;PC;GF1426;46 verde;2/06/2026;666;1123;1.6862;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49428;PC730225;PC;GF1426;84 verde;2/06/2026;716;1116;1.5587;Natural;CONEO SOTO DEINER JOSE;13;14;6;Manual;Camión;23;73;0.8047;PESCA
-49479;SC173123;SC;GF0226;151 verde;2/06/2026;1040;961;0.924;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.165;BARRIDA
-49479;SC173123;SC;GF0226;11 verde;2/06/2026;694;773;1.1138;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.165;BARRIDA
-49479;SC173723;SC;GF0226;11 verde;2/06/2026;254;283;1.1142;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
-49479;SC173723;SC;GF0226;95 verde;2/06/2026;888;1051;1.1836;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
-49480;SC173723;SC;GF0226;21 verde;2/06/2026;924;1064;1.1515;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
-49480;SC173723;SC;GF0226;13 verde;2/06/2026;1000;1016;1.016;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
-49480;SC173723;SC;GF0226;16 verde;2/06/2026;354;360;1.0169;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.1391;BARRIDA
-49480;SC172223;SC;GF0226;16 verde;2/06/2026;422;429;1.0166;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0152;BARRIDA
-49481;SC172023;SC;GF0226;16 verde;2/06/2026;224;228;1.0179;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0801;BARRIDA
-49481;SC172023;SC;GF0226;16 verde;2/06/2026;952;981;1.0305;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0801;BARRIDA
-49481;SC172023;SC;GF0226;147 verde;2/06/2026;636;763;1.1997;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0801;BARRIDA
-49481;SC171023;SC;GF0226;147 verde;2/06/2026;250;300;1.2;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0135;BARRIDA
-49482;SC171023;SC;GF0226;71 verde;2/06/2026;284;248;0.8732;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0135;BARRIDA
-49482;SC170823;SC;GF0226;71 verde;2/06/2026;800;700;0.875;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0342;BARRIDA
-49482;SC170823;SC;GF0226;26 verde;2/06/2026;138;106;0.7681;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0342;BARRIDA
-49482;SC170323;SC;GF0226;26 verde;2/06/2026;1028;789;0.7675;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
-49483;SC170323;SC;GF0226;41 verde;2/06/2026;1160;907;0.7819;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
-49483;SC170323;SC;GF0226;57 verde;2/06/2026;1162;890;0.7659;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
-49483;SC170323;SC;GF0226;117 verde;2/06/2026;398;313;0.7864;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.4571;BARRIDA
-49483;SC170523;SC;GF0226;117 verde;2/06/2026;732;577;0.7883;Inducción;YESID ALCIRIA VERGARA;6;11;11;Mecánica;Tractor;23;17;0.0444;BARRIDA
-49519;PC742825;PC;GF0326;69 verde;2/06/2026;780;1199;1.5372;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
-49519;PC742825;PC;GF0326;57 verde;2/06/2026;724;1179;1.6285;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
-49519;PC742825;PC;GF0326;18 verde;2/06/2026;718;1171;1.6309;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
-49519;PC742825;PC;GF0326;27 verde;2/06/2026;704;1144;1.625;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
-49520;PC742825;PC;GF0326;41 verde;2/06/2026;732;1155;1.5779;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
-49520;PC742825;PC;GF0326;90 verde;2/06/2026;740;1171;1.5824;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;JERONIMO MARTINS COLOMBIA SAS
-49520;PC742525;PC;GF0326;33 verde;2/06/2026;760;1306;1.7184;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
-49520;PC742525;PC;GF0326;142 verde;2/06/2026;708;1229;1.7359;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
-49521;PC742525;PC;GF0326;117 verde;2/06/2026;704;1159;1.6463;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
-49521;PC742525;PC;GF0326;119 verde;2/06/2026;660;1213;1.8379;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
-49521;PC742525;PC;GF0326;24 verde;2/06/2026;686;1228;1.7901;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4485;ALMACENES EXITO S.A.
-49521;PC742825;PC;GF0326;53 verde;2/06/2026;710;1228;1.7296;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;ALMACENES EXITO S.A.
-49522;PC742825;PC;GF0326;89 verde;2/06/2026;710;1203;1.6944;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;BARRIDA
-49522;PC742825;PC;GF0326;54 verde;2/06/2026;714;1277;1.7885;Inducción;ANDERSON CORDOBA CAICEDO;1;11;8;Mecánica;Camión;23;74;0.4579;BARRIDA
-49551;SC193523;SC;GF0226;88 verde;2/06/2026;1156;960;0.8304;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49551;SC193523;SC;GF0226;78 verde;2/06/2026;1018;1028;1.0098;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49551;SC193523;SC;GF0226;83 verde;2/06/2026;996;1055;1.0592;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49551;SC193523;SC;GF0226;139 verde;2/06/2026;1100;1029;0.9355;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49552;SC193523;SC;GF0226;42 verde;2/06/2026;880;988;1.1227;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49552;SC193523;SC;GF0226;73 verde;2/06/2026;924;1075;1.1634;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49552;SC193523;SC;GF0226;18 verde;2/06/2026;884;971;1.0984;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49552;SC193523;SC;GF0226;27 verde;2/06/2026;892;923;1.0348;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.7343;BARRIDA
-49553;SC193623;SC;GF0226;16 verde;2/06/2026;1042;930;0.8925;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.6059;BARRIDA
-49553;SC193623;SC;GF0226;53 verde;2/06/2026;1060;941;0.8877;Inducción;WILMAR ANDRES PINEDA MANCO;5;11;9;Mecánica;Tractor;23;19;0.6059;BARRIDA
-49601;PC740325;PC;GF0226;36 verde;2/06/2026;308;377;1.224;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.2252;BARRIDA
-49601;PC740125;PC;GF0226;36 verde;2/06/2026;576;704;1.2222;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3146;BARRIDA
-49601;PC740125;PC;GF0226;48 verde;2/06/2026;358;511;1.4274;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3146;BARRIDA
-49601;PC741025;PC;GF0326;48 verde;2/06/2026;440;629;1.4295;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
-49602;PC743625;PC;GF0226;81 verde;2/06/2026;412;615;1.4927;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.0949;BARRIDA
-49602;PC740325;PC;GF0226;81 verde;2/06/2026;328;489;1.4909;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.2252;BARRIDA
-49602;PC740225;PC;GF0226;81 verde;2/06/2026;36;54;1.5;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3094;BARRIDA
-49602;PC742425;PC;GF0226;146 verde;2/06/2026;708;1197;1.6907;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3232;BARRIDA
-49603;PC743625;PC;GF0226;103 verde;2/06/2026;750;1134;1.512;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.0949;BARRIDA
-49603;PC740125;PC;GF0226;82 verde;2/06/2026;794;1153;1.4521;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.3146;BARRIDA
-49603;PC741025;PC;GF0326;145 verde;2/06/2026;664;1215;1.8298;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
-49603;PC741025;PC;GF0326;123 verde;2/06/2026;682;1212;1.7771;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
-49604;PC741025;PC;GF0326;17 verde;2/06/2026;752;1185;1.5758;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
-49604;PC741025;PC;GF0326;99 verde;2/06/2026;770;1093;1.4195;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
-49604;PC741025;PC;GF0326;109 verde;2/06/2026;502;704;1.4024;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
-49604;PC741025;PC;GF0326;153 verde;2/06/2026;354;452;1.2768;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;10;8.5;Mecánica;Camión;23;74;0.1313;BARRIDA
+`;
+
+// === DATOS DESPACHOS ===
+const RAW_DESPACHOS = `
+FechaProceso;FechaDespacho;Cliente;Categoria;Grupo;KilosTotal;Precio
+1/06/2026;1/06/2026;DREAN FOOD CARIBE;Piña AD1;1526;23.0;0
+1/06/2026;1/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1526;453.0;0
+1/06/2026;1/06/2026;DREAN FOOD CARIBE;Piña ADGUA;1526;1743.0;0
+1/06/2026;2/06/2026;Aldinsen Gonzalez;AD-piña indstria;1526;240.0;600.0
+1/06/2026;2/06/2026;Aldinsen Gonzalez;AD-piña jugos;1526;931.0;600.0
+1/06/2026;2/06/2026;cartagena;Piña AD1;1526;346.0;0
+1/06/2026;2/06/2026;DREAN FOOD CARIBE;Piña AD2;1526;1923.0;0
+1/06/2026;2/06/2026;DREAN FOOD CARIBE;Piña AD3;1526;505.0;0
+1/06/2026;2/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1526;425.0;0
+1/06/2026;2/06/2026;local apartado;Piña AD1;1526;927.0;0
+1/06/2026;2/06/2026;local apartado;Piña ADGUA;1526;241.0;0
+1/06/2026;2/06/2026;local medellin;Piña AD3;1526;571.0;0
+1/06/2026;2/06/2026;local sincelejo;Piña AD1;1526;141.0;0
+1/06/2026;2/06/2026;local sincelejo;Piña AD2;1526;261.0;0
+1/06/2026;2/06/2026;local sincelejo;Piña AD3;1526;1059.0;0
+1/06/2026;2/06/2026;local sincelejo;Piña ADGUA;1526;915.0;0
+1/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña AD3;1526;125.0;0
+1/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1526;140.0;0
+1/06/2026;3/06/2026;local medellin;Piña AD2;1526;457.0;0
+2/06/2026;3/06/2026;Aldinsen Gonzalez;AD-piña jugos;1426;757.0;0
+2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña AD1;1426;1813.0;0
+2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña AD3;1426;875.0;0
+2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1426;254.0;0
+2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña ADGUA;1426;230.0;0
+2/06/2026;3/06/2026;gildardo ovidio cataño;Piña AD3;1426;352.0;0
+2/06/2026;3/06/2026;KARINA BORJA;AD-piña jugos;1426;1462.0;0
+2/06/2026;3/06/2026;local apartado;Piña AD1;1426;600.0;0
+2/06/2026;3/06/2026;local medellin;Piña AD1;1426;696.0;0
+2/06/2026;3/06/2026;local medellin;Piña AD2;1426;1668.0;0
+2/06/2026;3/06/2026;local sincelejo;Piña AD3;1426;128.0;0
+2/06/2026;3/06/2026;local sincelejo;Piña ADGUA;1426;49.0;0
+3/06/2026;3/06/2026;cartagena;Piña AD1;0;867.0;0
+3/06/2026;3/06/2026;dario alberto;Piña AD1;0;47.0;0
 `;
 
 // === PARSEO ===
@@ -10274,6 +10310,216 @@ function updateGerenCharts() {
   if(pcscTotal) pcscTotal.textContent = fmtNum(Math.round(totalPC+totalSC));
 }
 
+// === DESPACHOS ===
+let allDespachos = [], filtDespachos = [];
+
+// Colores por categoría
+const CAT_COLORS = {
+  'Piña AD1':        '#f39c12',
+  'Piña AD2':        '#e67e22',
+  'Piña AD3':        '#e74c3c',
+  'Piña ADBABY':     '#9b59b6',
+  'Piña ADGUA':      '#1abc9c',
+  'AD-piña indstria':'#3498db',
+  'AD-piña jugos':   '#2ecc71',
+};
+function catColor(cat) {
+  return CAT_COLORS[cat] || '#95a5a6';
+}
+
+function parseDespachos(raw) {
+  const lines = raw.trim().split('\n');
+  const data = [];
+  for (let i = 1; i < lines.length; i++) {
+    const p = lines[i].split(';');
+    if (p.length < 6) continue;
+    const kt = parseFloat(p[5]) || 0;
+    if (kt <= 0) continue;
+    data.push({
+      fechaProceso:  p[0].trim(),
+      fechaDespacho: p[1].trim(),
+      cliente:       p[2].trim(),
+      categoria:     p[3].trim(),
+      grupo:         p[4].trim(),
+      kilos:         kt,
+      precio:        parseFloat(p[6]) || 0,
+    });
+  }
+  return data;
+}
+
+function initDespFiltros() {
+  const fechas   = [...new Set(allDespachos.map(r=>r.fechaDespacho))].sort();
+  const clientes = [...new Set(allDespachos.map(r=>r.cliente))].sort();
+  const cats     = [...new Set(allDespachos.map(r=>r.categoria))].sort();
+
+  const fSel = document.getElementById('desp-filter-fecha');
+  fechas.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;fSel.appendChild(o);});
+
+  const cSel = document.getElementById('desp-filter-cliente');
+  clientes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cSel.appendChild(o);});
+
+  const catSel = document.getElementById('desp-filter-cat');
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o);});
+
+  document.getElementById('desp-filter-fecha').addEventListener('change', applyDespFiltros);
+  document.getElementById('desp-filter-cliente').addEventListener('change', applyDespFiltros);
+  document.getElementById('desp-filter-cat').addEventListener('change', applyDespFiltros);
+}
+
+function applyDespFiltros() {
+  const fecha   = document.getElementById('desp-filter-fecha').value;
+  const cliente = document.getElementById('desp-filter-cliente').value;
+  const cat     = document.getElementById('desp-filter-cat').value;
+  filtDespachos = allDespachos.filter(r =>
+    (!fecha   || r.fechaDespacho === fecha) &&
+    (!cliente || r.cliente === cliente) &&
+    (!cat     || r.categoria === cat)
+  );
+  document.getElementById('desp-counter').textContent = `${filtDespachos.length} registros`;
+  updateDespachos();
+}
+
+function resetDespFiltros() {
+  document.getElementById('desp-filter-fecha').value = '';
+  document.getElementById('desp-filter-cliente').value = '';
+  document.getElementById('desp-filter-cat').value = '';
+  filtDespachos = [...allDespachos];
+  document.getElementById('desp-counter').textContent = `${filtDespachos.length} registros`;
+  updateDespachos();
+}
+window.resetDespFiltros = resetDespFiltros;
+
+function initDespCharts() {
+  const TOOLTIP = {backgroundColor:'rgba(15,25,35,0.95)',borderColor:'#f39c12',borderWidth:1,titleColor:'#ecf0f1',bodyColor:'#95a5a6'};
+  const GRID = 'rgba(255,255,255,0.05)';
+
+  // G-DESP-A: Barras apiladas por día y categoría
+  charts.despDia = new Chart(document.getElementById('chart-desp-dia').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'},boxWidth:12}},
+        tooltip:{...TOOLTIP,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtNum(Math.round(ctx.parsed.y))} kg`}}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#95a5a6'},grid:{display:false}},
+        y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID},title:{display:true,text:'Kg despachados',color:'#95a5a6'}}
+      }
+    }
+  });
+
+  // G-DESP-B: Dona categoría
+  charts.despCat = new Chart(document.getElementById('chart-desp-cat').getContext('2d'), {
+    type:'doughnut',
+    data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:'#1a2535',borderWidth:3,hoverOffset:10}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'right',labels:{color:'#ecf0f1',font:{family:'Space Grotesk',size:11},padding:12,boxWidth:12}},
+        tooltip:{...TOOLTIP,callbacks:{label:ctx=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return ` ${fmtNum(Math.round(ctx.parsed))} kg (${t>0?(ctx.parsed/t*100).toFixed(1):0}%)`;}}}
+      }
+    }
+  });
+
+  // G-DESP-C: Barras horizontales por cliente
+  charts.despCliente = new Chart(document.getElementById('chart-desp-cliente').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[{label:'Kg',data:[],backgroundColor:'rgba(243,156,18,0.75)',borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...TOOLTIP,callbacks:{label:ctx=>` ${fmtNum(Math.round(ctx.parsed.x))} kg`}}},
+      scales:{x:{ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID}},y:{ticks:{color:'#ecf0f1',font:{size:10}},grid:{display:false}}}
+    }
+  });
+
+  // G-DESP-D: Flujo proceso → despacho (líneas por fecha proceso)
+  charts.despFlujo = new Chart(document.getElementById('chart-desp-flujo').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'},boxWidth:12}},
+        tooltip:{...TOOLTIP,callbacks:{
+          title:items=>`Despacho: ${items[0].label}`,
+          label:ctx=>` ${ctx.dataset.label}: ${fmtNum(Math.round(ctx.parsed.y))} kg`
+        }}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#95a5a6'},grid:{display:false}},
+        y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID},
+          title:{display:true,text:'Kg (agrupado por fecha proceso)',color:'#95a5a6'}}
+      }
+    }
+  });
+}
+
+function updateDespachos() {
+  const data = filtDespachos;
+  // KPIs
+  const totalKg = data.reduce((s,r)=>s+r.kilos,0);
+  const conPrecio = data.filter(r=>r.precio>0);
+  const precioAvg = conPrecio.length ? conPrecio.reduce((s,r)=>s+r.precio,0)/conPrecio.length : 0;
+  document.getElementById('desp-kg-total').textContent = fmtNum(Math.round(totalKg));
+  document.getElementById('desp-precio-avg').textContent = precioAvg > 0 ? '$'+fmtNum(Math.round(precioAvg)) : '—';
+  document.getElementById('desp-clientes').textContent = new Set(data.map(r=>r.cliente)).size;
+  document.getElementById('desp-cats').textContent = new Set(data.map(r=>r.categoria)).size;
+  document.getElementById('desp-dias').textContent = new Set(data.map(r=>r.fechaDespacho)).size;
+
+  const fechas = [...new Set(data.map(r=>r.fechaDespacho))].sort();
+  const cats   = [...new Set(data.map(r=>r.categoria))].sort();
+
+  // G-A: Barras apiladas por día y categoría
+  const datasetsA = cats.map(cat => ({
+    label: cat,
+    data: fechas.map(f => data.filter(r=>r.fechaDespacho===f&&r.categoria===cat).reduce((s,r)=>s+r.kilos,0)),
+    backgroundColor: catColor(cat),
+    borderRadius: 2, borderSkipped: false,
+  }));
+  charts.despDia.data.labels = fechas;
+  charts.despDia.data.datasets = datasetsA;
+  charts.despDia.update('none');
+
+  // G-B: Dona por categoría
+  const catKg = cats.map(c=>data.filter(r=>r.categoria===c).reduce((s,r)=>s+r.kilos,0));
+  charts.despCat.data.labels = cats;
+  charts.despCat.data.datasets[0].data = catKg;
+  charts.despCat.data.datasets[0].backgroundColor = cats.map(c=>catColor(c));
+  charts.despCat.update('none');
+
+  // G-C: Por cliente
+  const clienteAgg = {};
+  data.forEach(r=>{ clienteAgg[r.cliente]=(clienteAgg[r.cliente]||0)+r.kilos; });
+  const clienteSorted = Object.entries(clienteAgg).sort((a,b)=>b[1]-a[1]);
+  charts.despCliente.data.labels = clienteSorted.map(e=>e[0]);
+  charts.despCliente.data.datasets[0].data = clienteSorted.map(e=>e[1]);
+  charts.despCliente.update('none');
+
+  // G-D: Flujo proceso → despacho (quién se despachó según cuándo entró)
+  const procesos = [...new Set(data.map(r=>r.fechaProceso))].sort();
+  const procesosColors = ['#2ecc71','#3498db','#f39c12','#e74c3c','#9b59b6','#1abc9c'];
+  const datasetsD = procesos.map((proc, i) => ({
+    label: `Proceso ${proc}`,
+    data: fechas.map(f => data.filter(r=>r.fechaDespacho===f&&r.fechaProceso===proc).reduce((s,r)=>s+r.kilos,0)),
+    backgroundColor: procesosColors[i % procesosColors.length],
+    borderRadius: 2, borderSkipped: false,
+  }));
+  charts.despFlujo.data.labels = fechas;
+  charts.despFlujo.data.datasets = datasetsD;
+  charts.despFlujo.update('none');
+
+  // Tabla
+  const tbody = document.getElementById('desp-tbody');
+  tbody.innerHTML = data.map(r => {
+    const valorTotal = r.precio > 0 ? r.kilos * r.precio : 0;
+    return `<tr>
+      <td style="font-family:var(--font-mono)">${r.fechaProceso}</td>
+      <td style="font-family:var(--font-mono)">${r.fechaDespacho}</td>
+      <td>${r.cliente}</td>
+      <td><span style="background:${catColor(r.categoria)}22;color:${catColor(r.categoria)};padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600">${r.categoria}</span></td>
+      <td style="font-family:var(--font-mono);color:var(--text-secondary)">${r.grupo}</td>
+      <td style="text-align:right;font-family:var(--font-mono);font-weight:600">${fmtNum(Math.round(r.kilos))}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${r.precio>0?'$'+fmtNum(Math.round(r.precio)):'—'}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--accent-green)">${valorTotal>0?'$'+fmtNum(Math.round(valorTotal)):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+
 // === UPDATE ALL ===
 function updateGFKpis() {
   // Agrupar frutas por GrupoForza
@@ -10391,6 +10637,8 @@ window.addEventListener('DOMContentLoaded', () => {
   Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
 
   allData = parseCSV(RAW_CSV);
+  allDespachos = parseDespachos(RAW_DESPACHOS);
+  filtDespachos = [...allDespachos];
   document.getElementById('count-total').textContent = fmtNum(allData.length);
 
   populateDropdowns();
@@ -10405,12 +10653,15 @@ window.addEventListener('DOMContentLoaded', () => {
   initChartCuad();
   initChartBloque();
   initChartFlor();
+  initDespCharts();
+  initDespFiltros();
   setupFilterListeners();
 
   filteredData = [...allData];
   document.getElementById('count-filtered').textContent = fmtNum(filteredData.length);
   document.getElementById('footer-count-val').textContent = fmtNum(filteredData.length);
   updateAllCharts();
+  updateDespachos();
 
   setTimeout(() => {
     const ov = document.getElementById('loading-overlay');
