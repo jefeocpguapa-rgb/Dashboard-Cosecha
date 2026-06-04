@@ -508,6 +508,46 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
 
 
 
+    <!-- TABLA DETALLE -->
+  <div class="section-header">
+    <div class="section-divider"></div>
+    <span class="sh-icon">📋</span>
+    <h2>Detalle de Registros</h2>
+  </div>
+  <section id="detail-section">
+    <div id="detail-header">
+      <h2>📋 Registros individuales</h2>
+      <div class="detail-controls">
+        <input type="text" id="table-search" placeholder="🔍 Buscar...">
+        <button id="btn-export">⬇ Exportar CSV</button>
+        <button id="btn-toggle-table">Ver detalle ▼</button>
+      </div>
+    </div>
+    <div id="table-wrapper">
+      <div style="overflow-x:auto">
+        <table class="data-table" id="data-table">
+          <thead><tr>
+            <th data-col="Fecha">Fecha</th>
+            <th data-col="Boleta">Boleta</th>
+            <th data-col="Bloque">Bloque</th>
+            <th data-col="Cuadrillero">Cuadrillero</th>
+            <th data-col="Bin">Bin</th>
+            <th data-col="Frutas">Frutas</th>
+            <th data-col="Peso">Peso (kg)</th>
+            <th data-col="PesoMedio">Peso Medio</th>
+            <th data-col="TipoCosecha">Tipo</th>
+            <th data-col="Floracion">Floración</th>
+            <th data-col="ModoTransporte">Transporte</th>
+          </tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+      <div id="page-info"></div>
+    </div>
+  </section>
+
+
     <!-- SECCION DESPACHOS NATURAL/ADELANTADA -->
   <div class="section-header">
     <div class="section-divider" style="background:linear-gradient(180deg,#f39c12,#e74c3c)"></div>
@@ -568,58 +608,26 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     <div style="overflow-x:auto">
       <table class="data-table" id="desp-table">
         <thead><tr>
-          <th>Fecha Proceso</th>
-          <th>Fecha Despacho</th>
-          <th>Cliente</th>
-          <th>Categoría</th>
-          <th>Grupo</th>
-          <th style="text-align:right">Kg Total</th>
-          <th style="text-align:right">Precio COP/kg</th>
-          <th style="text-align:right">Valor Total</th>
+          <th onclick="sortDesp('fechaProceso')" id="dth-fechaProceso" style="cursor:pointer;user-select:none" title="Ordenar">Fecha Proceso</th>
+          <th onclick="sortDesp('fechaDespacho')" id="dth-fechaDespacho" style="cursor:pointer;user-select:none" title="Ordenar">Fecha Despacho</th>
+          <th onclick="sortDesp('remision')" id="dth-remision" style="cursor:pointer;user-select:none" title="Ordenar">Remisión</th>
+          <th onclick="sortDesp('cliente')" id="dth-cliente" style="cursor:pointer;user-select:none" title="Ordenar">Cliente</th>
+          <th onclick="sortDesp('categoria')" id="dth-categoria" style="cursor:pointer;user-select:none" title="Ordenar">Categoría</th>
+          <th onclick="sortDesp('grupo')" id="dth-grupo" style="cursor:pointer;user-select:none" title="Ordenar">Grupo</th>
+          <th onclick="sortDesp('kilos')" id="dth-kilos" style="text-align:right;cursor:pointer;user-select:none" title="Ordenar">Kg Total</th>
+          <th onclick="sortDesp('precio')" id="dth-precio" style="text-align:right;cursor:pointer;user-select:none" title="Ordenar">Precio COP/kg</th>
+          <th onclick="sortDesp('valorTotal')" id="dth-valorTotal" style="text-align:right;cursor:pointer;user-select:none" title="Ordenar">Valor Total</th>
         </tr></thead>
         <tbody id="desp-tbody"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- TABLA DETALLE -->
-  <div class="section-header">
-    <div class="section-divider"></div>
-    <span class="sh-icon">📋</span>
-    <h2>Detalle de Registros</h2>
+  <!-- Export CSV despachos -->
+  <div style="display:flex;justify-content:flex-end;padding:0 0 24px">
+    <button onclick="exportDespCSV()" style="background:rgba(243,156,18,.1);border:1px solid rgba(243,156,18,.3);color:var(--accent-yellow);padding:8px 20px;border-radius:8px;font-size:.82rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;gap:8px" onmouseover="this.style.background='var(--accent-yellow)';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.1)';this.style.color='var(--accent-yellow)'">⬇ Exportar Despachos CSV</button>
   </div>
-  <section id="detail-section">
-    <div id="detail-header">
-      <h2>📋 Registros individuales</h2>
-      <div class="detail-controls">
-        <input type="text" id="table-search" placeholder="🔍 Buscar...">
-        <button id="btn-export">⬇ Exportar CSV</button>
-        <button id="btn-toggle-table">Ver detalle ▼</button>
-      </div>
-    </div>
-    <div id="table-wrapper">
-      <div style="overflow-x:auto">
-        <table class="data-table" id="data-table">
-          <thead><tr>
-            <th data-col="Fecha">Fecha</th>
-            <th data-col="Boleta">Boleta</th>
-            <th data-col="Bloque">Bloque</th>
-            <th data-col="Cuadrillero">Cuadrillero</th>
-            <th data-col="Bin">Bin</th>
-            <th data-col="Frutas">Frutas</th>
-            <th data-col="Peso">Peso (kg)</th>
-            <th data-col="PesoMedio">Peso Medio</th>
-            <th data-col="TipoCosecha">Tipo</th>
-            <th data-col="Floracion">Floración</th>
-            <th data-col="ModoTransporte">Transporte</th>
-          </tr></thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </div>
-      <div class="pagination" id="pagination"></div>
-      <div id="page-info"></div>
-    </div>
-  </section>
+
 
 </main>
 
@@ -9559,40 +9567,65 @@ Boleta;Bloque;Desarrollo;GrupoForza;Bin;Fecha;Frutas;Peso;PesoMedio;Floracion;Cu
 
 // === DATOS DESPACHOS ===
 const RAW_DESPACHOS = `
-FechaProceso;FechaDespacho;Cliente;Categoria;Grupo;KilosTotal;Precio
-1/06/2026;1/06/2026;DREAN FOOD CARIBE;Piña AD1;1526;23.0;0
-1/06/2026;1/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1526;453.0;0
-1/06/2026;1/06/2026;DREAN FOOD CARIBE;Piña ADGUA;1526;1743.0;0
-1/06/2026;2/06/2026;Aldinsen Gonzalez;AD-piña indstria;1526;240.0;600.0
-1/06/2026;2/06/2026;Aldinsen Gonzalez;AD-piña jugos;1526;931.0;600.0
-1/06/2026;2/06/2026;cartagena;Piña AD1;1526;346.0;0
-1/06/2026;2/06/2026;DREAN FOOD CARIBE;Piña AD2;1526;1923.0;0
-1/06/2026;2/06/2026;DREAN FOOD CARIBE;Piña AD3;1526;505.0;0
-1/06/2026;2/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1526;425.0;0
-1/06/2026;2/06/2026;local apartado;Piña AD1;1526;927.0;0
-1/06/2026;2/06/2026;local apartado;Piña ADGUA;1526;241.0;0
-1/06/2026;2/06/2026;local medellin;Piña AD3;1526;571.0;0
-1/06/2026;2/06/2026;local sincelejo;Piña AD1;1526;141.0;0
-1/06/2026;2/06/2026;local sincelejo;Piña AD2;1526;261.0;0
-1/06/2026;2/06/2026;local sincelejo;Piña AD3;1526;1059.0;0
-1/06/2026;2/06/2026;local sincelejo;Piña ADGUA;1526;915.0;0
-1/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña AD3;1526;125.0;0
-1/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1526;140.0;0
-1/06/2026;3/06/2026;local medellin;Piña AD2;1526;457.0;0
-2/06/2026;3/06/2026;Aldinsen Gonzalez;AD-piña jugos;1426;757.0;0
-2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña AD1;1426;1813.0;0
-2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña AD3;1426;875.0;0
-2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña ADBABY;1426;254.0;0
-2/06/2026;3/06/2026;DREAN FOOD CARIBE;Piña ADGUA;1426;230.0;0
-2/06/2026;3/06/2026;gildardo ovidio cataño;Piña AD3;1426;352.0;0
-2/06/2026;3/06/2026;KARINA BORJA;AD-piña jugos;1426;1462.0;0
-2/06/2026;3/06/2026;local apartado;Piña AD1;1426;600.0;0
-2/06/2026;3/06/2026;local medellin;Piña AD1;1426;696.0;0
-2/06/2026;3/06/2026;local medellin;Piña AD2;1426;1668.0;0
-2/06/2026;3/06/2026;local sincelejo;Piña AD3;1426;128.0;0
-2/06/2026;3/06/2026;local sincelejo;Piña ADGUA;1426;49.0;0
-3/06/2026;3/06/2026;cartagena;Piña AD1;0;867.0;0
-3/06/2026;3/06/2026;dario alberto;Piña AD1;0;47.0;0
+FechaProceso;FechaDespacho;Remision;Cliente;Categoria;Grupo;KilosTotal;Precio
+;1/06/2026;R-17724;local sincelejo;Piña AD2;;387.0;0
+29/05/2026;1/06/2026;R-17724;local sincelejo;Piña AD2;1126;200.0;0
+29/05/2026;1/06/2026;R-17725;local sincelejo;Piña AD1;;532.0;0
+31/05/2026;1/06/2026;R-17721;local medellin;Piña AD1;;3654.0;0
+31/05/2026;1/06/2026;R-17721;local medellin;Piña AD2;1326;505.0;0
+31/05/2026;1/06/2026;R-17721;local medellin;Piña AD2;1426;495.0;0
+31/05/2026;1/06/2026;R-17721;local medellin;Piña AD2;1526;392.0;0
+31/05/2026;1/06/2026;R-17722;FRUTAS COLOMBIANAS DE EXPORTACIÓN S.A.S;AD-piña indstria;626;368.0;1700.0
+31/05/2026;1/06/2026;R-17722;FRUTAS COLOMBIANAS DE EXPORTACIÓN S.A.S;Piña AD1;;1382.0;1700.0
+31/05/2026;1/06/2026;R-17722;FRUTAS COLOMBIANAS DE EXPORTACIÓN S.A.S;Piña AD2;626;500.0;1700.0
+31/05/2026;1/06/2026;R-17722;FRUTAS COLOMBIANAS DE EXPORTACIÓN S.A.S;Piña AD2;1226;1178.0;1700.0
+31/05/2026;1/06/2026;R-17722;FRUTAS COLOMBIANAS DE EXPORTACIÓN S.A.S;Piña AD2;1426;506.0;1700.0
+31/05/2026;1/06/2026;R-17722;FRUTAS COLOMBIANAS DE EXPORTACIÓN S.A.S;Piña AD2;1526;1440.0;1700.0
+31/05/2026;1/06/2026;R-17723;Aldinsen Gonzalez;Piña ADGUA;1326;472.0;800.0
+31/05/2026;1/06/2026;R-17724;local sincelejo;Piña ADGUA;1426;434.0;0
+31/05/2026;1/06/2026;R-17724;local sincelejo;Piña ADGUA;1526;477.0;0
+31/05/2026;1/06/2026;R-17725;local sincelejo;Piña AD2;626;353.0;0
+31/05/2026;1/06/2026;R-17725;local sincelejo;Piña AD2;1426;278.0;0
+31/05/2026;1/06/2026;R-17725;local sincelejo;Piña AD3;1526;366.0;0
+31/05/2026;1/06/2026;R-17726;juan pablo cogollo;Piña ADBABY;1526;127.0;600.0
+31/05/2026;1/06/2026;R-17726;juan pablo cogollo;Piña ADGUA;1426;401.0;800.0
+31/05/2026;1/06/2026;R-17734;DREAN FOOD CARIBE;Piña AD1;;2044.0;0
+31/05/2026;2/06/2026;R-17738;KARINA BORJA;Piña AD3;626;489.0;700.0
+31/05/2026;2/06/2026;R-17738;KARINA BORJA;Piña AD3;1326;480.0;700.0
+31/05/2026;2/06/2026;R-17738;KARINA BORJA;Piña AD3;1526;2430.0;700.0
+1/06/2026;1/06/2026;R-17734;DREAN FOOD CARIBE;Piña AD1;;23.0;0
+1/06/2026;1/06/2026;R-17734;DREAN FOOD CARIBE;Piña ADBABY;1526;453.0;0
+1/06/2026;1/06/2026;R-17734;DREAN FOOD CARIBE;Piña ADGUA;1526;1743.0;0
+1/06/2026;2/06/2026;R-17736;local apartado;Piña AD1;;927.0;0
+1/06/2026;2/06/2026;R-17736;local apartado;Piña ADGUA;1526;241.0;0
+1/06/2026;2/06/2026;R-17737;local medellin;Piña AD3;1526;571.0;0
+1/06/2026;2/06/2026;R-17740;DREAN FOOD CARIBE;Piña AD2;1526;1923.0;0
+1/06/2026;2/06/2026;R-17740;DREAN FOOD CARIBE;Piña AD3;1526;505.0;0
+1/06/2026;2/06/2026;R-17740;DREAN FOOD CARIBE;Piña ADBABY;1526;425.0;0
+1/06/2026;2/06/2026;R-17741;cartagena;Piña AD1;;346.0;0
+1/06/2026;2/06/2026;R-17742;local sincelejo;Piña AD1;;141.0;0
+1/06/2026;2/06/2026;R-17742;local sincelejo;Piña AD2;1526;261.0;0
+1/06/2026;2/06/2026;R-17742;local sincelejo;Piña AD3;1526;1059.0;0
+1/06/2026;2/06/2026;R-17742;local sincelejo;Piña ADGUA;1526;915.0;0
+1/06/2026;2/06/2026;R-17745;Aldinsen Gonzalez;AD-piña indstria;1526;240.0;600.0
+1/06/2026;2/06/2026;R-17745;Aldinsen Gonzalez;AD-piña jugos;1526;931.0;600.0
+1/06/2026;3/06/2026;R-17748;DREAN FOOD CARIBE;Piña AD3;1526;125.0;0
+1/06/2026;3/06/2026;R-17749;DREAN FOOD CARIBE;Piña ADBABY;1526;140.0;0
+1/06/2026;3/06/2026;R-17752;local medellin;Piña AD2;1526;457.0;0
+2/06/2026;3/06/2026;R-17747;local apartado;Piña AD1;;600.0;0
+2/06/2026;3/06/2026;R-17748;DREAN FOOD CARIBE;Piña AD1;;1813.0;0
+2/06/2026;3/06/2026;R-17748;DREAN FOOD CARIBE;Piña AD3;1426;875.0;0
+2/06/2026;3/06/2026;R-17749;DREAN FOOD CARIBE;Piña ADBABY;1426;254.0;0
+2/06/2026;3/06/2026;R-17749;DREAN FOOD CARIBE;Piña ADGUA;1426;230.0;0
+2/06/2026;3/06/2026;R-17750;gildardo ovidio cataño;Piña AD3;1426;352.0;0
+2/06/2026;3/06/2026;R-17752;local medellin;Piña AD1;;696.0;0
+2/06/2026;3/06/2026;R-17755;Aldinsen Gonzalez;AD-piña jugos;1426;757.0;0
+2/06/2026;3/06/2026;R-17757;KARINA BORJA;AD-piña jugos;1426;1462.0;0
+2/06/2026;3/06/2026;R-17758;local sincelejo;Piña AD3;1426;128.0;0
+2/06/2026;3/06/2026;R-17758;local sincelejo;Piña ADGUA;1426;49.0;0
+2/06/2026;3/06/2026;R-17759;local medellin;Piña AD2;1426;1668.0;0
+3/06/2026;3/06/2026;R-17760;dario alberto;Piña AD1;;47.0;0
+3/06/2026;3/06/2026;R-17766;cartagena;Piña AD1;;867.0;0
 `;
 
 // === PARSEO ===
@@ -10227,6 +10260,68 @@ function renderTable() {
   document.getElementById('page-info').textContent=`Página ${page} de ${pages} · ${total} registros`;
 }
 
+// Sort state for despachos table
+let despSortCol = null, despSortDir = 'asc';
+
+function sortDesp(col) {
+  if (despSortCol === col) {
+    despSortDir = despSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    despSortCol = col;
+    despSortDir = col === 'kilos' || col === 'precio' || col === 'valorTotal' ? 'desc' : 'asc';
+  }
+  // Update header indicators
+  document.querySelectorAll('[id^="dth-"]').forEach(th => {
+    th.textContent = th.textContent.replace(' ↑','').replace(' ↓','');
+  });
+  const th = document.getElementById('dth-' + col);
+  if (th) th.textContent += despSortDir === 'asc' ? ' ↑' : ' ↓';
+
+  // Sort and re-render
+  filtDespachos.sort((a, b) => {
+    let av, bv;
+    if (col === 'kilos')      { av = a.kilos;   bv = b.kilos; }
+    else if (col === 'precio') { av = a.precio;  bv = b.precio; }
+    else if (col === 'valorTotal') { av = a.kilos*a.precio; bv = b.kilos*b.precio; }
+    else { av = (a[col]||'').toLowerCase(); bv = (b[col]||'').toLowerCase(); }
+    if (av < bv) return despSortDir === 'asc' ? -1 : 1;
+    if (av > bv) return despSortDir === 'asc' ?  1 : -1;
+    return 0;
+  });
+  // Re-render only the table
+  const tbody = document.getElementById('desp-tbody');
+  tbody.innerHTML = filtDespachos.map(r => {
+    const valorTotal = r.precio > 0 ? r.kilos * r.precio : 0;
+    return `<tr>
+      <td style="font-family:var(--font-mono)">${r.fechaProceso}</td>
+      <td style="font-family:var(--font-mono)">${r.fechaDespacho}</td>
+      <td style="font-family:var(--font-mono);color:var(--accent-teal)">${r.remision||'—'}</td>
+      <td>${r.cliente}</td>
+      <td><span style="background:${catColor(r.categoria)}22;color:${catColor(r.categoria)};padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600">${r.categoria}</span></td>
+      <td style="font-family:var(--font-mono);color:var(--text-secondary)">${r.grupo}</td>
+      <td style="text-align:right;font-family:var(--font-mono);font-weight:600">${fmtNum(Math.round(r.kilos))}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${r.precio>0?'$'+fmtNum(Math.round(r.precio)):'—'}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--accent-green)">${valorTotal>0?'$'+fmtNum(Math.round(valorTotal)):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+window.sortDesp = sortDesp;
+
+function exportDespCSV() {
+  const cols = ['FechaProceso','FechaDespacho','Remision','Cliente','Categoria','Grupo','KilosTotal','Precio'];
+  const header = ['Fecha Proceso','Fecha Despacho','Remisión','Cliente','Categoría','Grupo','Kg Total','Precio COP/kg','Valor Total'];
+  const rows = filtDespachos.map(r => [
+    r.fechaProceso, r.fechaDespacho, r.remision||'', r.cliente, r.categoria,
+    r.grupo, Math.round(r.kilos), r.precio > 0 ? Math.round(r.precio) : '',
+    r.precio > 0 ? Math.round(r.kilos * r.precio) : ''
+  ].join(';'));
+  const csv = [header.join(';'), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = 'despachos_natural_filtrado.csv';
+  a.click();
+}
+
 function exportCSV() {
   const cols=['Fecha','Boleta','Bloque','Cuadrillero','Bin','Frutas','Peso','PesoMedio','TipoCosecha','Floracion','ModoTransporte','Semana'];
   const csv=[[...cols].join(';'),...filteredData.map(r=>cols.map(c=>c==='Frutas'?r._frutas:c==='Peso'?r._peso:c==='PesoMedio'?r._pesoMedio:r[c]||'').join(';'))].join('\n');
@@ -10438,16 +10533,17 @@ function parseDespachos(raw) {
   for (let i = 1; i < lines.length; i++) {
     const p = lines[i].split(';');
     if (p.length < 6) continue;
-    const kt = parseFloat(p[5]) || 0;
+    const kt = parseFloat(p[6]) || 0;
     if (kt <= 0) continue;
     data.push({
       fechaProceso:  p[0].trim(),
       fechaDespacho: p[1].trim(),
-      cliente:       p[2].trim(),
-      categoria:     p[3].trim(),
-      grupo:         p[4].trim(),
+      remision:      p[2].trim(),
+      cliente:       p[3].trim(),
+      categoria:     p[4].trim(),
+      grupo:         p[5].trim(),
       kilos:         kt,
-      precio:        parseFloat(p[6]) || 0,
+      precio:        parseFloat(p[7]) || 0,
     });
   }
   return data;
@@ -10614,6 +10710,7 @@ function updateDespachos() {
     return `<tr>
       <td style="font-family:var(--font-mono)">${r.fechaProceso}</td>
       <td style="font-family:var(--font-mono)">${r.fechaDespacho}</td>
+      <td style="font-family:var(--font-mono);color:var(--accent-teal)">${r.remision||'—'}</td>
       <td>${r.cliente}</td>
       <td><span style="background:${catColor(r.categoria)}22;color:${catColor(r.categoria)};padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600">${r.categoria}</span></td>
       <td style="font-family:var(--font-mono);color:var(--text-secondary)">${r.grupo}</td>
