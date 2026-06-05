@@ -189,14 +189,14 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
 <body>
 
 <div id="loading-overlay">
-  <div class="loading-logo">🌿</div>
+  <div class="loading-logo">🍍</div>
   <div class="loading-text">Cargando dashboard de cosecha...</div>
   <div class="loading-bar"><div class="loading-bar-fill"></div></div>
 </div>
 
 <header id="header">
   <div class="brand">
-    <span class="logo">🌿</span>
+    <span class="logo">🍍</span>
     <div><h1>Dashboard de Cosecha 2026</h1><p>Análisis de producción · Piña/Fruta</p></div>
   </div>
   <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
@@ -10323,11 +10323,31 @@ function exportDespCSV() {
 }
 
 function exportCSV() {
-  const cols=['Fecha','Boleta','Bloque','Cuadrillero','Bin','Frutas','Peso','PesoMedio','TipoCosecha','Floracion','ModoTransporte','Semana'];
-  const csv=[[...cols].join(';'),...filteredData.map(r=>cols.map(c=>c==='Frutas'?r._frutas:c==='Peso'?r._peso:c==='PesoMedio'?r._pesoMedio:r[c]||'').join(';'))].join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download='cosecha_filtrado.csv';a.click();
+  // Encabezados legibles
+  const header = ['Fecha','Boleta','Bloque','Grupo Forza','Cuadrillero','Bin','Frutas','Peso (kg)','Peso Medio (kg/fruta)','Tipo Cosecha','Floracion','Modo Transporte','Semana','LOTE','Cliente'];
+  const rows = filteredData.map(r => [
+    r['Fecha'] || '',
+    r['Boleta'] || '',
+    r['Bloque'] || '',
+    r._gf || '',
+    r['Cuadrillero'] || '',
+    r['Bin'] || '',
+    r._frutas,
+    r._peso,
+    // Peso medio: usar el valor del CSV, si es 0 recalcular desde Peso/Frutas
+    r._pesoMedio > 0 ? r._pesoMedio.toFixed(4).replace('.',',') : (r._frutas > 0 ? (r._peso / r._frutas).toFixed(4).replace('.',',') : ''),
+    r['TipoCosecha'] || '',
+    r['Floracion'] || '',
+    r['ModoTransporte'] || '',
+    r['Semana'] || '',
+    r['LOTE'] || '',
+    r._cliente || ''
+  ].join(';'));
+  const csv = [header.join(';'), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = 'cosecha_filtrado.csv';
+  a.click();
 }
 
 // === GRÁFICAS GERENCIALES ===
