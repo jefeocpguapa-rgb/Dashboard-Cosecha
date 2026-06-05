@@ -9626,6 +9626,20 @@ FechaProceso;FechaDespacho;Remision;Cliente;Categoria;Grupo;KilosTotal;Precio
 2/06/2026;3/06/2026;R-17759;local medellin;Piña AD2;1426;1668.0;0
 3/06/2026;3/06/2026;R-17760;dario alberto;Piña AD1;;47.0;0
 3/06/2026;3/06/2026;R-17766;cartagena;Piña AD1;;867.0;0
+1/06/2026;4/06/2026;R-17770;local medellin;Piña AD3;1526;169.0;0
+2/06/2026;4/06/2026;R-17773;dario alberto;Piña AD1;1426;232.0;1700.0
+2/06/2026;4/06/2026;R-17774;local sincelejo;Piña AD3;1426;23.0;0
+3/06/2026;4/06/2026;R-17767;KARINA BORJA;Piña AD3;626;484.0;700.0
+3/06/2026;4/06/2026;R-17768;local apartado;Piña AD2;626;220.0;0
+3/06/2026;4/06/2026;R-17770;local medellin;Piña AD1;326;554.0;0
+3/06/2026;4/06/2026;R-17770;local medellin;Piña AD1;526;554.0;0
+3/06/2026;4/06/2026;R-17770;local medellin;Piña AD1;626;397.0;0
+3/06/2026;4/06/2026;R-17770;local medellin;Piña AD2;526;1000.0;0
+3/06/2026;4/06/2026;R-17773;dario alberto;Piña AD1;626;354.0;1700.0
+3/06/2026;4/06/2026;R-17773;dario alberto;Piña AD2;626;321.0;1500.0
+3/06/2026;4/06/2026;R-17774;local sincelejo;Piña AD2;626;421.0;0
+3/06/2026;4/06/2026;R-17774;local sincelejo;Piña AD3;626;865.0;0
+3/06/2026;4/06/2026;R-17774;local sincelejo;Piña ADGUA;626;484.0;0
 `;
 
 // === PARSEO ===
@@ -9745,6 +9759,8 @@ const FESTIVOS_2026 = new Set([
 ]);
 const COSTO_ORDINARIO = 7959;
 const COSTO_ESPECIAL = 15122;
+const COSTO_HORA_EXTRA = 9948;   // hora extra lunes-sábado (>7.33h/día)
+const HORAS_ORDINARIAS_DIA = 7.33; // jornada ordinaria diaria
 
 function getTipoFecha(fechaStr) {
   // fechaStr formato d/mm/yyyy
@@ -9768,18 +9784,30 @@ function fmtCOP(n) {
   return '$' + fmtNum(Math.round(n));
 }
 
+function calcCostoDelDia(horas, personas, fecha) {
+  // Calcula costo de un día incluyendo horas extra en días ordinarios (L-S)
+  const tipo = getTipoFecha(fecha);
+  if (tipo !== 'ordinario') {
+    // Domingo o festivo: todo se paga a tasa especial, sin recargo adicional
+    return horas * personas * COSTO_ESPECIAL;
+  }
+  // Día ordinario (L-S): primeras 7.33h ordinarias, resto es hora extra
+  const horasOrdinarias = Math.min(horas, HORAS_ORDINARIAS_DIA);
+  const horasExtra      = Math.max(0, horas - HORAS_ORDINARIAS_DIA);
+  return (horasOrdinarias * personas * COSTO_ORDINARIO) +
+         (horasExtra      * personas * COSTO_HORA_EXTRA);
+}
+
 function calcTotalCosto() {
   // Costo total de todas las cuadrillas en los datos filtrados
-  const seen = {}; // key: cuadrillero+fecha
+  const seen = {};
   let total = 0;
   filteredData.forEach(r => {
     const c = r['Cuadrillero']; if (!c) return;
     const key = c + '||' + r['Fecha'];
     if (!(key in seen) && r._horas > 0 && r._cantPersonas > 0) {
       seen[key] = true;
-      const tipo = getTipoFecha(r['Fecha']);
-      const tasa = tipo === 'ordinario' ? COSTO_ORDINARIO : COSTO_ESPECIAL;
-      total += r._horas * r._cantPersonas * tasa;
+      total += calcCostoDelDia(r._horas, r._cantPersonas, r['Fecha']);
     }
   });
   return total;
@@ -9977,15 +10005,13 @@ function calcFPP() {
     const personasDia = Object.values(personasDict).reduce((s,v)=>s+v, 0);
     // Horas únicas sumadas (solo días con datos)
     const horasTotales = Object.values(horasDict).reduce((s,v)=>s+v, 0);
-    // Costo: por cada día con horas, calcular tasa según tipo de día × personas de ese día × horas de ese día
+    // Costo: horas ordinarias + horas extra (>7.33h en días L-S) + dominical/festivo
     let costo = 0;
     Object.keys(horasDict).forEach(fecha => {
       const h = horasDict[fecha];
       const p = personasDict[fecha] || 0;
       if (h > 0 && p > 0) {
-        const tipo = getTipoFecha(fecha);
-        const tasa = tipo === 'ordinario' ? COSTO_ORDINARIO : COSTO_ESPECIAL;
-        costo += h * p * tasa;
+        costo += calcCostoDelDia(h, p, fecha);
       }
     });
     const ratio = personasDia > 0 ? frutas / personasDia : 0;
@@ -10504,9 +10530,7 @@ function updateGerenCharts() {
     const key = (r['Cuadrillero']||'') + '||' + r['Fecha'];
     if(!(key in seen) && r._horas>0 && r._cantPersonas>0){
       seen[key]=true;
-      const tipo = getTipoFecha(r['Fecha']);
-      const tasa = tipo==='ordinario'?COSTO_ORDINARIO:COSTO_ESPECIAL;
-      costoSem[r._semana] = (costoSem[r._semana]||0) + r._horas*r._cantPersonas*tasa;
+      costoSem[r._semana] = (costoSem[r._semana]||0) + calcCostoDelDia(r._horas, r._cantPersonas, r['Fecha']);
     }
   });
   const kgSem = sems.map(s=>filteredData.filter(r=>r._semana===s).reduce((a,r)=>a+r._peso,0));
