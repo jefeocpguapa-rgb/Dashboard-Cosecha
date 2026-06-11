@@ -10796,12 +10796,12 @@ function initGerenCharts() {
     }
   });
 
-  // G-B: Peso medio PC vs SC por semana
+  // G-B: Peso medio PC vs SC por semana - líneas
   charts.gerenPeso = new Chart(document.getElementById('chart-geren-peso').getContext('2d'), {
-    type:'bar',
+    type:'line',
     data:{labels:[],datasets:[
-      {label:'PC',data:[],backgroundColor:'rgba(52,152,219,0.75)',borderRadius:4,borderSkipped:false},
-      {label:'SC',data:[],backgroundColor:'rgba(155,89,182,0.75)',borderRadius:4,borderSkipped:false}
+      {label:'PC',data:[],borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.12)',fill:true,tension:0.4,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#3498db',borderWidth:2.5,spanGaps:true},
+      {label:'SC',data:[],borderColor:'#9b59b6',backgroundColor:'rgba(155,89,182,0.12)',fill:true,tension:0.4,pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#9b59b6',borderWidth:2.5,spanGaps:true}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'}}},
