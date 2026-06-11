@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard de Cosecha 2026</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 :root {
@@ -267,6 +268,9 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     <div class="kpi-card" data-accent="red"><span class="kpi-icon">💰</span><div class="kpi-label">Costo Total Cuadrillas</div><div class="kpi-value" id="kpi-costo-total" style="font-size:1.3rem">—</div><div class="kpi-sub">COP acumulado</div></div>
     <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚡</span><div class="kpi-label">Costo / kg</div><div class="kpi-value" id="kpi-costo-kg">—</div><div class="kpi-sub">COP por kilogramo</div></div>
     <div class="kpi-card" data-accent="teal"><span class="kpi-icon">🌱</span><div class="kpi-label">Área Cosechada</div><div class="kpi-value" id="kpi-area">—</div><div class="kpi-sub">hectáreas (ha)</div></div>
+    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚙️</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-mec-ind">—</div><div class="kpi-sub">Mecánica · Inducción</div></div>
+    <div class="kpi-card" data-accent="blue"><span class="kpi-icon">✋</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-man-ind">—</div><div class="kpi-sub">Manual · Inducción</div></div>
+    <div class="kpi-card" data-accent="green"><span class="kpi-icon">🌿</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-nat">—</div><div class="kpi-sub">Natural (todas)</div></div>
   </section>
 
 
@@ -289,6 +293,12 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     <div class="chart-card full-width">
       <div class="chart-title">⚖️ Peso Medio de Fruta PC vs SC — Semana a Semana <span class="badge">kg/fruta</span></div>
       <div class="chart-container tall"><canvas id="chart-geren-peso"></canvas></div>
+    </div>
+
+    <!-- G-FHD: Frutas/Hombre·Día por semana - 3 curvas -->
+    <div class="chart-card full-width">
+      <div class="chart-title">👷 Frutas/Hombre·Día — Semana a Semana <span class="badge">Mecánica·Ind · Manual·Ind · Natural</span></div>
+      <div class="chart-container tall"><canvas id="chart-geren-fhd"></canvas></div>
     </div>
 
     <!-- G-C: Costo total cuadrillas semana a semana -->
@@ -10226,6 +10236,29 @@ function updateKPIs() {
   const lotesSet = [...new Set(filteredData.map(r=>r['LOTE']).filter(Boolean))].sort((a,b)=>parseInt(a)-parseInt(b));
   document.getElementById('kpi-lotes').textContent = lotesSet.length;
   document.getElementById('kpi-lotes-lista').textContent = 'Lotes: ' + lotesSet.join(', ');
+  // Frutas/Hombre·Día por combinación tipo+floracion
+  function calcFHD(rows) {
+    // Por cuadrilla+fecha: sumar frutas, tomar personas una sola vez
+    const diaMap = {};
+    rows.forEach(r => {
+      const key = (r['Cuadrillero']||'') + '||' + r['Fecha'];
+      if (!diaMap[key]) diaMap[key] = {frutas:0, personas: r._cantPersonas||0};
+      diaMap[key].frutas += r._frutas;
+      if (r._cantPersonas > 0 && diaMap[key].personas === 0) diaMap[key].personas = r._cantPersonas;
+    });
+    const dias = Object.values(diaMap).filter(d => d.personas > 0);
+    if (!dias.length) return 0;
+    const totalFrutas = dias.reduce((s,d) => s + d.frutas, 0);
+    const totalPersonasDia = dias.reduce((s,d) => s + d.personas, 0);
+    return totalPersonasDia > 0 ? totalFrutas / totalPersonasDia : 0;
+  }
+  const fhdMecInd = calcFHD(filteredData.filter(r => r['TipoCosecha']==='Mecánica' && r['Floracion']==='Inducción'));
+  const fhdManInd = calcFHD(filteredData.filter(r => r['TipoCosecha']==='Manual'   && r['Floracion']==='Inducción'));
+  const fhdNat    = calcFHD(filteredData.filter(r => r['Floracion']==='Natural'));
+  document.getElementById('kpi-fhd-mec-ind').textContent = fhdMecInd > 0 ? fmtNum(Math.round(fhdMecInd)) : '—';
+  document.getElementById('kpi-fhd-man-ind').textContent = fhdManInd > 0 ? fmtNum(Math.round(fhdManInd)) : '—';
+  document.getElementById('kpi-fhd-nat').textContent     = fhdNat    > 0 ? fmtNum(Math.round(fhdNat))    : '—';
+
   // Área: el área es una propiedad FIJA del bloque físico.
   // Un bloque puede trabajarse en múltiples fechas y por múltiples cuadrilleros,
   // pero su área no cambia. Se cuenta UNA SOLA VEZ por Bloque único.
@@ -10841,6 +10874,35 @@ function initGerenCharts() {
     }
   });
 
+  // G-FHD: Frutas/Hombre·Día por semana - 3 curvas con etiquetas
+  charts.gerenFhd = new Chart(document.getElementById('chart-geren-fhd').getContext('2d'), {
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'⚙️ Mecánica · Inducción',data:[],borderColor:'#f39c12',backgroundColor:'rgba(243,156,18,0.08)',fill:true,tension:0.4,pointRadius:4,pointHoverRadius:7,pointBackgroundColor:'#f39c12',borderWidth:2.5,spanGaps:true,
+       datalabels:{align:'top',anchor:'end',color:'#f39c12',font:{size:9,weight:'bold',family:'JetBrains Mono'},formatter:v=>v!=null?fmtNum(Math.round(v)):''}},
+      {label:'✋ Manual · Inducción',  data:[],borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.08)',fill:true,tension:0.4,pointRadius:4,pointHoverRadius:7,pointBackgroundColor:'#3498db',borderWidth:2.5,spanGaps:true,
+       datalabels:{align:'top',anchor:'end',color:'#3498db',font:{size:9,weight:'bold',family:'JetBrains Mono'},formatter:v=>v!=null?fmtNum(Math.round(v)):''}},
+      {label:'🌿 Natural',             data:[],borderColor:'#2ecc71',backgroundColor:'rgba(46,204,113,0.08)',fill:true,tension:0.4,pointRadius:4,pointHoverRadius:7,pointBackgroundColor:'#2ecc71',borderWidth:2.5,spanGaps:true,
+       datalabels:{align:'bottom',anchor:'end',color:'#2ecc71',font:{size:9,weight:'bold',family:'JetBrains Mono'},formatter:v=>v!=null?fmtNum(Math.round(v)):''}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:20,bottom:10}},
+      plugins:{
+        legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'},padding:16}},
+        tooltip:{...TOOLTIP,callbacks:{
+          title:items=>`Semana ${items[0].label}`,
+          label:ctx=>` ${ctx.dataset.label}: ${fmtNum(Math.round(ctx.parsed.y))} frutas/hombre·día`
+        }},
+        datalabels:{display: typeof ChartDataLabels !== 'undefined'}
+      },
+      scales:{
+        x:{ticks:{color:'#95a5a6',font:{size:11}},grid:{color:GRID}},
+        y:{ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID},
+          title:{display:true,text:'Frutas / Hombre · Día',color:'#95a5a6'}}
+      }
+    }
+  });
+
   // G-D: PC vs SC % participación por semana (barras apiladas 100%)
   charts.gerenPcscSem = new Chart(document.getElementById('chart-geren-pcsc-sem').getContext('2d'), {
     type:'bar',
@@ -10939,6 +11001,30 @@ function updateGerenCharts() {
   charts.gerenCosto.data.datasets[0].data = sems.map(s=>costoSem[s]||0);
   charts.gerenCosto.data.datasets[1].data = kgSem;
   charts.gerenCosto.update('none');
+
+  // G-FHD: Frutas/Hombre·Día por semana - 3 curvas
+  function calcFHDSem(rows, semana) {
+    const diaMap = {};
+    rows.filter(r=>r._semana===semana).forEach(r=>{
+      const key=(r['Cuadrillero']||'')+'||'+r['Fecha'];
+      if(!diaMap[key]) diaMap[key]={frutas:0,personas:r._cantPersonas||0};
+      diaMap[key].frutas += r._frutas;
+      if(r._cantPersonas>0 && diaMap[key].personas===0) diaMap[key].personas=r._cantPersonas;
+    });
+    const dias=Object.values(diaMap).filter(d=>d.personas>0);
+    if(!dias.length) return null;
+    const tf=dias.reduce((s,d)=>s+d.frutas,0);
+    const tp=dias.reduce((s,d)=>s+d.personas,0);
+    return tp>0?tf/tp:null;
+  }
+  const rowsMecInd = filteredData.filter(r=>r['TipoCosecha']==='Mecánica'&&r['Floracion']==='Inducción');
+  const rowsManInd = filteredData.filter(r=>r['TipoCosecha']==='Manual'  &&r['Floracion']==='Inducción');
+  const rowsNat    = filteredData.filter(r=>r['Floracion']==='Natural');
+  charts.gerenFhd.data.labels = labels;
+  charts.gerenFhd.data.datasets[0].data = sems.map(s=>calcFHDSem(rowsMecInd,s));
+  charts.gerenFhd.data.datasets[1].data = sems.map(s=>calcFHDSem(rowsManInd,s));
+  charts.gerenFhd.data.datasets[2].data = sems.map(s=>calcFHDSem(rowsNat,s));
+  charts.gerenFhd.update('none');
 
   // G-D: PC vs SC apilado por semana
   charts.gerenPcscSem.data.labels = labels;
@@ -11280,6 +11366,11 @@ function resetFilters() {
 
 // === ARRANQUE ===
 window.addEventListener('DOMContentLoaded', () => {
+  // Register datalabels plugin globally, disabled by default
+  if (typeof ChartDataLabels !== 'undefined') {
+    Chart.register(ChartDataLabels);
+    Chart.defaults.set('plugins.datalabels', {display: false});
+  }
   Chart.defaults.color = '#ecf0f1';
   Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
 
