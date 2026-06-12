@@ -271,6 +271,9 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚙️</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-mec-ind">—</div><div class="kpi-sub">Mecánica · Inducción</div></div>
     <div class="kpi-card" data-accent="blue"><span class="kpi-icon">✋</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-man-ind">—</div><div class="kpi-sub">Manual · Inducción</div></div>
     <div class="kpi-card" data-accent="green"><span class="kpi-icon">🌿</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-nat">—</div><div class="kpi-sub">Natural (todas)</div></div>
+    <div class="kpi-card" data-accent="red"><span class="kpi-icon">⚙️</span><div class="kpi-label">Costo/kg Natural</div><div class="kpi-value" id="kpi-costo-nat">—</div><div class="kpi-sub">COP cosecha proporcional</div></div>
+    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">💵</span><div class="kpi-label">Precio/kg Vendido Natural</div><div class="kpi-value" id="kpi-precio-nat">—</div><div class="kpi-sub">COP promedio despachos</div></div>
+    <div class="kpi-card" data-accent="green"><span class="kpi-icon">📈</span><div class="kpi-label">Margen Bruto Natural</div><div class="kpi-value" id="kpi-margen-nat">—</div><div class="kpi-sub">COP/kg (precio − costo)</div></div>
   </section>
 
 
@@ -10446,7 +10449,10 @@ function updateKPIs() {
   document.getElementById('kpi-fhd-man-ind').textContent = fhdManInd > 0 ? fmtNum(Math.round(fhdManInd)) : '—';
   document.getElementById('kpi-fhd-nat').textContent     = fhdNat    > 0 ? fmtNum(Math.round(fhdNat))    : '—';
 
-  // Área: el área es una propiedad FIJA del bloque físico.
+  // ── Costo/kg Natural (proporcional), Precio/kg vendido, Margen ──
+  updateNatMarginKPIs();
+
+// Área: el área es una propiedad FIJA del bloque físico.
   // Un bloque puede trabajarse en múltiples fechas y por múltiples cuadrilleros,
   // pero su área no cambia. Se cuenta UNA SOLA VEZ por Bloque único.
   const areaBloques = {};
@@ -10457,16 +10463,52 @@ function updateKPIs() {
   });
   const totalArea = Object.values(areaBloques).reduce((s,v)=>s+v, 0);
   document.getElementById('kpi-area').textContent = totalArea > 0 ? totalArea.toLocaleString('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
-  document.getElementById('kpi-ratio').textContent = tp>0?fmtDec(tf/tp):'—';
-  document.getElementById('kpi-semanas').textContent = new Set(filteredData.map(r=>r._semana)).size;
-  // Peso medio gerencial
-  const pmVals = filteredData.map(r=>r._pesoMedio).filter(v=>v>0);
-  const pmAvg = pmVals.length ? pmVals.reduce((s,v)=>s+v,0)/pmVals.length : 0;
-  document.getElementById('kpi-pm-geren').textContent = pmAvg > 0 ? fmtDec(pmAvg) : '—';
-  // Costos
-  const costoTotal = calcTotalCosto();
-  document.getElementById('kpi-costo-total').textContent = costoTotal > 0 ? fmtCOP(costoTotal) : '—';
-  document.getElementById('kpi-costo-kg').textContent = (costoTotal > 0 && tp > 0) ? '$'+fmtNum(Math.round(costoTotal/tp)) : '—';
+}
+
+function updateNatMarginKPIs() {
+  // ── Costo/kg Natural (proporcional), Precio/kg vendido, Margen ──
+  // Costo proporcional: por cuadrilla·día, asignar a Natural el % de kg que corresponde
+  const seenNat = {};
+  let costoNatTotal = 0;
+  let kgNatTotal = 0;
+  filteredData.forEach(r => {
+    const key = (r['Cuadrillero']||'') + '||' + r['Fecha'];
+    if (!(key in seenNat)) {
+      // All bins of this cuadrilla+fecha
+      const diaRows = filteredData.filter(x => x['Cuadrillero']===r['Cuadrillero'] && x['Fecha']===r['Fecha']);
+      const kgDiaTotal = diaRows.reduce((s,x)=>s+x._peso, 0);
+      const kgDiaNat   = diaRows.filter(x=>x['Floracion']==='Natural').reduce((s,x)=>s+x._peso, 0);
+      const propNat = kgDiaTotal > 0 ? kgDiaNat / kgDiaTotal : 0;
+      if (r._horas > 0 && r._cantPersonas > 0 && propNat > 0) {
+        const costoDia = calcCostoDelDia(r._horas, r._cantPersonas, r['Fecha']);
+        costoNatTotal += costoDia * propNat;
+      }
+      seenNat[key] = true;
+    }
+    if (r['Floracion'] === 'Natural') kgNatTotal += r._peso;
+  });
+  const costoKgNat = kgNatTotal > 0 ? costoNatTotal / kgNatTotal : 0;
+
+  // Precio promedio ponderado de despachos Natural (filtrados por semana si aplica)
+  const despNatConPrecio = filtDespachos.filter(d => d.precio > 0);
+  const totalKgConPrecio = despNatConPrecio.reduce((s,d)=>s+d.kilos, 0);
+  const precioNatPond = totalKgConPrecio > 0
+    ? despNatConPrecio.reduce((s,d)=>s+d.precio*d.kilos, 0) / totalKgConPrecio
+    : 0;
+
+  const margenNat = precioNatPond > 0 && costoKgNat > 0 ? precioNatPond - costoKgNat : 0;
+
+  const elCostoNat  = document.getElementById('kpi-costo-nat');
+  const elPrecioNat = document.getElementById('kpi-precio-nat');
+  const elMargenNat = document.getElementById('kpi-margen-nat');
+
+  elCostoNat.textContent  = costoKgNat  > 0 ? '$'+fmtNum(Math.round(costoKgNat))  : '—';
+  elPrecioNat.textContent = precioNatPond > 0 ? '$'+fmtNum(Math.round(precioNatPond)) : '—';
+  elMargenNat.textContent = margenNat !== 0
+    ? (margenNat > 0 ? '+' : '') + '$'+fmtNum(Math.round(margenNat))
+    : '—';
+  // Color margen: verde si positivo, rojo si negativo
+  elMargenNat.style.color = margenNat > 0 ? 'var(--accent-green)' : margenNat < 0 ? 'var(--accent-red)' : 'var(--text-primary)';
 }
 
 // ── G10/11/12: COMBO TIPO × FLORACION ──
@@ -11670,7 +11712,8 @@ function updateDespachos() {
   // KPIs
   const totalKg = data.reduce((s,r)=>s+r.kilos,0);
   const conPrecio = data.filter(r=>r.precio>0);
-  const precioAvg = conPrecio.length ? conPrecio.reduce((s,r)=>s+r.precio,0)/conPrecio.length : 0;
+  const kgConPrecio = conPrecio.reduce((s,r)=>s+r.kilos,0);
+  const precioAvg = kgConPrecio > 0 ? conPrecio.reduce((s,r)=>s+r.precio*r.kilos,0)/kgConPrecio : 0;
   document.getElementById('desp-kg-total').textContent = fmtNum(Math.round(totalKg));
   document.getElementById('desp-precio-avg').textContent = precioAvg > 0 ? '$'+fmtNum(Math.round(precioAvg)) : '—';
   document.getElementById('desp-clientes').textContent = new Set(data.map(r=>r.cliente)).size;
@@ -11735,6 +11778,9 @@ function updateDespachos() {
   charts.balanceNat.data.datasets[0].data = cosechadoNat;
   charts.balanceNat.data.datasets[1].data = despachado;
   charts.balanceNat.update('none');
+
+  // Refresh natural margin KPIs when despachos filter changes
+  updateNatMarginKPIs();
 
   // Tabla
   const tbody = document.getElementById('desp-tbody');
