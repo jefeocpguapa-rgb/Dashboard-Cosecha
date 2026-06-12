@@ -592,6 +592,12 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
   <!-- Gráficas despachos -->
   <div class="charts-grid" style="margin-bottom:20px">
 
+    <!-- G-BALANCE: Cosechado vs Despachado Natural por semana -->
+    <div class="chart-card full-width">
+      <div class="chart-title">⚖️ Natural Cosechada vs Despachada — Semana a Semana <span class="badge">Balance</span></div>
+      <div class="chart-container tall"><canvas id="chart-balance-nat"></canvas></div>
+    </div>
+
     <!-- G-DESP-A: Kg despachados por día y categoría (barras apiladas) -->
     <div class="chart-card full-width">
       <div class="chart-title">📅 Kg Despachados por Día — por Categoría <span class="badge">Apilado</span></div>
@@ -620,8 +626,11 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
 
   <!-- Tabla despachos -->
   <div class="chart-card" style="margin-bottom:24px">
-    <div class="chart-title">📋 Detalle de Despachos</div>
-    <div style="overflow-x:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
+      <div class="chart-title" style="margin-bottom:0">📋 Detalle de Despachos</div>
+      <button id="btn-toggle-desp-table" onclick="toggleDespTable()" style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.3);color:var(--accent-blue);padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--accent-blue)';this.style.color='#fff'" onmouseout="this.style.background='rgba(52,152,219,.1)';this.style.color='var(--accent-blue)'">Ver detalle ▼</button>
+    </div>
+    <div id="desp-table-wrapper" style="display:none;margin-top:14px;overflow-x:auto">
       <table class="data-table" id="desp-table">
         <thead><tr>
           <th onclick="sortDesp('fechaProceso')" id="dth-fechaProceso" style="cursor:pointer;user-select:none" title="Ordenar">Fecha Proceso</th>
@@ -636,6 +645,7 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
         </tr></thead>
         <tbody id="desp-tbody"></tbody>
       </table>
+    </div>
     </div>
   </div>
 
@@ -10281,6 +10291,7 @@ function applyFilters() {
   document.getElementById('footer-count-val').textContent = fmtNum(filteredData.length);
   filterState.tablePage = 1;
   updateAllCharts();
+  applyDespFiltros();
 }
 
 // === CHARTS ===
@@ -11288,6 +11299,146 @@ function catColor(cat) {
   return CAT_COLORS[cat] || '#95a5a6';
 }
 
+const DATE_SEMANA_MAP = {
+  '2/01/2026': 1,
+  '4/01/2026': 2,
+  '5/01/2026': 2,
+  '6/01/2026': 2,
+  '7/01/2026': 2,
+  '8/01/2026': 2,
+  '9/01/2026': 2,
+  '11/01/2026': 3,
+  '12/01/2026': 3,
+  '13/01/2026': 3,
+  '14/01/2026': 3,
+  '15/01/2026': 3,
+  '16/01/2026': 3,
+  '18/01/2026': 4,
+  '19/01/2026': 4,
+  '20/01/2026': 4,
+  '21/01/2026': 4,
+  '22/01/2026': 4,
+  '23/01/2026': 4,
+  '25/01/2026': 5,
+  '26/01/2026': 5,
+  '27/01/2026': 5,
+  '28/01/2026': 5,
+  '29/01/2026': 5,
+  '30/01/2026': 5,
+  '1/02/2026': 6,
+  '2/02/2026': 6,
+  '3/02/2026': 6,
+  '4/02/2026': 6,
+  '5/02/2026': 6,
+  '6/02/2026': 6,
+  '8/02/2026': 7,
+  '9/02/2026': 7,
+  '10/02/2026': 7,
+  '11/02/2026': 7,
+  '12/02/2026': 7,
+  '13/02/2026': 7,
+  '15/02/2026': 8,
+  '16/02/2026': 8,
+  '17/02/2026': 8,
+  '18/02/2026': 8,
+  '19/02/2026': 8,
+  '20/02/2026': 8,
+  '22/02/2026': 9,
+  '23/02/2026': 9,
+  '24/02/2026': 9,
+  '25/02/2026': 9,
+  '26/02/2026': 9,
+  '27/02/2026': 9,
+  '1/03/2026': 10,
+  '2/03/2026': 10,
+  '3/03/2026': 10,
+  '4/03/2026': 10,
+  '5/03/2026': 10,
+  '6/03/2026': 10,
+  '8/03/2026': 11,
+  '9/03/2026': 11,
+  '10/03/2026': 11,
+  '11/03/2026': 11,
+  '12/03/2026': 11,
+  '13/03/2026': 11,
+  '15/03/2026': 12,
+  '16/03/2026': 12,
+  '17/03/2026': 12,
+  '18/03/2026': 12,
+  '19/03/2026': 12,
+  '20/03/2026': 12,
+  '22/03/2026': 13,
+  '23/03/2026': 13,
+  '24/03/2026': 13,
+  '25/03/2026': 13,
+  '26/03/2026': 13,
+  '27/03/2026': 13,
+  '29/03/2026': 14,
+  '30/03/2026': 14,
+  '31/03/2026': 14,
+  '1/04/2026': 14,
+  '4/04/2026': 14,
+  '5/04/2026': 15,
+  '6/04/2026': 15,
+  '7/04/2026': 15,
+  '8/04/2026': 15,
+  '10/04/2026': 15,
+  '11/04/2026': 15,
+  '13/04/2026': 16,
+  '14/04/2026': 16,
+  '15/04/2026': 16,
+  '16/04/2026': 16,
+  '17/04/2026': 16,
+  '19/04/2026': 17,
+  '20/04/2026': 17,
+  '21/04/2026': 17,
+  '22/04/2026': 17,
+  '23/04/2026': 17,
+  '24/04/2026': 17,
+  '26/04/2026': 18,
+  '27/04/2026': 18,
+  '28/04/2026': 18,
+  '29/04/2026': 18,
+  '30/04/2026': 18,
+  '2/05/2026': 18,
+  '3/05/2026': 19,
+  '4/05/2026': 19,
+  '5/05/2026': 19,
+  '6/05/2026': 19,
+  '7/05/2026': 19,
+  '8/05/2026': 19,
+  '10/05/2026': 20,
+  '11/05/2026': 20,
+  '12/05/2026': 20,
+  '13/05/2026': 20,
+  '14/05/2026': 20,
+  '15/05/2026': 20,
+  '16/05/2026': 20,
+  '18/05/2026': 21,
+  '19/05/2026': 21,
+  '20/05/2026': 21,
+  '21/05/2026': 21,
+  '22/05/2026': 21,
+  '24/05/2026': 22,
+  '25/05/2026': 22,
+  '26/05/2026': 22,
+  '27/05/2026': 22,
+  '28/05/2026': 22,
+  '29/05/2026': 22,
+  '31/05/2026': 22,
+  '1/06/2026': 23,
+  '2/06/2026': 23,
+  '3/06/2026': 23,
+  '4/06/2026': 23,
+  '5/06/2026': 23,
+  '6/06/2026': 23,
+  '7/06/2026': 23,
+  '8/06/2026': 24,
+  '9/06/2026': 24,
+  '10/06/2026': 24,
+  '11/06/2026': 24,
+};
+
 function parseDespachos(raw) {
   const lines = raw.trim().split('\n');
   const data = [];
@@ -11296,22 +11447,33 @@ function parseDespachos(raw) {
     if (p.length < 6) continue;
     const kt = parseFloat(p[6]) || 0;
     if (kt <= 0) continue;
+    const fdStr = p[1].trim();
+    const fpStr = p[0].trim();
+    // Use DATE_SEMANA_MAP for accurate semana lookup
+    const fdSemana = DATE_SEMANA_MAP[fdStr] || DATE_SEMANA_MAP[fpStr] || 0;
     data.push({
-      fechaProceso:  p[0].trim(),
-      fechaDespacho: p[1].trim(),
+      fechaProceso:  fpStr,
+      fechaDespacho: fdStr,
       remision:      p[2].trim(),
       cliente:       p[3].trim(),
       categoria:     p[4].trim(),
       grupo:         p[5].trim(),
       kilos:         kt,
       precio:        parseFloat(p[7]) || 0,
+      semana:        fdSemana,
     });
   }
   return data;
 }
 
 function initDespFiltros() {
-  const fechas   = [...new Set(allDespachos.map(r=>r.fechaDespacho))].sort();
+  const fechas = [...new Set(allDespachos.map(r=>r.fechaDespacho))].sort((a,b) => {
+    // Sort dates d/mm/yyyy correctly
+    const pa = a.split('/'), pb = b.split('/');
+    const da = new Date(parseInt(pa[2]), parseInt(pa[1])-1, parseInt(pa[0]));
+    const db = new Date(parseInt(pb[2]), parseInt(pb[1])-1, parseInt(pb[0]));
+    return da - db;
+  });
   const clientes = [...new Set(allDespachos.map(r=>r.cliente))].sort();
   const cats     = [...new Set(allDespachos.map(r=>r.categoria))].sort();
 
@@ -11329,15 +11491,26 @@ function initDespFiltros() {
   document.getElementById('desp-filter-cat').addEventListener('change', applyDespFiltros);
 }
 
+function toggleDespTable() {
+  const wrapper = document.getElementById('desp-table-wrapper');
+  const btn = document.getElementById('btn-toggle-desp-table');
+  wrapper.style.display = wrapper.style.display === 'none' ? 'block' : 'none';
+  btn.textContent = wrapper.style.display === 'none' ? 'Ver detalle ▼' : 'Ocultar detalle ▲';
+}
+window.toggleDespTable = toggleDespTable;
+
 function applyDespFiltros() {
   const fecha   = document.getElementById('desp-filter-fecha').value;
   const cliente = document.getElementById('desp-filter-cliente').value;
   const cat     = document.getElementById('desp-filter-cat').value;
-  filtDespachos = allDespachos.filter(r =>
-    (!fecha   || r.fechaDespacho === fecha) &&
-    (!cliente || r.cliente === cliente) &&
-    (!cat     || r.categoria === cat)
-  );
+  filtDespachos = allDespachos.filter(r => {
+    if (fecha   && r.fechaDespacho !== fecha) return false;
+    if (cliente && r.cliente !== cliente) return false;
+    if (cat     && r.categoria !== cat) return false;
+    // Sync with main semana filter
+    if (filterState.semana && r.semana !== parseInt(filterState.semana)) return false;
+    return true;
+  });
   document.getElementById('desp-counter').textContent = `${filtDespachos.length} registros`;
   updateDespachos();
 }
@@ -11366,6 +11539,39 @@ function initDespCharts() {
       scales:{
         x:{stacked:true,ticks:{color:'#95a5a6'},grid:{display:false}},
         y:{stacked:true,ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID},title:{display:true,text:'Kg despachados',color:'#95a5a6'}}
+      }
+    }
+  });
+
+  // G-BALANCE: Cosechado vs Despachado Natural por semana
+  charts.balanceNat = new Chart(document.getElementById('chart-balance-nat').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[
+      {label:'🌿 Kg Cosechados Natural',data:[],backgroundColor:'rgba(46,204,113,0.75)',borderRadius:4,borderSkipped:false},
+      {label:'🚚 Kg Despachados',       data:[],backgroundColor:'rgba(243,156,18,0.75)',borderRadius:4,borderSkipped:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'},padding:16}},
+        tooltip:{...TOOLTIP,callbacks:{
+          title:items=>`Semana ${items[0].label}`,
+          label:ctx=>` ${ctx.dataset.label}: ${fmtNum(Math.round(ctx.parsed.y))} kg`,
+          afterBody:items=>{
+            const idx = items[0].dataIndex;
+            const cosechado = charts.balanceNat.data.datasets[0].data[idx]||0;
+            const despachado = charts.balanceNat.data.datasets[1].data[idx]||0;
+            const diff = cosechado - despachado;
+            return [diff >= 0
+              ? `📦 Stock pendiente: ${fmtNum(Math.round(diff))} kg`
+              : `⚠️ Despachado supera cosecha: ${fmtNum(Math.round(Math.abs(diff)))} kg`];
+          }
+        }},
+        datalabels:{display:false}
+      },
+      scales:{
+        x:{ticks:{color:'#95a5a6'},grid:{display:false}},
+        y:{ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID_COLOR},
+          title:{display:true,text:'kg',color:'#95a5a6'}}
       }
     }
   });
@@ -11463,6 +11669,23 @@ function updateDespachos() {
   charts.despFlujo.data.labels = fechas;
   charts.despFlujo.data.datasets = datasetsD;
   charts.despFlujo.update('none');
+
+  // G-BALANCE: cosechado Natural vs despachado por semana
+  const semasAll = [...new Set([
+    ...filteredData.filter(r=>r['Floracion']==='Natural').map(r=>r._semana),
+    ...filtDespachos.map(r=>r.semana)
+  ].filter(s=>s>0))].sort((a,b)=>a-b);
+
+  const cosechadoNat = semasAll.map(s =>
+    filteredData.filter(r=>r['Floracion']==='Natural' && r._semana===s).reduce((acc,r)=>acc+r._peso,0)
+  );
+  const despachado = semasAll.map(s =>
+    filtDespachos.filter(r=>r.semana===s).reduce((acc,r)=>acc+r.kilos,0)
+  );
+  charts.balanceNat.data.labels = semasAll.map(s=>`S${s}`);
+  charts.balanceNat.data.datasets[0].data = cosechadoNat;
+  charts.balanceNat.data.datasets[1].data = despachado;
+  charts.balanceNat.update('none');
 
   // Tabla
   const tbody = document.getElementById('desp-tbody');
