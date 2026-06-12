@@ -175,6 +175,26 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
 #footer{background:var(--bg-filter);border-top:1px solid var(--border-color);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--text-secondary);flex-wrap:wrap;gap:8px}
 #footer-count{font-family:var(--font-mono);color:var(--accent-green)}
 
+/* MODO PRESENTACIÓN */
+body.modo-presentacion #filters-bar,
+body.modo-presentacion #kpis,
+body.modo-presentacion #kpis-campo-section,
+body.modo-presentacion .section-header,
+body.modo-presentacion #desp-kpis,
+body.modo-presentacion #detail-section,
+body.modo-presentacion #footer { display: none !important; }
+
+body.modo-presentacion #header { padding: 8px 20px; }
+body.modo-presentacion #header .brand h1 { font-size: 1.1rem; }
+body.modo-presentacion #header .brand p { display: none; }
+body.modo-presentacion #main { padding: 10px 16px; }
+body.modo-presentacion .chart-card { margin-bottom: 12px; }
+body.modo-presentacion .chart-container { height: 380px; }
+body.modo-presentacion .chart-container.tall { height: 460px; }
+body.modo-presentacion .chart-container.xtall { height: 520px; }
+body.modo-presentacion #btn-presentacion { background: rgba(231,76,60,.15) !important; border-color: rgba(231,76,60,.4) !important; color: var(--accent-red) !important; }
+body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !important; color: #fff !important; }
+
 /* LOADING */
 #loading-overlay{position:fixed;inset:0;background:var(--bg-primary);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
 #loading-overlay.hidden{opacity:0;pointer-events:none}
@@ -200,7 +220,10 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
     <span class="logo">🍍</span>
     <div><h1>Dashboard de Cosecha 2026</h1><p>Análisis de producción · Piña/Fruta</p></div>
   </div>
-  <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="btn-presentacion" onclick="togglePresentacion()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:var(--accent-green);padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--accent-green)';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='var(--accent-green)'">⛶ Modo Presentación</button>
+    <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
+  </div>
 </header>
 
 <div id="filters-bar">
@@ -306,8 +329,8 @@ body{font-family:var(--font-main);background:var(--bg-primary);color:var(--text-
 
     <!-- G-TIPOCLIENTE: Frutas/Hombre·Día por Tipo+Cliente semana a semana -->
     <div class="chart-card full-width">
-      <div class="chart-title">📊 Frutas/Hombre·Día por Tipo de Cosecha × Cliente — Semana a Semana <span class="badge">Rendimiento</span></div>
-      <div class="chart-container xtall"><canvas id="chart-tipo-cliente"></canvas></div>
+      <div class="chart-title">📊 Frutas/Hombre·Día por Grupo — Semana a Semana <span class="badge">6 grupos simplificados</span></div>
+      <div class="chart-container" style="height:480px"><canvas id="chart-tipo-cliente"></canvas></div>
     </div>
 
     <!-- G-C: Costo total cuadrillas semana a semana -->
@@ -10449,6 +10472,21 @@ function updateKPIs() {
   document.getElementById('kpi-fhd-man-ind').textContent = fhdManInd > 0 ? fmtNum(Math.round(fhdManInd)) : '—';
   document.getElementById('kpi-fhd-nat').textContent     = fhdNat    > 0 ? fmtNum(Math.round(fhdNat))    : '—';
 
+  // KPIs de campo
+  countUp(document.getElementById('kpi-avg-peso'), bins>0?tp/bins:0);
+  countUp(document.getElementById('kpi-bins'), bins);
+  document.getElementById('kpi-semanas').textContent = new Set(filteredData.map(r=>r._semana)).size;
+
+  // Peso medio gerencial
+  const pmVals = filteredData.map(r=>r._pesoMedio).filter(v=>v>0);
+  const pmAvg = pmVals.length ? pmVals.reduce((s,v)=>s+v,0)/pmVals.length : 0;
+  document.getElementById('kpi-pm-geren').textContent = pmAvg > 0 ? fmtDec(pmAvg) : '—';
+
+  // Costos totales
+  const costoTotal = calcTotalCosto();
+  document.getElementById('kpi-costo-total').textContent = costoTotal > 0 ? fmtCOP(costoTotal) : '—';
+  document.getElementById('kpi-costo-kg').textContent = (costoTotal > 0 && tp > 0) ? '$'+fmtNum(Math.round(costoTotal/tp)) : '—';
+
   // ── Costo/kg Natural (proporcional), Precio/kg vendido, Margen ──
   updateNatMarginKPIs();
 
@@ -11171,7 +11209,7 @@ function initGerenCharts() {
           title:items=>`Semana ${items[0].label}`,
           label:ctx=>` ${ctx.dataset.label}: ${fmtNum(Math.round(ctx.parsed.y))} frutas/hombre·día`
         }},
-        datalabels:{display:false}
+        datalabels:{display:true}
       },
       scales:{
         x:{ticks:{color:'#95a5a6',font:{size:11}},grid:{color:GRID}},
@@ -11309,50 +11347,89 @@ function updateGerenCharts() {
 
 
 
-  // G-TIPOCLIENTE update
-  // Get all unique tipo+cliente combos present in filtered data
-  const tcCombos = [...new Set(filteredData.map(r => {
-    const tipo = r['TipoCosecha'] || '';
-    const cli  = CLIENT_ABBR[r._cliente] ?? (r._cliente || 'Sin dato');
-    return tipo + ' + ' + cli;
-  }))].filter(c => !c.startsWith(' +')).sort();
+  // G-TIPOCLIENTE: 6 grupos simplificados
+  const CLIENTES_ESPEC = new Set(['Ara','Éxito','Exportación','Pto. Venta']);
 
-  const tcDatasets = tcCombos.map(combo => {
-    const [tipo, ...cliParts] = combo.split(' + ');
-    const cliLabel = cliParts.join(' + ');
-    const rows = filteredData.filter(r => {
-      const rCli = CLIENT_ABBR[r._cliente] ?? (r._cliente || 'Sin dato');
-      return r['TipoCosecha'] === tipo && rCli === cliLabel;
+  function calcFHDgrupo(rowsFiltro) {
+    const diaMap = {};
+    rowsFiltro.forEach(r => {
+      const key = (r['Cuadrillero']||'') + '||' + r['Fecha'];
+      if (!diaMap[key]) diaMap[key] = {frutas:0, personas: r._cantPersonas||0};
+      diaMap[key].frutas += r._frutas;
+      if (r._cantPersonas > 0 && !diaMap[key].personas) diaMap[key].personas = r._cantPersonas;
     });
-    const color = TC_COLORS[combo] || '#95a5a6';
-    const isDashed = tipo === 'Manual';
+    const dias = Object.values(diaMap).filter(d => d.personas > 0);
+    if (!dias.length) return null;
+    return dias.reduce((s,d)=>s+d.frutas,0) / dias.reduce((s,d)=>s+d.personas,0);
+  }
+
+  const tc6Groups = [
+    {
+      label: '✋ Manual + Cliente Espec.',
+      color: '#3498db',
+      isDashed: true,
+      filter: r => r['TipoCosecha']==='Manual' && CLIENTES_ESPEC.has(CLIENT_ABBR[r._cliente] ?? '')
+    },
+    {
+      label: '⚙️ Mecánica + Cliente Espec.',
+      color: '#f39c12',
+      isDashed: false,
+      filter: r => r['TipoCosecha']==='Mecánica' && CLIENTES_ESPEC.has(CLIENT_ABBR[r._cliente] ?? '')
+    },
+    {
+      label: '✋ Manual + Barrida',
+      color: '#9b59b6',
+      isDashed: true,
+      filter: r => r['TipoCosecha']==='Manual' && (CLIENT_ABBR[r._cliente] ?? r._cliente) === 'Barrida'
+    },
+    {
+      label: '⚙️ Mecánica + Barrida',
+      color: '#e74c3c',
+      isDashed: false,
+      filter: r => r['TipoCosecha']==='Mecánica' && (CLIENT_ABBR[r._cliente] ?? r._cliente) === 'Barrida'
+    },
+    {
+      label: '✋ Manual + Pesca',
+      color: '#1abc9c',
+      isDashed: true,
+      filter: r => r['TipoCosecha']==='Manual' && (CLIENT_ABBR[r._cliente] ?? r._cliente) === 'Pesca'
+    },
+    {
+      label: '⚙️ Mecánica + Pesca',
+      color: '#2ecc71',
+      isDashed: false,
+      filter: r => r['TipoCosecha']==='Mecánica' && (CLIENT_ABBR[r._cliente] ?? r._cliente) === 'Pesca'
+    },
+  ];
+
+  const tcDatasets = tc6Groups.map(g => {
+    const semData = sems.map(s => calcFHDgrupo(filteredData.filter(r => r._semana===s && g.filter(r))));
+    const hasData = semData.some(v => v !== null);
+    if (!hasData) return null; // skip groups with no data after filtering
     return {
-      label: combo,
-      data: sems.map(s => {
-        const diaMap = {};
-        rows.filter(r => r._semana === s).forEach(r => {
-          const key = (r['Cuadrillero']||'') + '||' + r['Fecha'];
-          if (!diaMap[key]) diaMap[key] = {frutas:0, personas: r._cantPersonas||0};
-          diaMap[key].frutas += r._frutas;
-          if (r._cantPersonas > 0 && !diaMap[key].personas) diaMap[key].personas = r._cantPersonas;
-        });
-        const dias = Object.values(diaMap).filter(d => d.personas > 0);
-        if (!dias.length) return null;
-        return dias.reduce((s,d)=>s+d.frutas,0) / dias.reduce((s,d)=>s+d.personas,0);
-      }),
-      borderColor: color,
-      backgroundColor: color + '18',
-      borderWidth: 2,
-      borderDash: isDashed ? [5,4] : [],
+      label: g.label,
+      data: semData,
+      borderColor: g.color,
+      backgroundColor: g.color + '15',
+      borderWidth: 2.5,
+      borderDash: g.isDashed ? [6,4] : [],
       tension: 0.4,
-      pointRadius: 3,
-      pointHoverRadius: 6,
-      pointBackgroundColor: color,
+      pointRadius: 4,
+      pointHoverRadius: 7,
+      pointBackgroundColor: g.color,
       fill: false,
       spanGaps: true,
-      datalabels: {display: false}
+      datalabels: {
+        display: ctx => ctx.dataset.data[ctx.dataIndex] !== null,
+        align: 'top',
+        anchor: 'end',
+        offset: 2,
+        color: g.color,
+        font: {size: 8, weight: 'bold', family: 'JetBrains Mono'},
+        formatter: v => v !== null ? fmtNum(Math.round(v)) : ''
+      }
     };
-  });
+  }).filter(Boolean);
 
   charts.tipoCliente.data.labels = labels;
   charts.tipoCliente.data.datasets = tcDatasets;
@@ -11372,6 +11449,20 @@ function updateGerenCharts() {
   const pcscTotal = document.getElementById('pcsc-dona-total');
   if(pcscTotal) pcscTotal.textContent = fmtNum(Math.round(totalPC+totalSC));
 }
+
+// === MODO PRESENTACIÓN ===
+let enPresentacion = false;
+function togglePresentacion() {
+  enPresentacion = !enPresentacion;
+  document.body.classList.toggle('modo-presentacion', enPresentacion);
+  const btn = document.getElementById('btn-presentacion');
+  btn.textContent = enPresentacion ? '✕ Salir Presentación' : '⛶ Modo Presentación';
+  // Resize charts after layout change
+  setTimeout(() => {
+    Object.values(charts).forEach(c => { if (c && c.resize) c.resize(); });
+  }, 100);
+}
+window.togglePresentacion = togglePresentacion;
 
 // === DESPACHOS ===
 let allDespachos = [], filtDespachos = [];
