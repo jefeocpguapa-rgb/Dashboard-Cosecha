@@ -321,6 +321,20 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
       <div class="chart-container tall"><canvas id="chart-geren-peso"></canvas></div>
     </div>
 
+    <!-- G-CATPESO: Distribución de categorías de peso por bin -->
+    <div class="chart-card full-width">
+      <div class="chart-title">🏷️ Clasificación por Peso Medio de Fruta — Participación por Categoría <span class="badge">kg/fruta</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center">
+        <div style="position:relative;height:340px"><canvas id="chart-cat-peso-dona"></canvas>
+          <div id="cat-peso-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <div style="font-size:1.3rem;font-weight:700;font-family:var(--font-mono);color:var(--text-primary)" id="cat-peso-total">—</div>
+            <div style="font-size:.65rem;color:var(--text-secondary)">bloques únicos</div>
+          </div>
+        </div>
+        <div id="cat-peso-table" style="font-size:.82rem"></div>
+      </div>
+    </div>
+
     <!-- G-FHD: Frutas/Hombre·Día por semana - 3 curvas -->
     <div class="chart-card full-width">
       <div class="chart-title">👷 Frutas/Hombre·Día — Semana a Semana <span class="badge">Mecánica·Ind · Manual·Ind · Natural</span></div>
@@ -11740,6 +11754,39 @@ function initGerenCharts() {
     }
   });
 
+  // G-CATPESO: Distribución categorías de peso
+  charts.catPeso = new Chart(document.getElementById('chart-cat-peso-dona').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['🥇 Primera (>1.525 kg)', '🥈 Segunda (1.215-1.524)', '🥉 Tercera (1.015-1.214)', '💚 Guapita (0.715-1.014)', '🍼 Baby Guapa (0.500-0.714)', '⚠️ Sin dato/Fuera rango'],
+      datasets: [{
+        data: [0,0,0,0,0,0],
+        backgroundColor: ['#2ecc71','#3498db','#f39c12','#9b59b6','#1abc9c','#7f8c8d'],
+        borderColor: '#1a2535', borderWidth: 3, hoverOffset: 12
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {color:'#ecf0f1', font:{family:'Space Grotesk', size:11}, padding:10, boxWidth:14}
+        },
+        tooltip: {
+          backgroundColor:'rgba(15,25,35,0.95)', borderColor:'#2ecc71', borderWidth:1,
+          callbacks: {
+            label: ctx => {
+              const t = ctx.dataset.data.reduce((a,b)=>a+b,0);
+              const pct = t>0?(ctx.parsed/t*100).toFixed(1):0;
+              return ` ${fmtNum(ctx.parsed)} bins — ${pct}%`;
+            }
+          }
+        },
+        datalabels: {display: false}
+      }
+    }
+  });
+
   // G-FHD: Frutas/Hombre·Día por semana - 3 curvas con etiquetas
   charts.gerenFhd = new Chart(document.getElementById('chart-geren-fhd').getContext('2d'), {
     type:'line',
@@ -12006,6 +12053,69 @@ function updateGerenCharts() {
   charts.tipoCliente.data.labels = labels;
   charts.tipoCliente.data.datasets = tcDatasets;
   charts.tipoCliente.update('none');
+
+  // G-CATPESO: Clasificación por Peso Medio promedio del BLOQUE
+  // 1. Calcular peso medio promedio por bloque único
+  function classifyPesoMedio(pm) {
+    if (pm <= 0)      return 5;
+    if (pm > 1.525)   return 0; // Primera
+    if (pm >= 1.215)  return 1; // Segunda
+    if (pm >= 1.015)  return 2; // Tercera
+    if (pm >= 0.715)  return 3; // Guapita
+    if (pm >= 0.500)  return 4; // Baby Guapa
+    return 5;
+  }
+  const catColors = ['#2ecc71','#3498db','#f39c12','#9b59b6','#1abc9c','#7f8c8d'];
+  const catNames  = ['Primera >1.525','Segunda 1.215-1.524','Tercera 1.015-1.214','Guapita 0.715-1.014','Baby Guapa 0.500-0.714','Sin dato/Fuera rango'];
+
+  // Agrupar por bloque → calcular promedio de pesos medios de sus bins
+  const bloqueAgg = {};
+  filteredData.forEach(r => {
+    if (r._pesoMedio <= 0) return;
+    const b = r['Bloque'];
+    if (!bloqueAgg[b]) bloqueAgg[b] = {sum: 0, count: 0};
+    bloqueAgg[b].sum   += r._pesoMedio;
+    bloqueAgg[b].count += 1;
+  });
+  // Clasificar cada bloque por su peso medio promedio
+  const catCounts = [0,0,0,0,0,0];
+  Object.values(bloqueAgg).forEach(v => {
+    const pmBloque = v.sum / v.count;
+    catCounts[classifyPesoMedio(pmBloque)]++;
+  });
+  const totalBloques = Object.keys(bloqueAgg).length;
+  charts.catPeso.data.datasets[0].data = catCounts;
+  charts.catPeso.update('none');
+  document.getElementById('cat-peso-total').textContent = fmtNum(totalBloques);
+
+  // Tabla resumen categorías
+  const tableEl = document.getElementById('cat-peso-table');
+  tableEl.innerHTML = `
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:7px 10px;font-size:.7rem;color:var(--text-secondary);text-transform:uppercase;border-bottom:1px solid var(--border-color)">Categoría</th>
+          <th style="text-align:right;padding:7px 10px;font-size:.7rem;color:var(--text-secondary);text-transform:uppercase;border-bottom:1px solid var(--border-color)">Bloques</th>
+          <th style="text-align:right;padding:7px 10px;font-size:.7rem;color:var(--text-secondary);text-transform:uppercase;border-bottom:1px solid var(--border-color)">%</th>
+          <th style="padding:7px 10px;border-bottom:1px solid var(--border-color)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${catNames.map((name,i) => {
+          const pct = totalBloques>0?(catCounts[i]/totalBloques*100).toFixed(1):0;
+          return `<tr>
+            <td style="padding:7px 10px;color:${catColors[i]};font-weight:600;font-size:.82rem">${name}</td>
+            <td style="padding:7px 10px;text-align:right;font-family:var(--font-mono);font-size:.82rem;color:var(--text-primary)">${fmtNum(catCounts[i])}</td>
+            <td style="padding:7px 10px;text-align:right;font-family:var(--font-mono);font-size:.82rem;color:var(--text-primary);font-weight:700">${pct}%</td>
+            <td style="padding:7px 14px">
+              <div style="height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${catColors[i]};border-radius:4px;transition:width .4s"></div>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
 
   // G-D: PC vs SC apilado por semana
   charts.gerenPcscSem.data.labels = labels;
