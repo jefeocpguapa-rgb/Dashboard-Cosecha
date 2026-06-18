@@ -345,6 +345,11 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
       <div class="chart-container tall"><canvas id="chart-geren-pcsc-sem"></canvas></div>
     </div>
 
+        <div class="chart-card full-width">
+      <div class="chart-title">🗺️ Peso Medio por Bloque (Top 20) <span class="badge">kg/fruta promedio</span></div>
+      <div class="chart-container tall"><canvas id="chart-bloque"></canvas></div>
+    </div>
+
     <!-- G-E: Participación PC vs SC dona -->
     <div class="chart-card full-width">
       <div class="chart-title">🍩 Participación PC vs SC — Total Acumulado <span class="badge">Dona</span></div>
@@ -524,10 +529,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
       <div class="chart-title">👷 Top 15 Cuadrilleros por Peso <span class="badge">Barras horiz.</span></div>
       <div class="chart-container tall"><canvas id="chart-cuad"></canvas></div>
     </div>
-    <div class="chart-card full-width">
-      <div class="chart-title">🗺️ Peso por Bloque (Top 20) <span class="badge">Barras verticales</span></div>
-      <div class="chart-container tall"><canvas id="chart-bloque"></canvas></div>
-    </div>
+
 
 
     <div class="chart-card">
@@ -11279,23 +11281,51 @@ function initChartBloque() {
   charts.bloque = new Chart(document.getElementById('chart-bloque').getContext('2d'), {
     type:'bar',
     data:{labels:[],datasets:[
-      {label:'PC',data:[],backgroundColor:'rgba(52,152,219,0.75)',borderRadius:3},
-      {label:'SC',data:[],backgroundColor:'rgba(155,89,182,0.75)',borderRadius:3}
+      {label:'PC',data:[],backgroundColor:'rgba(52,152,219,0.75)',borderRadius:3,borderSkipped:false},
+      {label:'SC',data:[],backgroundColor:'rgba(155,89,182,0.75)',borderRadius:3,borderSkipped:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#ecf0f1'}},tooltip:{...TOOLTIP_STYLE,callbacks:{label:ctx=>` ${fmtNum(ctx.parsed.y)} kg`}}},
-      scales:{x:{ticks:{color:'#95a5a6',maxRotation:45,font:{size:9}},grid:{display:false}},y:{ticks:{color:'#95a5a6',callback:v=>fmtNum(v)},grid:{color:GRID_COLOR}}}
+      plugins:{
+        legend:{labels:{color:'#ecf0f1',font:{family:'Space Grotesk'}}},
+        tooltip:{...TOOLTIP_STYLE,callbacks:{
+          title:items=>`Bloque: ${items[0].label}`,
+          label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y > 0 ? ctx.parsed.y.toFixed(2) : '—'} kg/fruta`
+        }},
+        datalabels:{display:false}
+      },
+      scales:{
+        x:{ticks:{color:'#95a5a6',maxRotation:45,font:{size:9}},grid:{display:false}},
+        y:{ticks:{color:'#95a5a6',callback:v=>v.toFixed(2)},grid:{color:GRID_COLOR},
+           title:{display:true,text:'kg / fruta (peso medio)',color:'#95a5a6'}}
+      }
     }
   });
 }
 function updateChartBloque() {
-  const aPC={},aSC={};
-  filteredData.forEach(r=>{const b=r['Bloque'];if(r['Desarrollo']==='PC')aPC[b]=(aPC[b]||0)+r._peso;else aSC[b]=(aSC[b]||0)+r._peso;});
-  const all=[...new Set([...Object.keys(aPC),...Object.keys(aSC)])].map(b=>({b,t:(aPC[b]||0)+(aSC[b]||0)})).sort((a,bb)=>bb.t-a.t).slice(0,20);
-  const labels=all.map(e=>e.b);
-  charts.bloque.data.labels=labels;
-  charts.bloque.data.datasets[0].data=labels.map(b=>aPC[b]||0);
-  charts.bloque.data.datasets[1].data=labels.map(b=>aSC[b]||0);
+  // Peso medio por bloque: promedio de pesoMedio de todos los bins del bloque
+  const aggPC = {}, aggSC = {};
+  filteredData.forEach(r => {
+    const b = r['Bloque'];
+    const pm = r._pesoMedio;
+    if (pm <= 0) return;
+    const dest = r['Desarrollo'] === 'PC' ? aggPC : aggSC;
+    if (!dest[b]) dest[b] = {sum: 0, count: 0};
+    dest[b].sum   += pm;
+    dest[b].count += 1;
+  });
+  // Combine both PC and SC to rank by overall avg peso medio
+  const allBloques = new Set([...Object.keys(aggPC), ...Object.keys(aggSC)]);
+  const ranked = [...allBloques].map(b => {
+    const pc = aggPC[b] ? aggPC[b].sum / aggPC[b].count : 0;
+    const sc = aggSC[b] ? aggSC[b].sum / aggSC[b].count : 0;
+    const total = (aggPC[b]?.sum || 0) + (aggSC[b]?.sum || 0);
+    const cnt   = (aggPC[b]?.count || 0) + (aggSC[b]?.count || 0);
+    return {b, avg: cnt > 0 ? total/cnt : 0, pc, sc};
+  }).filter(x => x.avg > 0).sort((a,b) => b.avg - a.avg).slice(0, 20);
+
+  charts.bloque.data.labels = ranked.map(e => e.b);
+  charts.bloque.data.datasets[0].data = ranked.map(e => e.pc > 0 ? parseFloat(e.pc.toFixed(3)) : null);
+  charts.bloque.data.datasets[1].data = ranked.map(e => e.sc > 0 ? parseFloat(e.sc.toFixed(3)) : null);
   charts.bloque.update('none');
 }
 
