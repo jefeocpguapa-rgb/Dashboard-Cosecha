@@ -501,6 +501,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
           <thead><tr>
             <th style="width:36px">#</th>
             <th data-col="nombre">Cuadrillero</th>
+            <th data-col="tipo" style="text-align:center;font-size:.75rem">Tipo Cosecha</th>
             <th data-col="frutas" style="text-align:right">Total Frutas</th>
             <th data-col="peso" style="text-align:right">Kg Cosechados</th>
             <th data-col="personas" style="text-align:right">Personas·Día</th>
@@ -11236,11 +11237,14 @@ let fppData = [], fppSortKey = 'ratio';
 
 function calcFPP() {
   // Por cuadrillero y fecha: una sola vez personas y horas (aunque la cuadrilla repita en ese día)
-  const cuadFrutas = {}, cuadPeso = {}, cuadPersonasDia = {}, cuadHorasDia = {}, cuadDias = {};
+  const cuadFrutas = {}, cuadPeso = {}, cuadPersonasDia = {}, cuadHorasDia = {}, cuadDias = {}, cuadTipos = {};
   filteredData.forEach(r => {
     const c = r['Cuadrillero']; if (!c) return;
     cuadFrutas[c] = (cuadFrutas[c]||0) + r._frutas;
     cuadPeso[c] = (cuadPeso[c]||0) + r._peso;
+    // Track tipos de cosecha y floración
+    if (!cuadTipos[c]) cuadTipos[c] = new Set();
+    if (r['TipoCosecha'] && r['Floracion']) cuadTipos[c].add(r['TipoCosecha'] + '+' + r['Floracion']);
     const fecha = r['Fecha'];
     if (!cuadPersonasDia[c]) { cuadPersonasDia[c] = {}; cuadHorasDia[c] = {}; }
     // Personas únicas por día
@@ -11275,7 +11279,13 @@ function calcFPP() {
     });
     const ratio = personasDia > 0 ? frutas / personasDia : 0;
     const costoPorKg = (peso > 0 && costo > 0) ? costo / peso : 0;
-    return { nombre: c, frutas, peso, personas: personasDia, horas: horasTotales, ratio, costo, costoPorKg, dias };
+    // Summarize tipos: e.g. "Mecánica·Ind / Manual·Nat"
+    const tiposSet = cuadTipos[c] || new Set();
+    const tipoLabel = [...tiposSet].map(t => {
+      const [tipo, flor] = t.split('+');
+      return (tipo==='Mecánica'?'⚙️ Mec':'✋ Man') + ' · ' + (flor==='Inducción'?'Ind':'Nat');
+    }).join(' / ');
+    return { nombre: c, frutas, peso, personas: personasDia, horas: horasTotales, ratio, costo, costoPorKg, dias, tipo: tipoLabel };
   });
   sortFPP(fppSortKey, false);
 }
@@ -11303,6 +11313,7 @@ function renderFPP() {
     return `<tr>
       <td style="color:var(--text-secondary);font-family:var(--font-mono)" class="${rankClass}">${i+1}</td>
       <td title="${d.nombre}" style="font-weight:${i<3?'600':'400'}">${shortName}</td>
+      <td style="text-align:center;font-size:.7rem;white-space:nowrap">${d.tipo||'—'}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(d.frutas)}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(Math.round(d.peso))}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(d.personas)}</td>
@@ -11637,7 +11648,7 @@ function exportDespCSV() {
 
 function exportCSV() {
   // Encabezados legibles
-  const header = ['Fecha','Boleta','Bloque','Grupo Forza','Cuadrillero','Bin','Frutas','Peso (kg)','Peso Medio (kg/fruta)','Tipo Cosecha','Floracion','Modo Transporte','Semana','LOTE','Cliente'];
+  const header = ['Fecha','Boleta','Bloque','Grupo Forza','Cuadrillero','Bin','Frutas','Peso (kg)','Peso Medio (kg/fruta)','Tipo Cosecha','Floracion','Modo Transporte','Semana','LOTE','Area Bruta (ha)','Cliente'];
   const rows = filteredData.map(r => [
     r['Fecha'] || '',
     r['Boleta'] || '',
@@ -11654,6 +11665,7 @@ function exportCSV() {
     r['ModoTransporte'] || '',
     r['Semana'] || '',
     r['LOTE'] || '',
+    r._areaBruta > 0 ? r._areaBruta.toFixed(2).replace('.',',') : '',
     r._cliente || ''
   ].join(';'));
   const csv = [header.join(';'), ...rows].join('\n');
