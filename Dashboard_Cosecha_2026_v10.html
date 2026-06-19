@@ -625,7 +625,6 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
 
   <!-- Filtros despachos -->
   <div style="background:var(--bg-card);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-    <div class="filter-group"><label>Fecha Despacho</label><select id="desp-filter-fecha" style="min-width:160px"><option value="">Todas las fechas</option></select></div>
     <div class="filter-group"><label>Cliente</label><select id="desp-filter-cliente" style="min-width:180px"><option value="">Todos los clientes</option></select></div>
     <div class="filter-group"><label>Categoría</label><select id="desp-filter-cat" style="min-width:160px"><option value="">Todas las categorías</option></select></div>
     <button onclick="resetDespFiltros()" style="background:transparent;border:1px solid var(--accent-yellow);color:var(--accent-yellow);padding:6px 14px;border-radius:6px;font-size:.78rem;cursor:pointer;font-family:var(--font-main);transition:all .2s" onmouseover="this.style.background='var(--accent-yellow)';this.style.color='#0f1923'" onmouseout="this.style.background='transparent';this.style.color='var(--accent-yellow)'">↺ Resetear</button>
@@ -10589,6 +10588,115 @@ Boleta;Bloque;Desarrollo;GrupoForza;Bin;Fecha;Frutas;Peso;PesoMedio;Floracion;Cu
 49930;PC760425;PC;GF0526;99 verde;17/06/2026;730;1126;1.5425;Inducción;ANDERSON CORDOBA CAICEDO;1;12;8;Mecánica;Camión;25;76;0.0611;BARRIDA
 49930;PC760425;PC;GF0526;139 verde;17/06/2026;582;798;1.3711;Inducción;ANDERSON CORDOBA CAICEDO;1;12;8;Mecánica;Camión;25;76;0.0611;BARRIDA
 49930;PC761525;PC;GF0526;139 verde;17/06/2026;212;290;1.3679;Inducción;ANDERSON CORDOBA CAICEDO;1;12;8;Mecánica;Camión;25;76;0.2976;BARRIDA
+48994;PC730125;PC;GF1426;82 verde;18/06/2026;788;1219;1.547;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.7255;PESCA
+48994;PC730125;PC;GF1426;142 verde;18/06/2026;744;1201;1.6142;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.7255;PESCA
+48994;PC730225;PC;GF1426;101 verde;18/06/2026;756;1190;1.5741;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.8047;PESCA
+48994;PC730225;PC;GF1426;102 verde;18/06/2026;732;1162;1.5874;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.8047;PESCA
+48995;PC730125;PC;GF1426;110 verde;18/06/2026;792;1186;1.4975;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.7255;PESCA
+48995;PC730125;PC;GF1426;151 verde;18/06/2026;648;1006;1.5525;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.7255;PESCA
+48995;PC730225;PC;GF1426;151 verde;18/06/2026;134;208;1.5522;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.8047;PESCA
+48996;PC730225;PC;GF1426;67 verde;18/06/2026;740;1165;1.5743;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.8047;PESCA
+48996;PC730225;PC;GF1426;83 verde;18/06/2026;784;1300;1.6582;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.8047;PESCA
+48996;PC730225;PC;GF1426;59 verde;18/06/2026;742;1113;1.5;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.8047;PESCA
+48996;PC730225;PC;GF1426;5 verde;18/06/2026;774;1185;1.531;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;8;6.5;Mecánica;Camión;25;73;0.8047;PESCA
+49585;SC011723;SC;GF0526;36 verde;18/06/2026;858;959;1.1177;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49585;SC011723;SC;GF0526;136 verde;18/06/2026;896;1078;1.2031;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49585;SC011723;SC;GF0526;117 verde;18/06/2026;802;1034;1.2893;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49585;SC011723;SC;GF0526;26 verde;18/06/2026;870;1110;1.2759;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49586;SC011723;SC;GF0526;140 verde;18/06/2026;824;1036;1.2573;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49586;SC011723;SC;GF0526;139 verde;18/06/2026;866;1106;1.2771;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49586;SC011723;SC;GF0526;147 verde;18/06/2026;858;1036;1.2075;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49586;SC011723;SC;GF0526;44 verde;18/06/2026;956;1063;1.1119;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49587;SC011723;SC;GF0526;139 verde;18/06/2026;882;966;1.0952;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49587;SC011723;SC;GF0526;13 verde;18/06/2026;990;1004;1.0141;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49587;SC011723;SC;GF0526;136 verde;18/06/2026;934;932;0.9979;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49587;SC011723;SC;GF0526;36 verde;18/06/2026;1010;812;0.804;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49588;SC011723;SC;GF0526;140 verde;18/06/2026;980;971;0.9908;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49588;SC011723;SC;GF0526;130 verde;18/06/2026;952;1030;1.0819;Inducción;WILMAR ANDRES PINEDA MANCO;5;9;7.5;Mecánica;Tractor;25;01;0.9281;BARRIDA
+49728;SC171723;SC;GF0526;145 verde;18/06/2026;968;1017;1.0506;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1743;BARRIDA
+49728;SC171723;SC;GF0526;48 verde;18/06/2026;422;458;1.0853;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1743;BARRIDA
+49728;SC171923;SC;GF0526;48 verde;18/06/2026;432;469;1.0856;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49728;SC171923;SC;GF0526;16 verde;18/06/2026;1028;969;0.9426;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49729;SC171923;SC;GF0526;1 verde;18/06/2026;1010;977;0.9673;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49729;SC171923;SC;GF0526;13 verde;18/06/2026;1030;952;0.9243;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49729;SC171923;SC;GF0526;64 verde;18/06/2026;1024;906;0.8848;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49729;SC171923;SC;GF0526;95 verde;18/06/2026;998;924;0.9259;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49730;SC171923;SC;GF0526;130 verde;18/06/2026;990;942;0.9515;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49730;SC171923;SC;GF0526;47 verde;18/06/2026;452;438;0.969;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1859;BARRIDA
+49730;SC172623;SC;GF0526;47 verde;18/06/2026;580;563;0.9707;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1109;BARRIDA
+49730;SC172623;SC;GF0526;73 verde;18/06/2026;1050;978;0.9314;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1109;BARRIDA
+49731;SC172623;SC;GF0526;145 verde;18/06/2026;950;984;1.0358;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1109;BARRIDA
+49731;SC172623;SC;GF0526;48 verde;18/06/2026;1038;955;0.92;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1109;BARRIDA
+49731;SC172623;SC;GF0526;117 verde;18/06/2026;992;975;0.9829;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1109;BARRIDA
+49731;SC172623;SC;GF0526;26 verde;18/06/2026;490;548;1.1184;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.1109;BARRIDA
+49732;SC172823;SC;GF0526;26 verde;18/06/2026;452;505;1.1173;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.3625;BARRIDA
+49732;SC172823;SC;GF0526;47 verde;18/06/2026;972;980;1.0082;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.3625;BARRIDA
+49732;SC172823;SC;GF0526;73 verde;18/06/2026;998;1000;1.002;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.3625;BARRIDA
+49732;SC172823;SC;GF0526;69 verde;18/06/2026;982;975;0.9929;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.3625;BARRIDA
+49733;SC172823;SC;GF0526;70 verde;18/06/2026;988;1033;1.0455;Inducción;YESID ALCIRIA VERGARA;6;10;7.5;Mecánica;Tractor;25;17;0.3625;BARRIDA
+49854;PC722625;PC;GF1026;104 verde;18/06/2026;260;446;1.7154;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.1766;PESCA
+49854;PC722725;PC;GF1126;104 verde;18/06/2026;472;803;1.7013;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.2228;PESCA
+49854;PC722625;PC;GF1026;36 verde;18/06/2026;306;506;1.6536;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.1766;PESCA
+49854;PC722825;PC;GF1226;36 verde;18/06/2026;224;371;1.6562;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.2464;PESCA
+49855;PC723325;PC;GF1026;36 verde;18/06/2026;98;162;1.6531;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.459;PESCA
+49855;PC723425;PC;GF1126;36 verde;18/06/2026;108;179;1.6574;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.4793;PESCA
+49855;PC723825;PC;GF0726;53 verde;18/06/2026;160;269;1.6812;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.3938;PESCA
+49855;PC732125;PC;GF1626;53 verde;18/06/2026;200;337;1.685;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.2475;PESCA
+49856;PC732225;PC;GF1626;53 verde;18/06/2026;90;152;1.6889;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.0592;PESCA
+49856;PC732025;PC;GF1626;53 verde;18/06/2026;258;434;1.6822;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.3895;PESCA
+49856;PC723925;PC;GF1226;146 verde;18/06/2026;132;205;1.553;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.1841;PESCA
+49856;PC723825;PC;GF0726;146 verde;18/06/2026;154;239;1.5519;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.3938;PESCA
+49857;PC732125;PC;GF1626;146 verde;18/06/2026;448;695;1.5513;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.2475;PESCA
+49857;PC732025;PC;GF1626;65 verde;18/06/2026;716;906;1.2654;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.3895;PESCA
+49857;PC731325;PC;GF1526;65 verde;18/06/2026;164;208;1.2683;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.6223;PESCA
+49857;PC732025;PC;GF1626;6 verde;18/06/2026;372;502;1.3495;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.3895;PESCA
+49858;PC732125;PC;GF1626;6 verde;18/06/2026;222;300;1.3514;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.2475;PESCA
+49858;PC731325;PC;GF1526;6 verde;18/06/2026;278;375;1.3489;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.6223;PESCA
+49858;PC722925;PC;GF1226;77 verde;18/06/2026;224;344;1.5357;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.1111;PESCA
+49858;PC723025;PC;GF1226;77 verde;18/06/2026;520;799;1.5365;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.2689;PESCA
+49859;PC723325;PC;GF1026;77 verde;18/06/2026;36;55;1.5278;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.459;PESCA
+49859;PC722825;PC;GF1226;74 verde;18/06/2026;172;268;1.5581;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.2464;PESCA
+49859;PC723125;PC;GF1226;74 verde;18/06/2026;292;455;1.5582;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.3072;PESCA
+49859;PC723225;PC;GF1226;74 verde;18/06/2026;188;293;1.5585;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.0816;PESCA
+49860;PC723325;PC;GF1026;74 verde;18/06/2026;170;264;1.5529;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.459;PESCA
+49860;PC723325;PC;GF1026;66 verde;18/06/2026;144;233;1.6181;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.459;PESCA
+49860;PC723425;PC;GF1126;66 verde;18/06/2026;288;466;1.6181;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.4793;PESCA
+49860;PC723625;PC;GF0926;66 verde;18/06/2026;64;103;1.6094;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.1297;PESCA
+49861;PC723525;PC;GF1026;66 verde;18/06/2026;12;19;1.5833;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.1943;PESCA
+49861;PC723825;PC;GF0726;66 verde;18/06/2026;246;398;1.6179;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.3938;PESCA
+49861;PC723325;PC;GF1026;42 verde;18/06/2026;412;644;1.5631;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.459;PESCA
+49861;PC723525;PC;GF1026;42 verde;18/06/2026;388;606;1.5619;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;72;0.1943;PESCA
+49862;PC731425;PC;GF1526;7 verde;18/06/2026;248;331;1.3347;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5615;PESCA
+49862;PC731325;PC;GF1526;7 verde;18/06/2026;600;802;1.3367;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.6223;PESCA
+49862;PC731425;PC;GF1526;20 verde;18/06/2026;250;336;1.344;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5615;PESCA
+49862;PC731325;PC;GF1526;20 verde;18/06/2026;596;800;1.3423;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.6223;PESCA
+49864;PC731125;PC;GF1426;17 verde;18/06/2026;686;1183;1.7245;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5969;PESCA
+49864;PC731225;PC;GF1526;94 verde;18/06/2026;30;53;1.7667;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5978;PESCA
+49864;PC731125;PC;GF1426;94 verde;18/06/2026;638;1133;1.7759;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5969;PESCA
+49864;PC731225;PC;GF1526;132 verde;18/06/2026;770;1163;1.5104;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5978;PESCA
+49865;PC731125;PC;GF1426;16 verde;18/06/2026;206;309;1.5;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5969;PESCA
+49865;PC731225;PC;GF1526;16 verde;18/06/2026;438;659;1.5046;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.5978;PESCA
+49865;PC731325;PC;GF1526;16 verde;18/06/2026;410;617;1.5049;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;73;0.6223;PESCA
+49866;PC490125;PC;GF1626;1 verde;18/06/2026;30;44;1.4667;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;49;0.1355;PESCA
+49866;PC490225;PC;GF1826;1 verde;18/06/2026;8;12;1.5;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;49;0.3298;PESCA
+49866;PC490325;PC;GF1626;1 verde;18/06/2026;6;9;1.5;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;49;0.6185;PESCA
+49866;PC490425;PC;GF1626;1 verde;18/06/2026;6;9;1.5;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;49;0.6093;PESCA
+49867;PC490525;PC;GF1626;1 verde;18/06/2026;6;9;1.5;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;49;0.0783;PESCA
+49867;PC490625;PC;GF1626;1 verde;18/06/2026;71;103;1.4507;Natural;REYES RIVERA NELSON DAVID;15;50;7;Manual;Camión;25;49;0.2864;PESCA
+49931;PC730225;PC;GF1426;46 verde;18/06/2026;770;1226;1.5922;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.8047;PESCA
+49931;PC730225;PC;GF1426;84 verde;18/06/2026;732;1194;1.6311;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.8047;PESCA
+49931;PC730225;PC;GF1426;71 verde;18/06/2026;768;1219;1.5872;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.8047;PESCA
+49931;PC730225;PC;GF1426;41 verde;18/06/2026;770;1201;1.5597;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.8047;PESCA
+49932;PC730225;PC;GF1426;69 verde;18/06/2026;756;1126;1.4894;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.8047;PESCA
+49932;PC730225;PC;GF1426;70 verde;18/06/2026;936;1233;1.3173;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.8047;PESCA
+49932;PC730625;PC;GF1226;50 verde;18/06/2026;700;1190;1.7;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
+49932;PC730625;PC;GF1226;45 verde;18/06/2026;710;1198;1.6873;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
+49933;PC730625;PC;GF1226;27 verde;18/06/2026;756;1225;1.6204;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
+49933;PC730625;PC;GF1226;24 verde;18/06/2026;724;1193;1.6478;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
+49933;PC730625;PC;GF1226;37 verde;18/06/2026;690;1222;1.771;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
+49933;PC730625;PC;GF1226;55 verde;18/06/2026;710;1180;1.662;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
+49934;PC730625;PC;GF1226;43 verde;18/06/2026;742;1156;1.558;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
+49934;PC730625;PC;GF1226;34 verde;18/06/2026;720;1179;1.6375;Natural;ANDERSON CORDOBA CAICEDO;1;12;7.5;Mecánica;Camión;25;73;0.3975;PESCA
 `;
 
 // === DATOS DESPACHOS ===
@@ -10911,6 +11019,28 @@ FechaProceso;FechaDespacho;Remision;Cliente;Categoria;Grupo;KilosTotal;Precio
 18/06/2026;18/06/2026;R-17941;Almacenes Éxito S.A. - Barranquilla;Piña AD1;1526;288.0;3300.0
 18/06/2026;18/06/2026;R-17946;claudia andrea varela;Piña AD1;1426;31.0;1700.0
 18/06/2026;18/06/2026;R-17946;claudia andrea varela;Piña AD3;1426;23.0;1000.0
+31/05/2026;2/06/2026;descarte;descarte;AD-piña jugos;1426;20.0;0
+31/05/2026;2/06/2026;descarte;descarte;AD-piña jugos;1526;781.0;0
+2/06/2026;5/06/2026;descarte;descarte;AD-piña jugos;1426;117.0;0
+3/06/2026;6/06/2026;descarte;descarte;AD-piña jugos;526;1138.0;0
+3/06/2026;6/06/2026;descarte;descarte;AD-piña jugos;626;2754.0;0
+5/06/2026;5/06/2026;descarte;descarte;Ad-PE1;326;25.0;0
+5/06/2026;9/06/2026;descarte;descarte;AD-piña jugos;826;107.0;0
+5/06/2026;9/06/2026;descarte;descarte;AD-piña jugos;926;2940.0;0
+5/06/2026;9/06/2026;descarte;descarte;AD-piña jugos;1026;1117.0;0
+6/06/2026;10/06/2026;descarte;descarte;AD-piña jugos;726;2714.0;0
+6/06/2026;10/06/2026;descarte;descarte;AD-piña jugos;926;4248.0;0
+6/06/2026;10/06/2026;descarte;descarte;AD-piña jugos;1226;1076.0;0
+12/06/2026;16/06/2026;descarte;descarte;AD-piña jugos;326;145.0;0
+12/06/2026;16/06/2026;descarte;descarte;AD-piña jugos;1126;1016.0;0
+12/06/2026;16/06/2026;descarte;descarte;AD-piña jugos;1226;849.0;0
+12/06/2026;16/06/2026;descarte;descarte;AD-piña jugos;1526;1211.0;0
+13/06/2026;17/06/2026;descarte;descarte;AD-piña jugos;526;554.0;0
+13/06/2026;17/06/2026;descarte;descarte;AD-piña jugos;626;465.0;0
+13/06/2026;17/06/2026;descarte;descarte;AD-piña jugos;726;3103.0;0
+13/06/2026;17/06/2026;descarte;descarte;AD-piña jugos;826;969.0;0
+13/06/2026;17/06/2026;descarte;descarte;AD-piña jugos;1126;564.0;0
+13/06/2026;17/06/2026;descarte;descarte;AD-piña jugos;1526;1048.0;0
 `;
 
 // === PARSEO ===
@@ -11176,7 +11306,7 @@ function updateNatMarginKPIs() {
   const costoKgNat = kgNatTotal > 0 ? costoNatTotal / kgNatTotal : 0;
 
   // Precio promedio ponderado de despachos Natural (filtrados por semana si aplica)
-  const despNatConPrecio = filtDespachos.filter(d => d.precio > 0);
+  const despNatConPrecio = filtDespachos.filter(d => d.precio > 0 && d.cliente !== 'descarte');
   const totalKgConPrecio = despNatConPrecio.reduce((s,d)=>s+d.kilos, 0);
   const precioNatPond = totalKgConPrecio > 0
     ? despNatConPrecio.reduce((s,d)=>s+d.precio*d.kilos, 0) / totalKgConPrecio
@@ -12440,6 +12570,7 @@ function parseDespachos(raw) {
     if (kt <= 0) continue;
     const fdStr = p[1].trim();
     const fpStr = p[0].trim();
+    // Semana basada en fechaDespacho, con fechaProceso como fallback
     const fdSemana = getSemana(fdStr) || getSemana(fpStr);
     data.push({
       fechaProceso:  fpStr,
@@ -12467,16 +12598,12 @@ function initDespFiltros() {
   const clientes = [...new Set(allDespachos.map(r=>r.cliente))].sort();
   const cats     = [...new Set(allDespachos.map(r=>r.categoria))].sort();
 
-  const fSel = document.getElementById('desp-filter-fecha');
-  fechas.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;fSel.appendChild(o);});
-
   const cSel = document.getElementById('desp-filter-cliente');
   clientes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;cSel.appendChild(o);});
 
   const catSel = document.getElementById('desp-filter-cat');
   cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o);});
 
-  document.getElementById('desp-filter-fecha').addEventListener('change', applyDespFiltros);
   document.getElementById('desp-filter-cliente').addEventListener('change', applyDespFiltros);
   document.getElementById('desp-filter-cat').addEventListener('change', applyDespFiltros);
 }
@@ -12490,26 +12617,28 @@ function toggleDespTable() {
 window.toggleDespTable = toggleDespTable;
 
 function applyDespFiltros() {
-  const fecha   = document.getElementById('desp-filter-fecha').value;
   const cliente = document.getElementById('desp-filter-cliente').value;
   const cat     = document.getElementById('desp-filter-cat').value;
   filtDespachos = allDespachos.filter(r => {
     // ── Respetar filtro global de SEMANA ──
     if (filterState.semana !== '' && r.semana !== parseInt(filterState.semana)) return false;
-    // ── Respetar filtro global de FECHAS (por fechaDespacho) ──
+    // ── Respetar filtro global de FECHAS ──
+    // Descarte: usar fechaProceso (es cuando ocurre físicamente)
+    // Despachos normales: usar fechaDespacho, con fechaProceso como fallback
     if (filterState.dateFrom || filterState.dateTo) {
-      const parts = r.fechaDespacho.split('/');
+      const dateStr = r.fechaDespacho || r.fechaProceso || '';
+      const parts = dateStr.split('/');
       if (parts.length === 3) {
         const fd = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-        // Compare date-only (strip time from filterState dates)
         const fromDay = filterState.dateFrom ? new Date(filterState.dateFrom.getFullYear(), filterState.dateFrom.getMonth(), filterState.dateFrom.getDate()) : null;
         const toDay   = filterState.dateTo   ? new Date(filterState.dateTo.getFullYear(),   filterState.dateTo.getMonth(),   filterState.dateTo.getDate())   : null;
         if (fromDay && fd < fromDay) return false;
         if (toDay   && fd > toDay)   return false;
+      } else {
+        return false;
       }
     }
     // ── Filtros propios de despachos ──
-    if (fecha   && r.fechaDespacho !== fecha) return false;
     if (cliente && r.cliente !== cliente) return false;
     if (cat     && r.categoria !== cat) return false;
     return true;
@@ -12519,7 +12648,6 @@ function applyDespFiltros() {
 }
 
 function resetDespFiltros() {
-  document.getElementById('desp-filter-fecha').value = '';
   document.getElementById('desp-filter-cliente').value = '';
   document.getElementById('desp-filter-cat').value = '';
   filtDespachos = [...allDespachos];
@@ -12623,7 +12751,7 @@ function updateDespachos() {
   const data = filtDespachos;
   // KPIs
   const totalKg = data.reduce((s,r)=>s+r.kilos,0);
-  const conPrecio = data.filter(r=>r.precio>0);
+  const conPrecio = data.filter(r=>r.precio>0 && r.cliente !== 'descarte');
   const kgConPrecio = conPrecio.reduce((s,r)=>s+r.kilos,0);
   const precioAvg = kgConPrecio > 0 ? conPrecio.reduce((s,r)=>s+r.precio*r.kilos,0)/kgConPrecio : 0;
   document.getElementById('desp-kg-total').textContent = fmtNum(Math.round(totalKg));
