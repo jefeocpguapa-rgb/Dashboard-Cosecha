@@ -17,7 +17,7 @@
   .card { background: #fff; border-radius: 10px; border: 1px solid #ddd; padding: 16px; margin-bottom: 14px; }
   label { font-size: 13px; color: #555; display: block; margin-bottom: 5px; }
   input, select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 7px; font-size: 15px; margin-bottom: 12px; }
-  input[readonly] { background: #f4f6f8; color: #888; }
+  .auto-val { background: #f4f6f8; border: 1px solid #ccc; border-radius: 7px; padding: 10px 12px; font-size: 15px; color: #555; margin-bottom: 12px; text-align: center; font-weight: 600; }
   .bin-input { font-size: 32px; font-weight: 700; text-align: center; padding: 14px; letter-spacing: 2px; }
   .btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; }
   .btn-primary { background: #163F61; color: white; }
@@ -29,7 +29,6 @@
   .badge.error { background: #f8d7da; color: #721c24; }
   .auto-row { display: flex; gap: 10px; }
   .auto-row > div { flex: 1; }
-  .auto-val { background: #f4f6f8; border: 1px solid #ccc; border-radius: 7px; padding: 10px 12px; font-size: 15px; color: #555; margin-bottom: 12px; text-align: center; font-weight: 600; }
   .metrics { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
   .metric { flex: 1; min-width: 80px; background: #f4f6f8; border-radius: 8px; padding: 12px; text-align: center; }
   .metric .val { font-size: 22px; font-weight: 700; }
@@ -48,9 +47,9 @@
   .legend { display: flex; gap: 14px; margin-top: 10px; font-size: 11px; color: #777; flex-wrap: wrap; }
   .legend span { display: flex; align-items: center; gap: 5px; }
   .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { text-align: left; padding: 7px 6px; border-bottom: 1px solid #ddd; color: #777; font-weight: 600; font-size: 11px; }
-  td { padding: 7px 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { text-align: left; padding: 6px 5px; border-bottom: 1px solid #ddd; color: #777; font-weight: 600; font-size: 10px; }
+  td { padding: 6px 5px; }
   tr:nth-child(even) td { background: #f9f9f9; }
   .empty { text-align: center; padding: 30px; color: #aaa; font-size: 14px; }
   .ultimo { background: #eaf6ee; border: 1px solid #b2dfcc; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: #155724; display: none; }
@@ -82,14 +81,14 @@
         </div>
         <div>
           <label>Hora</label>
-          <div class="auto-val" id="disp-hora">—</div>
+          <input type="time" id="disp-hora" style="font-weight:600; text-align:center;">
         </div>
       </div>
 
       <label>Número de bin</label>
       <input type="number" id="inp-bin" class="bin-input" min="1" placeholder="Ej: 45" inputmode="numeric">
 
-      <label>Grupo de Fuerza</label>
+      <label>Grupo de Forza</label>
       <select id="inp-gf">
         <option value="">— Selecciona —</option>
       </select>
@@ -108,8 +107,36 @@
         <option>ARGENTINA</option>
       </select>
 
-      <div class="ultimo" id="ultimo-registro"></div>
+      <label>Observaciones Proceso</label>
+      <select id="inp-obs">
+        <option value="">— Selecciona (opcional) —</option>
+        <option>PESCA</option>
+        <option>FALTA DE ENERGIA</option>
+        <option>FALTA DE FRUTA</option>
+        <option>FALTA DE ESTIBAS</option>
+        <option>FALTA DE CANASTAS</option>
+        <option>FALTA DE MONTACARGAS</option>
+        <option>GASES DE MONTACARGAS</option>
+        <option>MONTACARGAS VARADO</option>
+        <option>REUNION</option>
+        <option>CAMBIO DE FRUTA DE LA SEMANA</option>
+        <option>CAMBIO DE BINES CON FRUTA</option>
+        <option>CAMBIO DE MERCADO</option>
+        <option>CAPACITACION</option>
+        <option>PARE DE BANDA</option>
+        <option>BANDA VARADA</option>
+        <option>BASCULA VARADA</option>
+        <option>REFRIGERIO</option>
+        <option>RECESO PARA COMER</option>
+        <option>REDUCCION DE BANDA</option>
+        <option>PREPARACION PARA PEDIDOS</option>
+        <option>PROCESO MANUAL</option>
+        <option>BINES DE FLORACION</option>
+        <option>INICIO DE PROCESO</option>
+        <option>FIN DE PROCESO</option>
+      </select>
 
+      <div class="ultimo" id="ultimo-registro"></div>
       <button class="btn btn-primary" onclick="guardar()" id="btn-guardar">Registrar Bin</button>
     </div>
   </div>
@@ -165,13 +192,13 @@ function getHoraActual() {
   const d = new Date();
   return String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
 }
-function getHoraNum() { return new Date().getHours(); }
 
 function setMsg(tipo, txt) {
   const el = document.getElementById("msg");
   el.className = "badge " + tipo;
   el.textContent = txt;
 }
+
 function setTab(t) {
   document.getElementById("vista-ingreso").style.display = t === "ingreso" ? "" : "none";
   document.getElementById("vista-dashboard").style.display = t === "dashboard" ? "" : "none";
@@ -182,8 +209,19 @@ function setTab(t) {
 
 function initForm() {
   document.getElementById("dash-fecha").value = getHoy();
-  actualizarReloj();
-  setInterval(actualizarReloj, 30000);
+  document.getElementById("disp-fecha").textContent = getHoy();
+  document.getElementById("disp-hora").value = getHoraActual();
+
+  setInterval(function() {
+    document.getElementById("disp-fecha").textContent = getHoy();
+    if (!document.getElementById("disp-hora").dataset.tocado) {
+      document.getElementById("disp-hora").value = getHoraActual();
+    }
+  }, 30000);
+
+  document.getElementById("disp-hora").addEventListener("change", function() {
+    this.dataset.tocado = "1";
+  });
 
   const sel = document.getElementById("inp-gf");
   for (let i = 1; i <= 52; i++) {
@@ -193,11 +231,6 @@ function initForm() {
     o.textContent = "GF" + num + "26";
     sel.appendChild(o);
   }
-}
-
-function actualizarReloj() {
-  document.getElementById("disp-fecha").textContent = getHoy();
-  document.getElementById("disp-hora").textContent = getHoraActual();
 }
 
 function cargar() {
@@ -211,7 +244,8 @@ function cargar() {
       bin: r.bin,
       gf: r.gf,
       lote: r.lote,
-      finca: r.finca
+      finca: r.finca,
+      obs: r.obs
     }));
     setMsg("ok", registros.length + " registros cargados ✓");
     renderDashboard();
@@ -231,15 +265,16 @@ function guardar() {
   const gf = document.getElementById("inp-gf").value;
   const lote = document.getElementById("inp-lote").value.trim().toUpperCase();
   const finca = document.getElementById("inp-finca").value;
+  const obs = document.getElementById("inp-obs").value;
 
   if (!bin || !gf || !lote || !finca) {
-    setMsg("warn", "Completa todos los campos antes de registrar.");
+    setMsg("warn", "Completa Bin, Grupo de Forza, Lote y Finca.");
     return;
   }
 
   const fecha = getHoy();
-  const hora = getHoraNum();
-  const horaStr = getHoraActual();
+  const horaStr = document.getElementById("disp-hora").value || getHoraActual();
+  const hora = parseInt(horaStr.split(":")[0]);
 
   const btn = document.getElementById("btn-guardar");
   btn.disabled = true;
@@ -252,8 +287,10 @@ function guardar() {
     if (data.ok) {
       const ult = document.getElementById("ultimo-registro");
       ult.style.display = "";
-      ult.textContent = "✓ Bin #" + bin + " registrado — " + finca + " / " + gf + " / Lote " + lote + " a las " + horaStr;
+      ult.textContent = "✓ Bin #" + bin + " — " + finca + " / " + gf + " / Lote " + lote + " a las " + horaStr;
       document.getElementById("inp-bin").value = "";
+      document.getElementById("disp-hora").removeAttribute("data-tocado");
+      document.getElementById("disp-hora").value = getHoraActual();
       setMsg("ok", "¡Bin registrado en Google Sheet ✓");
       setTimeout(cargar, 1500);
     } else {
@@ -277,6 +314,7 @@ function guardar() {
     "&gf=" + encodeURIComponent(gf) +
     "&lote=" + encodeURIComponent(lote) +
     "&finca=" + encodeURIComponent(finca) +
+    "&obs=" + encodeURIComponent(obs) +
     "&t=" + Date.now();
   document.body.appendChild(script);
 }
@@ -285,13 +323,11 @@ function renderDashboard() {
   const fecha = document.getElementById("dash-fecha").value;
   const regs = registros.filter(r => r.fecha === fecha).sort((a,b) => a.hora - b.hora);
   const total = regs.length;
-  const horaActual = getHoraNum();
+  const horaActual = new Date().getHours();
   const horasTranscurridas = Math.max(1, Math.min(HORAS, horaActual - 6));
   const prom = (total / horasTranscurridas).toFixed(1);
   const proy = Math.round(total + (total / horasTranscurridas) * Math.max(0, HORAS - horasTranscurridas));
   const pct = Math.min(100, Math.round(total / META_T * 100));
-  const pctProy = Math.min(100, Math.round(proy / META_T * 100));
-
   const ultimaHora = regs.filter(r => r.hora === horaActual).length;
 
   document.getElementById("d-total").textContent = total;
@@ -306,7 +342,7 @@ function renderDashboard() {
   bar.style.background = pct >= 100 ? "#27ae60" : pct >= 60 ? "#2ECC71" : "#e67e22";
   document.getElementById("prog-txt").textContent = pct + "% — " + total + " / " + META_T + " bines";
 
-  const maxB = Math.max(META, ...Array.from({length:HORAS},(_,i)=>regs.filter(r=>r.hora===i+6).length), 1);
+  const maxB = Math.max(META, ...Array.from({length:HORAS},(_,i) => regs.filter(r=>r.hora===i+6).length), 1);
   const chart = document.getElementById("chart");
   chart.innerHTML = "";
   for (let h = 6; h <= 15; h++) {
@@ -317,19 +353,17 @@ function renderDashboard() {
     col.className = "bar-col";
     col.innerHTML =
       '<div class="bar-val" style="color:' + (cnt > 0 ? (cnt >= META ? "#27ae60" : "#e67e22") : "transparent") + '">' + (cnt > 0 ? cnt : "·") + '</div>' +
-      '<div class="bar-wrap">' +
-        '<div class="bar-meta" style="bottom:' + metaH + 'px"></div>' +
-        '<div class="bar" style="height:' + barH + 'px;background:' + (cnt === 0 ? "#e0e0e0" : cnt >= META ? "#27ae60" : "#e67e22") + '"></div>' +
-      '</div>' +
+      '<div class="bar-wrap"><div class="bar-meta" style="bottom:' + metaH + 'px"></div>' +
+      '<div class="bar" style="height:' + barH + 'px;background:' + (cnt === 0 ? "#e0e0e0" : cnt >= META ? "#27ae60" : "#e67e22") + '"></div></div>' +
       '<div class="bar-lbl">' + h + 'h</div>';
     chart.appendChild(col);
   }
 
   const tb = document.getElementById("tabla-body");
   if (!regs.length) { tb.innerHTML = '<div class="empty">Sin registros para esta fecha</div>'; return; }
-  tb.innerHTML = '<table><thead><tr><th>Hora</th><th>Bin</th><th>Grupo Fuerza</th><th>Lote</th><th>Finca</th></tr></thead><tbody>' +
-    regs.map((r,i) =>
-      '<tr><td>' + String(r.hora).padStart(2,"0") + ':00</td><td><strong>' + r.bin + '</strong></td><td>' + (r.gf||"—") + '</td><td>' + (r.lote||"—") + '</td><td>' + (r.finca||"—") + '</td></tr>'
+  tb.innerHTML = '<table><thead><tr><th>Hora</th><th>Bin</th><th>Grupo Forza</th><th>Lote</th><th>Finca</th><th>Obs.</th></tr></thead><tbody>' +
+    regs.map(r =>
+      '<tr><td>' + String(r.hora).padStart(2,"0") + ':00</td><td><strong>' + r.bin + '</strong></td><td>' + (r.gf||"—") + '</td><td>' + (r.lote||"—") + '</td><td>' + (r.finca||"—") + '</td><td>' + (r.obs||"—") + '</td></tr>'
     ).join("") +
   '</tbody></table>';
 }
