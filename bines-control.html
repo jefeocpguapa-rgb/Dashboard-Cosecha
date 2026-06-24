@@ -105,34 +105,6 @@ tr:nth-child(even) td { background: #f9f9f9; }
         <option>EGIPTO</option>
         <option>ARGENTINA</option>
       </select>
-      <label>Observaciones Proceso</label>
-      <select id="inp-obs">
-        <option value="">— Selecciona (opcional) —</option>
-        <option>PESCA</option>
-        <option>FALTA DE ENERGIA</option>
-        <option>FALTA DE FRUTA</option>
-        <option>FALTA DE ESTIBAS</option>
-        <option>FALTA DE CANASTAS</option>
-        <option>FALTA DE MONTACARGAS</option>
-        <option>GASES DE MONTACARGAS</option>
-        <option>MONTACARGAS VARADO</option>
-        <option>REUNION</option>
-        <option>CAMBIO DE FRUTA DE LA SEMANA</option>
-        <option>CAMBIO DE BINES CON FRUTA</option>
-        <option>CAMBIO DE MERCADO</option>
-        <option>CAPACITACION</option>
-        <option>PARE DE BANDA</option>
-        <option>BANDA VARADA</option>
-        <option>BASCULA VARADA</option>
-        <option>REFRIGERIO</option>
-        <option>RECESO PARA COMER</option>
-        <option>REDUCCION DE BANDA</option>
-        <option>PREPARACION PARA PEDIDOS</option>
-        <option>PROCESO MANUAL</option>
-        <option>BINES DE FLORACION</option>
-        <option>INICIO DE PROCESO</option>
-        <option>FIN DE PROCESO</option>
-      </select>
       <div class="ultimo" id="ultimo-bin"></div>
       <button class="btn btn-primary" onclick="guardarBin()" id="btn-bin">Registrar Bin</button>
     </div>
@@ -329,7 +301,7 @@ function guardarBin() {
   const gf = document.getElementById("inp-gf").value;
   const lote = document.getElementById("inp-lote").value.trim().toUpperCase();
   const finca = document.getElementById("inp-finca").value;
-  const obs = document.getElementById("inp-obs").value;
+  const obs = "";
   if (!bin||!gf||!lote||!finca) { setMsg("warn","Completa Bin, Grupo de Forza, Lote y Finca."); return; }
   const fecha = getHoy();
   const horaStr = document.getElementById("disp-hora").value || getHoraActual();
