@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; background: #f4f6f8; color: #222; }
-  header { background: #2C3E50; color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+  header { background: #2C3E50; color: white; padding: 16px 20px; }
   header h1 { font-size: 17px; font-weight: 600; }
   header span { font-size: 12px; color: #7EC8E3; }
   .tabs { display: flex; background: #fff; border-bottom: 1px solid #ddd; }
@@ -31,18 +31,18 @@
   .metric .val { font-size: 26px; font-weight: 700; }
   .metric .lbl { font-size: 11px; color: #777; margin-top: 3px; }
   .metric .sub { font-size: 11px; color: #aaa; }
-  .green { color: #2ECC71; }
+  .green { color: #27ae60; }
   .orange { color: #e67e22; }
   .progress-wrap { background: #e0e0e0; border-radius: 99px; height: 13px; overflow: hidden; margin-bottom: 6px; }
   .progress-bar { height: 100%; border-radius: 99px; transition: width 0.4s; }
   .chart { display: flex; gap: 3px; align-items: flex-end; height: 150px; margin-top: 8px; }
   .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-  .bar-val { font-size: 9px; font-weight: 700; }
+  .bar-val { font-size: 9px; font-weight: 700; min-height: 12px; }
   .bar-wrap { position: relative; width: 100%; height: 128px; display: flex; align-items: flex-end; justify-content: center; }
   .bar-meta { position: absolute; left: 0; right: 0; border-top: 1.5px dashed #aaa; }
   .bar { width: 72%; border-radius: 3px 3px 0 0; }
   .bar-lbl { font-size: 9px; color: #999; }
-  .legend { display: flex; gap: 14px; margin-top: 10px; font-size: 11px; color: #777; align-items: center; }
+  .legend { display: flex; gap: 14px; margin-top: 10px; font-size: 11px; color: #777; align-items: center; flex-wrap: wrap; }
   .legend span { display: flex; align-items: center; gap: 5px; }
   .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -55,10 +55,8 @@
 <body>
 
 <header>
-  <div>
-    <h1>Control de Bines</h1>
-    <span>Agrícola Guapa S.A.S — Planta Empacadora</span>
-  </div>
+  <h1>Control de Bines</h1>
+  <span>Agrícola Guapa S.A.S — Planta Empacadora</span>
 </header>
 
 <div class="tabs">
@@ -86,45 +84,29 @@
   <!-- DASHBOARD -->
   <div id="vista-dashboard" style="display:none">
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-      <label style="margin:0">Fecha:</label>
+      <label style="margin:0; white-space:nowrap">Fecha:</label>
       <input type="date" id="dash-fecha" style="width:auto; margin:0; flex:1">
-      <button onclick="cargar()" style="padding:8px 14px; border:1px solid #ccc; border-radius:7px; background:#fff; cursor:pointer; font-size:13px;">↺</button>
+      <button onclick="cargar()" style="padding:8px 14px; border:1px solid #ccc; border-radius:7px; background:#fff; cursor:pointer; font-size:16px;">↺</button>
     </div>
-
     <div class="metrics">
-      <div class="metric">
-        <div class="val" id="d-total">—</div>
-        <div class="lbl">Acumulado</div>
-        <div class="sub">meta 120</div>
-      </div>
-      <div class="metric">
-        <div class="val" id="d-prom">—</div>
-        <div class="lbl">Promedio/hora</div>
-        <div class="sub">meta 12</div>
-      </div>
-      <div class="metric">
-        <div class="val" id="d-proy">—</div>
-        <div class="lbl">Proyección</div>
-        <div class="sub" id="d-proy-pct">—</div>
-      </div>
+      <div class="metric"><div class="val" id="d-total">—</div><div class="lbl">Acumulado</div><div class="sub">meta 120</div></div>
+      <div class="metric"><div class="val" id="d-prom">—</div><div class="lbl">Promedio/hora</div><div class="sub">meta 12</div></div>
+      <div class="metric"><div class="val" id="d-proy">—</div><div class="lbl">Proyección</div><div class="sub" id="d-proy-pct">—</div></div>
     </div>
-
     <div class="card">
       <label style="font-weight:600; margin-bottom:10px;">Avance del turno</label>
       <div class="progress-wrap"><div class="progress-bar" id="prog-bar" style="width:0%"></div></div>
       <div style="font-size:12px; color:#999;" id="prog-txt">0% — 0 / 120 bines</div>
     </div>
-
     <div class="card">
       <label style="font-weight:600; margin-bottom:4px;">Bines por hora</label>
       <div class="chart" id="chart"></div>
       <div class="legend">
-        <span><span class="dot" style="background:#2ECC71"></span>En meta</span>
+        <span><span class="dot" style="background:#27ae60"></span>En meta</span>
         <span><span class="dot" style="background:#e67e22"></span>Bajo meta</span>
         <span><span style="border-top:1.5px dashed #aaa; width:14px; display:inline-block"></span>Meta (12)</span>
       </div>
     </div>
-
     <div class="card" id="tabla-card">
       <label style="font-weight:600; margin-bottom:10px;">Registros del día</label>
       <div id="tabla-body"></div>
@@ -138,7 +120,8 @@ const META = 12, HORAS = 10, META_T = 120;
 let registros = [];
 
 function getHoy() {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 }
 
 function setMsg(tipo, txt) {
@@ -164,7 +147,7 @@ function initForm() {
   for (let i = 6; i <= 15; i++) {
     const o = document.createElement("option");
     o.value = i;
-    o.textContent = `${String(i).padStart(2,"0")}:00 — ${String(i+1).padStart(2,"0")}:00`;
+    o.textContent = String(i).padStart(2,"0") + ":00 — " + String(i+1).padStart(2,"0") + ":00";
     if (i === hora) o.selected = true;
     sel.appendChild(o);
   }
@@ -174,58 +157,77 @@ function initForm() {
 function checkMeta() {
   const v = parseInt(document.getElementById("inp-bines").value);
   const b = document.getElementById("badge-meta");
-  if (isNaN(v)) { b.style.display = "none"; return; }
+  if (isNaN(v) || v === 0) { b.style.display = "none"; return; }
   b.style.display = "";
-  if (v >= META) { b.className = "badge ok"; b.textContent = `✓ En meta (+${v - META} vs meta)`; }
-  else { b.className = "badge warn"; b.textContent = `⚠ Bajo meta (${v - META} vs meta)`; }
+  if (v >= META) { b.className = "badge ok"; b.textContent = "✓ En meta (+" + (v - META) + " vs meta)"; }
+  else { b.className = "badge warn"; b.textContent = "⚠ Bajo meta (" + (v - META) + " vs meta)"; }
 }
 
-async function cargar() {
+function cargar() {
   setMsg("info", "Leyendo Google Sheet...");
-  try {
-    const res = await fetch(SCRIPT + "?t=" + Date.now());
-    const data = await res.json();
+  const cbName = "cb_" + Date.now();
+  const script = document.createElement("script");
+  window[cbName] = function(data) {
     registros = (data.registros || []).map(r => ({
-      fecha: typeof r.fecha === "string" ? r.fecha : new Date(r.fecha).toISOString().split("T")[0],
+      fecha: typeof r.fecha === "string" ? r.fecha.split("T")[0] : new Date(r.fecha).toISOString().split("T")[0],
       hora: parseInt(r.hora),
       bines: parseInt(r.bines)
     }));
-    setMsg("ok", `${registros.length} registros cargados ✓`);
+    setMsg("ok", registros.length + " registros cargados ✓");
     renderDashboard();
-  } catch(e) {
-    setMsg("error", "Error: " + e.message);
-  }
+    document.body.removeChild(script);
+    delete window[cbName];
+  };
+  script.onerror = function() {
+    setMsg("error", "Error leyendo datos. Reintenta.");
+    document.body.removeChild(script);
+  };
+  script.src = SCRIPT + "?callback=" + cbName + "&t=" + Date.now();
+  document.body.appendChild(script);
 }
 
-async function guardar() {
+function guardar() {
   const fecha = document.getElementById("inp-fecha").value;
   const hora = parseInt(document.getElementById("inp-hora").value);
   const bines = parseInt(document.getElementById("inp-bines").value);
-  if (!fecha || isNaN(bines)) return;
+  if (!fecha || isNaN(bines) || bines <= 0) return;
+
   const btn = document.getElementById("btn-guardar");
-  btn.disabled = true; btn.textContent = "Guardando...";
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
   setMsg("info", "Guardando en Google Sheet...");
-  try {
-    await fetch(SCRIPT, {
-      method: "POST", mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fecha, hora, bines })
-    });
-    document.getElementById("inp-bines").value = "";
-    document.getElementById("badge-meta").style.display = "none";
-    setMsg("ok", "¡Guardado en Google Sheet ✓");
-    setTimeout(cargar, 1800);
-  } catch(e) {
-    setMsg("error", "Error: " + e.message);
-  }
-  btn.disabled = false; btn.textContent = "Guardar en Google Sheet";
+
+  const cbName = "cbpost_" + Date.now();
+  const script = document.createElement("script");
+  window[cbName] = function(data) {
+    if (data.ok) {
+      setMsg("ok", "¡Guardado en Google Sheet ✓");
+      document.getElementById("inp-bines").value = "";
+      document.getElementById("badge-meta").style.display = "none";
+      setTimeout(cargar, 1500);
+    } else {
+      setMsg("error", "Error al guardar. Intenta de nuevo.");
+    }
+    btn.disabled = false;
+    btn.textContent = "Guardar en Google Sheet";
+    document.body.removeChild(script);
+    delete window[cbName];
+  };
+  script.onerror = function() {
+    setMsg("error", "Error de conexión.");
+    btn.disabled = false;
+    btn.textContent = "Guardar en Google Sheet";
+    document.body.removeChild(script);
+  };
+  script.src = SCRIPT + "?callback=" + cbName + "&fecha=" + encodeURIComponent(fecha) + "&hora=" + hora + "&bines=" + bines + "&t=" + Date.now();
+  document.body.appendChild(script);
 }
 
 function renderDashboard() {
   const fecha = document.getElementById("dash-fecha").value;
   const regs = registros.filter(r => r.fecha === fecha).sort((a,b) => a.hora - b.hora);
   const total = regs.reduce((s,r) => s + r.bines, 0);
-  const prom = regs.length ? (total / regs.length) : 0;
+  const prom = regs.length ? total / regs.length : 0;
   const proy = regs.length ? Math.round(total + prom * Math.max(0, HORAS - regs.length)) : 0;
   const pct = Math.min(100, Math.round(total / META_T * 100));
   const pctProy = Math.min(100, Math.round(proy / META_T * 100));
@@ -241,7 +243,7 @@ function renderDashboard() {
   const bar = document.getElementById("prog-bar");
   bar.style.width = pct + "%";
   bar.style.background = pct >= 100 ? "#27ae60" : pct >= 60 ? "#2ECC71" : "#e67e22";
-  document.getElementById("prog-txt").textContent = `${pct}% — ${total} / ${META_T} bines`;
+  document.getElementById("prog-txt").textContent = pct + "% — " + total + " / " + META_T + " bines";
 
   const maxB = Math.max(META, ...regs.map(r => r.bines), 1);
   const chart = document.getElementById("chart");
@@ -253,28 +255,24 @@ function renderDashboard() {
     const metaH = Math.round(META / maxB * 120);
     const col = document.createElement("div");
     col.className = "bar-col";
-    col.innerHTML = `
-      ${val !== null ? `<div class="bar-val" style="color:${val>=META?"#2ECC71":"#e67e22"}">${val}</div>` : '<div class="bar-val"></div>'}
-      <div class="bar-wrap">
-        <div class="bar-meta" style="bottom:${metaH}px"></div>
-        <div class="bar" style="height:${barH}px;background:${val===null?"#e0e0e0":val>=META?"#2ECC71":"#e67e22"}"></div>
-      </div>
-      <div class="bar-lbl">${h}h</div>`;
+    col.innerHTML =
+      '<div class="bar-val" style="color:' + (val !== null ? (val >= META ? "#27ae60" : "#e67e22") : "transparent") + '">' + (val !== null ? val : "·") + '</div>' +
+      '<div class="bar-wrap">' +
+        '<div class="bar-meta" style="bottom:' + metaH + 'px"></div>' +
+        '<div class="bar" style="height:' + barH + 'px;background:' + (val === null ? "#e0e0e0" : val >= META ? "#27ae60" : "#e67e22") + '"></div>' +
+      '</div>' +
+      '<div class="bar-lbl">' + h + 'h</div>';
     chart.appendChild(col);
   }
 
   const tb = document.getElementById("tabla-body");
-  if (!regs.length) {
-    tb.innerHTML = '<div class="empty">Sin registros para esta fecha</div>';
-    return;
-  }
-  tb.innerHTML = `<table><thead><tr><th>Hora</th><th>Bines</th><th>vs Meta</th></tr></thead><tbody>
-    ${regs.map((r,i) => {
+  if (!regs.length) { tb.innerHTML = '<div class="empty">Sin registros para esta fecha</div>'; return; }
+  tb.innerHTML = '<table><thead><tr><th>Hora</th><th>Bines</th><th>vs Meta</th></tr></thead><tbody>' +
+    regs.map((r,i) => {
       const diff = r.bines - META;
-      return `<tr><td>${String(r.hora).padStart(2,"0")}:00</td><td><strong>${r.bines}</strong></td>
-        <td style="color:${diff>=0?"#2ECC71":"#e67e22"};font-weight:600">${diff>=0?"+"+diff:diff}</td></tr>`;
-    }).join("")}
-  </tbody></table>`;
+      return '<tr><td>' + String(r.hora).padStart(2,"0") + ':00</td><td><strong>' + r.bines + '</strong></td><td style="color:' + (diff >= 0 ? "#27ae60" : "#e67e22") + ';font-weight:600">' + (diff >= 0 ? "+" + diff : diff) + '</td></tr>';
+    }).join("") +
+  '</tbody></table>';
 }
 
 initForm();
