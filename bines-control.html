@@ -225,6 +225,10 @@ tr:nth-child(even) td { background: #f9f9f9; }
       <label style="font-weight:600;margin-bottom:10px;">Registros de bines</label>
       <div id="tabla-body"></div>
     </div>
+
+    <button class="btn btn-primary" onclick="generarInforme()" style="margin-bottom:20px;">
+      📄 Descargar Informe PDF
+    </button>
   </div>
 </div>
 
@@ -484,6 +488,144 @@ function renderDashboard() {
   tb.innerHTML='<table><thead><tr><th>Hora</th><th>Bin</th><th>Lote</th><th>Finca</th><th>Grupo Forza</th></tr></thead><tbody>'+
     regs.map(r=>'<tr><td>'+String(r.hora).padStart(2,"0")+':00</td><td><strong>'+r.bin+'</strong></td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>').join("")+
     '</tbody></table>';
+}
+
+function generarInforme() {
+  const fecha = document.getElementById("dash-fecha").value;
+  const regs = registros.filter(r=>r.fecha===fecha).sort((a,b)=>a.hora-b.hora);
+  const pars = paradas.filter(p=>p.fecha===fecha);
+  const total = regs.length;
+  const horaActual = new Date().getHours();
+  const horasT = Math.max(1,Math.min(HORAS,horaActual-6));
+  const prom = (total/horasT).toFixed(1);
+  const proy = Math.round(total+(total/horasT)*Math.max(0,HORAS-horasT));
+  const kgTotal = total*KG_BIN;
+  const kgProy = proy*KG_BIN;
+  const minPerdidos = pars.reduce((s,p)=>s+p.minutos,0);
+  const pct = Math.min(100,Math.round(total/META_T*100));
+  const ahora = new Date().toLocaleString("es-CO");
+
+  // Bines por hora
+  let filasBinesHora = "";
+  for (let h=6;h<=15;h++) {
+    const cnt = regs.filter(r=>r.hora===h).length;
+    const color = cnt===0?"#999":cnt>=META?"#27ae60":"#e67e22";
+    const vs = cnt===0?"—":cnt>=META?"+"+( cnt-META):(cnt-META);
+    filasBinesHora += `<tr><td>${String(h).padStart(2,"0")}:00 — ${String(h+1).padStart(2,"0")}:00</td><td style="text-align:center;font-weight:700;color:${color}">${cnt}</td><td style="text-align:center;color:${color}">${vs}</td></tr>`;
+  }
+
+  // Paradas
+  let filasParadas = "";
+  if (!pars.length) {
+    filasParadas = '<tr><td colspan="4" style="text-align:center;color:#aaa">Sin paradas registradas</td></tr>';
+  } else {
+    pars.forEach(p => {
+      filasParadas += `<tr><td>${p.obs}</td><td style="text-align:center">${p.inicio}</td><td style="text-align:center">${p.fin}</td><td style="text-align:center;font-weight:700;color:#c0392b">${p.minutos}</td></tr>`;
+    });
+    filasParadas += `<tr style="background:#fff3cd"><td colspan="3" style="font-weight:700">TOTAL MINUTOS PARADAS</td><td style="text-align:center;font-weight:700;color:#c0392b;font-size:15px">${minPerdidos} min</td></tr>`;
+  }
+
+  // Detalle bines
+  let filasDetalle = "";
+  if (!regs.length) {
+    filasDetalle = '<tr><td colspan="5" style="text-align:center;color:#aaa">Sin registros</td></tr>';
+  } else {
+    regs.forEach(r => {
+      filasDetalle += `<tr><td>${String(r.hora).padStart(2,"0")}:00</td><td style="text-align:center;font-weight:700">${r.bin}</td><td>${r.lote||"—"}</td><td>${r.finca||"—"}</td><td>${r.gf||"—"}</td></tr>`;
+    });
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe Diario — ${fecha}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #222; padding: 30px; }
+  .header { background: #2C3E50; color: white; padding: 20px 24px; border-radius: 8px; margin-bottom: 20px; }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { font-size: 12px; color: #7EC8E3; margin-top: 4px; }
+  .header .fecha { font-size: 14px; color: white; margin-top: 8px; font-weight: 600; }
+  .section { margin-bottom: 20px; }
+  .section h2 { font-size: 13px; font-weight: 700; color: #163F61; border-bottom: 2px solid #2ECC71; padding-bottom: 5px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .resumen { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .res-item { flex: 1; min-width: 110px; background: #f4f6f8; border-radius: 8px; padding: 12px; text-align: center; }
+  .res-item .val { font-size: 22px; font-weight: 700; color: #163F61; }
+  .res-item .lbl { font-size: 10px; color: #777; margin-top: 3px; }
+  .peso-box { background: #163F61; color: white; border-radius: 8px; padding: 14px; display: flex; gap: 12px; margin-bottom: 20px; }
+  .peso-item { flex: 1; text-align: center; }
+  .peso-item .pval { font-size: 18px; font-weight: 700; }
+  .peso-item .plbl { font-size: 10px; opacity: 0.8; margin-top: 3px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: #163F61; color: white; padding: 8px 6px; text-align: left; font-size: 11px; }
+  td { padding: 7px 6px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) td { background: #f9f9f9; }
+  .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 12px; }
+  @media print {
+    body { padding: 15px; }
+    button { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Agrícola Guapa S.A.S</h1>
+  <p>Informe Diario de Planta Empacadora</p>
+  <div class="fecha">📅 Fecha: ${fecha} &nbsp;&nbsp; 🕐 Generado: ${ahora}</div>
+</div>
+
+<div class="section">
+  <h2>Resumen del turno</h2>
+  <div class="resumen">
+    <div class="res-item"><div class="val">${total}</div><div class="lbl">Bines procesados</div></div>
+    <div class="res-item"><div class="val">${prom}</div><div class="lbl">Promedio bines/hora</div></div>
+    <div class="res-item"><div class="val">${pct}%</div><div class="lbl">Cumplimiento meta</div></div>
+    <div class="res-item" style="color:#c0392b"><div class="val" style="color:#c0392b">${minPerdidos} min</div><div class="lbl">Minutos en paradas</div></div>
+  </div>
+</div>
+
+<div class="peso-box">
+  <div class="peso-item"><div class="pval">${kgTotal.toLocaleString("es-CO")} kg</div><div class="plbl">Peso total procesado</div></div>
+  <div class="peso-item"><div class="pval">${(kgTotal/1000).toFixed(2)} ton</div><div class="plbl">Toneladas</div></div>
+  <div class="peso-item"><div class="pval">${kgProy.toLocaleString("es-CO")} kg</div><div class="plbl">Proyección peso cierre</div></div>
+</div>
+
+<div class="section">
+  <h2>Producción por hora</h2>
+  <table>
+    <thead><tr><th>Franja horaria</th><th style="text-align:center">Bines</th><th style="text-align:center">vs Meta</th></tr></thead>
+    <tbody>${filasBinesHora}</tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Paradas del día</h2>
+  <table>
+    <thead><tr><th>Causa</th><th style="text-align:center">Inicio</th><th style="text-align:center">Fin</th><th style="text-align:center">Minutos</th></tr></thead>
+    <tbody>${filasParadas}</tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Detalle de registros</h2>
+  <table>
+    <thead><tr><th>Hora</th><th style="text-align:center">Bin</th><th>Lote</th><th>Finca</th><th>Grupo Forza</th></tr></thead>
+    <tbody>${filasDetalle}</tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Agrícola Guapa S.A.S — NIT 900.689.885 — Control de Bines Planta Empacadora
+</div>
+
+<script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+
+  const win = window.open("","_blank");
+  win.document.write(html);
+  win.document.close();
 }
 
 initForm();
