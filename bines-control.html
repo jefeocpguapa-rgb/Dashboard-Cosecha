@@ -106,17 +106,8 @@ tr:nth-child(even) td { background: #f9f9f9; }
       <label>Lote</label>
       <input type="number" id="inp-lote" placeholder="Ej: 24" inputmode="numeric" oninput="detectarFinca()">
 
-      <label>Finca</label>
-      <div class="finca-auto" id="finca-auto">—</div>
-      <select id="inp-finca" style="display:none">
-        <option value="">— Selecciona —</option>
-        <option>LAS AMERICAS</option>
-        <option>LA FE</option>
-        <option>JAMAICA</option>
-        <option>BRASIL</option>
-        <option>EGIPTO</option>
-        <option>ARGENTINA</option>
-      </select>
+      <label>Finca (automática)</label>
+      <div class="finca-auto" id="finca-auto" style="display:block">— Ingresa el lote —</div>
 
       <div class="ultimo" id="ultimo-bin"></div>
       <button class="btn btn-primary" onclick="guardarBin()" id="btn-bin">Registrar Bin</button>
@@ -276,16 +267,25 @@ function setTab(t) {
 function detectarFinca() {
   const lote = parseInt(document.getElementById("inp-lote").value);
   const autoEl = document.getElementById("finca-auto");
-  if (!isNaN(lote)) {
+  if (!isNaN(lote) && lote > 0) {
     const match = FINCA_LOTES.find(f => lote >= f.min && lote <= f.max);
     if (match) {
       autoEl.textContent = "📍 " + match.finca;
-      autoEl.style.display = "";
-      return;
+      autoEl.style.background = "#eaf6ee";
+      autoEl.style.color = "#155724";
+      autoEl.style.border = "1px solid #b2dfcc";
+    } else {
+      autoEl.textContent = "⚠ Lote no reconocido";
+      autoEl.style.background = "#f8d7da";
+      autoEl.style.color = "#721c24";
+      autoEl.style.border = "1px solid #f5c6cb";
     }
+  } else {
+    autoEl.textContent = "— Ingresa el lote —";
+    autoEl.style.background = "#f4f6f8";
+    autoEl.style.color = "#aaa";
+    autoEl.style.border = "1px solid #ccc";
   }
-  autoEl.textContent = "—";
-  autoEl.style.display = lote ? "" : "none";
 }
 
 function getFinca() {
