@@ -18,7 +18,7 @@ header span { font-size: 12px; color: #7EC8E3; }
 label { font-size: 13px; color: #555; display: block; margin-bottom: 5px; }
 input, select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 7px; font-size: 15px; margin-bottom: 12px; }
 .auto-val { background: #f4f6f8; border: 1px solid #ccc; border-radius: 7px; padding: 10px 12px; font-size: 15px; color: #555; margin-bottom: 12px; text-align: center; font-weight: 600; }
-.finca-auto { background: #eaf6ee; border: 1px solid #b2dfcc; border-radius: 7px; padding: 10px 12px; font-size: 15px; color: #155724; margin-bottom: 12px; text-align: center; font-weight: 700; display: none; }
+.finca-auto { border-radius: 7px; padding: 10px 12px; font-size: 15px; margin-bottom: 12px; text-align: center; font-weight: 700; background: #f4f6f8; border: 1px solid #ccc; color: #aaa; }
 .bin-input { font-size: 32px; font-weight: 700; text-align: center; padding: 14px; letter-spacing: 2px; }
 .btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 8px; }
 .btn-primary { background: #163F61; color: white; }
@@ -35,20 +35,18 @@ input, select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-
 .metric { flex: 1; min-width: 75px; background: #f4f6f8; border-radius: 8px; padding: 10px 8px; text-align: center; }
 .metric .val { font-size: 19px; font-weight: 700; }
 .metric .lbl { font-size: 10px; color: #777; margin-top: 3px; }
-.metric .sub { font-size: 10px; color: #aaa; }
 .green { color: #27ae60; }
 .orange { color: #e67e22; }
 .red { color: #c0392b; }
-.blue { color: #2980b9; }
 .progress-wrap { background: #e0e0e0; border-radius: 99px; height: 13px; overflow: hidden; margin-bottom: 6px; }
 .progress-bar { height: 100%; border-radius: 99px; transition: width 0.4s; }
-.chart { display: flex; gap: 3px; align-items: flex-end; height: 150px; margin-top: 8px; }
-.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.bar-val { font-size: 9px; font-weight: 700; min-height: 12px; }
+.chart { display: flex; gap: 2px; align-items: flex-end; height: 150px; margin-top: 8px; overflow-x: auto; }
+.bar-col { min-width: 22px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.bar-val { font-size: 8px; font-weight: 700; min-height: 11px; }
 .bar-wrap { position: relative; width: 100%; height: 128px; display: flex; align-items: flex-end; justify-content: center; }
 .bar-meta { position: absolute; left: 0; right: 0; border-top: 1.5px dashed #aaa; }
-.bar { width: 72%; border-radius: 3px 3px 0 0; }
-.bar-lbl { font-size: 9px; color: #999; }
+.bar { width: 70%; border-radius: 3px 3px 0 0; }
+.bar-lbl { font-size: 8px; color: #999; }
 .legend { display: flex; gap: 14px; margin-top: 10px; font-size: 11px; color: #777; flex-wrap: wrap; }
 .legend span { display: flex; align-items: center; gap: 5px; }
 .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
@@ -61,7 +59,7 @@ tr:nth-child(even) td { background: #f9f9f9; }
 .minutos-calc { background: #fff3cd; border: 1px solid #ffc107; border-radius: 7px; padding: 10px 14px; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: #856404; text-align: center; display: none; }
 .peso-card { background: linear-gradient(135deg, #163F61, #2980b9); border-radius: 10px; padding: 16px; margin-bottom: 14px; color: white; display: flex; gap: 12px; flex-wrap: wrap; }
 .peso-item { flex: 1; min-width: 100px; text-align: center; }
-.peso-item .pval { font-size: 22px; font-weight: 700; }
+.peso-item .pval { font-size: 20px; font-weight: 700; }
 .peso-item .plbl { font-size: 11px; opacity: 0.8; margin-top: 3px; }
 </style>
 </head>
@@ -94,21 +92,16 @@ tr:nth-child(even) td { background: #f9f9f9; }
           <input type="time" id="disp-hora" style="font-weight:600;text-align:center;">
         </div>
       </div>
-
       <label>Número de bin</label>
       <input type="number" id="inp-bin" class="bin-input" min="1" placeholder="Ej: 45" inputmode="numeric">
-
       <label>Grupo de Forza</label>
       <select id="inp-gf">
         <option value="">— Selecciona —</option>
       </select>
-
       <label>Lote</label>
       <input type="number" id="inp-lote" placeholder="Ej: 24" inputmode="numeric" oninput="detectarFinca()">
-
       <label>Finca (automática)</label>
-      <div class="finca-auto" id="finca-auto" style="display:block">— Ingresa el lote —</div>
-
+      <div class="finca-auto" id="finca-auto">— Ingresa el lote —</div>
       <div class="ultimo" id="ultimo-bin"></div>
       <button class="btn btn-primary" onclick="guardarBin()" id="btn-bin">Registrar Bin</button>
     </div>
@@ -176,36 +169,22 @@ tr:nth-child(even) td { background: #f9f9f9; }
       <input type="date" id="dash-fecha" style="width:auto;margin:0;flex:1">
       <button onclick="cargarTodo()" style="padding:8px 14px;border:1px solid #ccc;border-radius:7px;background:#fff;cursor:pointer;font-size:16px;">↺</button>
     </div>
-
     <div class="metrics">
       <div class="metric"><div class="val" id="d-total">—</div><div class="lbl">Bines hoy</div></div>
       <div class="metric"><div class="val" id="d-prom">—</div><div class="lbl">Prom/hora</div></div>
       <div class="metric"><div class="val" id="d-proy">—</div><div class="lbl">Proyección</div></div>
       <div class="metric"><div class="val red" id="d-min-perdidos">—</div><div class="lbl">Min. paradas</div></div>
     </div>
-
-    <!-- PESO -->
     <div class="peso-card">
-      <div class="peso-item">
-        <div class="pval" id="d-kg">— kg</div>
-        <div class="plbl">Peso acumulado</div>
-      </div>
-      <div class="peso-item">
-        <div class="pval" id="d-ton">— ton</div>
-        <div class="plbl">Toneladas</div>
-      </div>
-      <div class="peso-item">
-        <div class="pval" id="d-kg-proy">— kg</div>
-        <div class="plbl">Proyección peso</div>
-      </div>
+      <div class="peso-item"><div class="pval" id="d-kg">0 kg</div><div class="plbl">Peso acumulado</div></div>
+      <div class="peso-item"><div class="pval" id="d-ton">0.00 ton</div><div class="plbl">Toneladas</div></div>
+      <div class="peso-item"><div class="pval" id="d-kg-proy">0 kg</div><div class="plbl">Proyección peso</div></div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Avance del turno (meta 120 bines)</label>
       <div class="progress-wrap"><div class="progress-bar" id="prog-bar" style="width:0%"></div></div>
       <div style="font-size:12px;color:#999;" id="prog-txt">0% — 0 / 120 bines</div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:4px;">Bines por hora</label>
       <div class="chart" id="chart"></div>
@@ -215,26 +194,21 @@ tr:nth-child(even) td { background: #f9f9f9; }
         <span><span style="border-top:1.5px dashed #aaa;width:14px;display:inline-block"></span>Meta (12)</span>
       </div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Paradas del día</label>
       <div id="tabla-paradas"></div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Registros de bines</label>
       <div id="tabla-body"></div>
     </div>
-
-    <button class="btn btn-primary" onclick="generarInforme()" style="margin-bottom:20px;">
-      📄 Descargar Informe PDF
-    </button>
+    <button class="btn btn-primary" onclick="generarInforme()" style="margin-bottom:20px;">📄 Descargar Informe PDF</button>
   </div>
 </div>
 
 <script>
 const SCRIPT = "https://script.google.com/macros/s/AKfycbyGcGCkIrMm2ye3BQ34lF3iEVmeUYw2s7_yd3rN7Kk26NjtVV6t6GlUDE1TjuhcWOKDZA/exec";
-const META = 12, HORAS = 10, META_T = 120, KG_BIN = 1150;
+const META = 12, HORAS = 24, META_T = 120, KG_BIN = 1150;
 
 const FINCA_LOTES = [
   { finca: "LA FE",        min: 1,  max: 27 },
@@ -267,31 +241,29 @@ function setTab(t) {
   });
   if (t==="dashboard") renderDashboard();
 }
-
 function detectarFinca() {
   const lote = parseInt(document.getElementById("inp-lote").value);
-  const autoEl = document.getElementById("finca-auto");
+  const el = document.getElementById("finca-auto");
   if (!isNaN(lote) && lote > 0) {
     const match = FINCA_LOTES.find(f => lote >= f.min && lote <= f.max);
     if (match) {
-      autoEl.textContent = "📍 " + match.finca;
-      autoEl.style.background = "#eaf6ee";
-      autoEl.style.color = "#155724";
-      autoEl.style.border = "1px solid #b2dfcc";
+      el.textContent = "📍 " + match.finca;
+      el.style.background = "#eaf6ee";
+      el.style.color = "#155724";
+      el.style.border = "1px solid #b2dfcc";
     } else {
-      autoEl.textContent = "⚠ Lote no reconocido";
-      autoEl.style.background = "#f8d7da";
-      autoEl.style.color = "#721c24";
-      autoEl.style.border = "1px solid #f5c6cb";
+      el.textContent = "⚠ Lote no reconocido";
+      el.style.background = "#f8d7da";
+      el.style.color = "#721c24";
+      el.style.border = "1px solid #f5c6cb";
     }
   } else {
-    autoEl.textContent = "— Ingresa el lote —";
-    autoEl.style.background = "#f4f6f8";
-    autoEl.style.color = "#aaa";
-    autoEl.style.border = "1px solid #ccc";
+    el.textContent = "— Ingresa el lote —";
+    el.style.background = "#f4f6f8";
+    el.style.color = "#aaa";
+    el.style.border = "1px solid #ccc";
   }
 }
-
 function getFinca() {
   const lote = parseInt(document.getElementById("inp-lote").value);
   if (!isNaN(lote)) {
@@ -300,7 +272,6 @@ function getFinca() {
   }
   return "";
 }
-
 function calcularMinutos() {
   const ini = document.getElementById("par-inicio").value;
   const fin = document.getElementById("par-fin").value;
@@ -311,7 +282,6 @@ function calcularMinutos() {
   el.style.display="";
   el.textContent = "⏱ Duración: " + mins + " minutos";
 }
-
 function initForm() {
   document.getElementById("dash-fecha").value = getHoy();
   document.getElementById("disp-fecha").textContent = getHoy();
@@ -334,7 +304,6 @@ function initForm() {
     sel.appendChild(o);
   }
 }
-
 function jsonp(url, cb) {
   const name = "cb_"+Date.now();
   const s = document.createElement("script");
@@ -343,14 +312,15 @@ function jsonp(url, cb) {
   s.src = url + (url.includes("?")?"&":"?") + "callback="+name+"&t="+Date.now();
   document.body.appendChild(s);
 }
-
 function cargarTodo() {
   setMsg("info","Cargando datos...");
   jsonp(SCRIPT, function(data) {
     if (!data) { setMsg("error","Error cargando bines."); return; }
     registros = (data.registros||[]).map(r => ({
       fecha: typeof r.fecha==="string" ? r.fecha.split("T")[0] : new Date(r.fecha).toISOString().split("T")[0],
-      hora: r.hora, bin: r.bin, gf: r.gf, lote: r.lote, finca: r.finca
+      hora: typeof r.hora==="string" ? parseInt(r.hora.split(":")[0]) : parseInt(r.hora),
+      horaStr: typeof r.hora==="string" ? r.hora : String(r.hora).padStart(2,"0")+":00",
+      bin: r.bin, gf: r.gf, lote: r.lote, finca: r.finca
     }));
     jsonp(SCRIPT+"?tipo=paradas", function(data2) {
       if (data2) {
@@ -364,7 +334,6 @@ function cargarTodo() {
     });
   });
 }
-
 function guardarBin() {
   const bin = document.getElementById("inp-bin").value.trim();
   const gf = document.getElementById("inp-gf").value;
@@ -376,7 +345,6 @@ function guardarBin() {
   }
   const fecha = getHoy();
   const horaStr = document.getElementById("disp-hora").value||getHoraActual();
-  const hora = parseInt(horaStr.split(":")[0]);
   const btn = document.getElementById("btn-bin");
   btn.disabled=true; btn.textContent="Registrando...";
   setMsg("info","Guardando...");
@@ -387,7 +355,10 @@ function guardarBin() {
       ult.textContent="✓ Bin #"+bin+" — "+finca+" / Lote "+lote+" / "+gf+" a las "+horaStr;
       document.getElementById("inp-bin").value="";
       document.getElementById("inp-lote").value="";
-      document.getElementById("finca-auto").style.display="none";
+      document.getElementById("finca-auto").textContent="— Ingresa el lote —";
+      document.getElementById("finca-auto").style.background="#f4f6f8";
+      document.getElementById("finca-auto").style.color="#aaa";
+      document.getElementById("finca-auto").style.border="1px solid #ccc";
       document.getElementById("disp-hora").removeAttribute("data-tocado");
       document.getElementById("disp-hora").value=getHoraActual();
       setMsg("ok","¡Bin registrado ✓");
@@ -396,7 +367,6 @@ function guardarBin() {
     btn.disabled=false; btn.textContent="Registrar Bin";
   });
 }
-
 function guardarParada() {
   const obs = document.getElementById("par-obs").value;
   const ini = document.getElementById("par-inicio").value;
@@ -423,26 +393,23 @@ function guardarParada() {
     btn.disabled=false; btn.textContent="Registrar Parada";
   });
 }
-
 function renderDashboard() {
   const fecha = document.getElementById("dash-fecha").value;
   const regs = registros.filter(r=>r.fecha===fecha).sort((a,b)=>a.hora-b.hora);
   const pars = paradas.filter(p=>p.fecha===fecha);
   const total = regs.length;
   const horaActual = new Date().getHours();
-  const horasT = Math.max(1,Math.min(HORAS,horaActual-6));
+  const horasT = Math.max(1, horaActual + 1);
   const prom = (total/horasT).toFixed(1);
-  const proy = Math.round(total+(total/horasT)*Math.max(0,HORAS-horasT));
+  const proy = Math.round(total+(total/horasT)*Math.max(0, HORAS-horasT));
   const pct = Math.min(100,Math.round(total/META_T*100));
   const minPerdidos = pars.reduce((s,p)=>s+p.minutos,0);
+  const kgTotal = total*KG_BIN;
+  const kgProy = proy*KG_BIN;
 
-  // Peso
-  const kgTotal = total * KG_BIN;
-  const kgProy = proy * KG_BIN;
-  document.getElementById("d-kg").textContent = kgTotal.toLocaleString("es-CO") + " kg";
-  document.getElementById("d-ton").textContent = (kgTotal/1000).toFixed(2) + " ton";
-  document.getElementById("d-kg-proy").textContent = kgProy.toLocaleString("es-CO") + " kg";
-
+  document.getElementById("d-kg").textContent = kgTotal.toLocaleString("es-CO")+" kg";
+  document.getElementById("d-ton").textContent = (kgTotal/1000).toFixed(2)+" ton";
+  document.getElementById("d-kg-proy").textContent = kgProy.toLocaleString("es-CO")+" kg";
   document.getElementById("d-total").textContent = total;
   document.getElementById("d-prom").textContent = prom;
   document.getElementById("d-prom").className = "val "+(parseFloat(prom)>=META?"green":"orange");
@@ -455,11 +422,12 @@ function renderDashboard() {
   bar.style.background = pct>=100?"#27ae60":pct>=60?"#2ECC71":"#e67e22";
   document.getElementById("prog-txt").textContent = pct+"% — "+total+" / "+META_T+" bines";
 
-  const maxB = Math.max(META,...Array.from({length:HORAS},(_,i)=>regs.filter(r=>r.hora===i+6).length),1);
+  const maxB = Math.max(META,...Array.from({length:24},(_,i)=>regs.filter(r=>r.hora===i).length),1);
   const chart = document.getElementById("chart");
   chart.innerHTML="";
-  for (let h=6;h<=15;h++) {
+  for (let h=0;h<=23;h++) {
     const cnt = regs.filter(r=>r.hora===h).length;
+    if (cnt===0 && h > horaActual) continue;
     const barH = cnt>0?Math.max(4,Math.round(cnt/maxB*120)):4;
     const metaH = Math.round(META/maxB*120);
     const col = document.createElement("div");
@@ -468,7 +436,7 @@ function renderDashboard() {
       '<div class="bar-val" style="color:'+(cnt>0?(cnt>=META?"#27ae60":"#e67e22"):"transparent")+'">'+(cnt>0?cnt:"·")+'</div>'+
       '<div class="bar-wrap"><div class="bar-meta" style="bottom:'+metaH+'px"></div>'+
       '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":cnt>=META?"#27ae60":"#e67e22")+'"></div></div>'+
-      '<div class="bar-lbl">'+h+'h</div>';
+      '<div class="bar-lbl">'+String(h).padStart(2,"0")+'h</div>';
     chart.appendChild(col);
   }
 
@@ -486,7 +454,7 @@ function renderDashboard() {
   const tb = document.getElementById("tabla-body");
   if (!regs.length) { tb.innerHTML='<div class="empty">Sin registros para esta fecha</div>'; return; }
   tb.innerHTML='<table><thead><tr><th>Hora</th><th>Bin</th><th>Lote</th><th>Finca</th><th>Grupo Forza</th></tr></thead><tbody>'+
-    regs.map(r=>'<tr><td>'+String(r.hora).padStart(2,"0")+':00</td><td><strong>'+r.bin+'</strong></td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>').join("")+
+    regs.map(r=>'<tr><td>'+(r.horaStr||String(r.hora).padStart(2,"0")+":00")+'</td><td><strong>'+r.bin+'</strong></td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>').join("")+
     '</tbody></table>';
 }
 
@@ -496,7 +464,7 @@ function generarInforme() {
   const pars = paradas.filter(p=>p.fecha===fecha);
   const total = regs.length;
   const horaActual = new Date().getHours();
-  const horasT = Math.max(1,Math.min(HORAS,horaActual-6));
+  const horasT = Math.max(1, horaActual+1);
   const prom = (total/horasT).toFixed(1);
   const proy = Math.round(total+(total/horasT)*Math.max(0,HORAS-horasT));
   const kgTotal = total*KG_BIN;
@@ -505,123 +473,93 @@ function generarInforme() {
   const pct = Math.min(100,Math.round(total/META_T*100));
   const ahora = new Date().toLocaleString("es-CO");
 
-  // Bines por hora
-  let filasBinesHora = "";
-  for (let h=6;h<=15;h++) {
+  let filasBinesHora="";
+  for (let h=0;h<=23;h++) {
     const cnt = regs.filter(r=>r.hora===h).length;
+    if (cnt===0 && h>horaActual) continue;
     const color = cnt===0?"#999":cnt>=META?"#27ae60":"#e67e22";
     const vs = cnt===0?"—":cnt>=META?"+"+( cnt-META):(cnt-META);
-    filasBinesHora += `<tr><td>${String(h).padStart(2,"0")}:00 — ${String(h+1).padStart(2,"0")}:00</td><td style="text-align:center;font-weight:700;color:${color}">${cnt}</td><td style="text-align:center;color:${color}">${vs}</td></tr>`;
+    filasBinesHora+=`<tr><td>${String(h).padStart(2,"0")}:00 — ${String(h+1).padStart(2,"0")}:00</td><td style="text-align:center;font-weight:700;color:${color}">${cnt}</td><td style="text-align:center;color:${color}">${vs}</td></tr>`;
   }
 
-  // Paradas
-  let filasParadas = "";
+  let filasParadas="";
   if (!pars.length) {
-    filasParadas = '<tr><td colspan="4" style="text-align:center;color:#aaa">Sin paradas registradas</td></tr>';
+    filasParadas='<tr><td colspan="4" style="text-align:center;color:#aaa">Sin paradas registradas</td></tr>';
   } else {
-    pars.forEach(p => {
-      filasParadas += `<tr><td>${p.obs}</td><td style="text-align:center">${p.inicio}</td><td style="text-align:center">${p.fin}</td><td style="text-align:center;font-weight:700;color:#c0392b">${p.minutos}</td></tr>`;
-    });
-    filasParadas += `<tr style="background:#fff3cd"><td colspan="3" style="font-weight:700">TOTAL MINUTOS PARADAS</td><td style="text-align:center;font-weight:700;color:#c0392b;font-size:15px">${minPerdidos} min</td></tr>`;
+    pars.forEach(p => { filasParadas+=`<tr><td>${p.obs}</td><td style="text-align:center">${p.inicio}</td><td style="text-align:center">${p.fin}</td><td style="text-align:center;font-weight:700;color:#c0392b">${p.minutos}</td></tr>`; });
+    filasParadas+=`<tr style="background:#fff3cd"><td colspan="3" style="font-weight:700">TOTAL MINUTOS PARADAS</td><td style="text-align:center;font-weight:700;color:#c0392b">${minPerdidos} min</td></tr>`;
   }
 
-  // Detalle bines
-  let filasDetalle = "";
+  let filasDetalle="";
   if (!regs.length) {
-    filasDetalle = '<tr><td colspan="5" style="text-align:center;color:#aaa">Sin registros</td></tr>';
+    filasDetalle='<tr><td colspan="5" style="text-align:center;color:#aaa">Sin registros</td></tr>';
   } else {
-    regs.forEach(r => {
-      filasDetalle += `<tr><td>${String(r.hora).padStart(2,"0")}:00</td><td style="text-align:center;font-weight:700">${r.bin}</td><td>${r.lote||"—"}</td><td>${r.finca||"—"}</td><td>${r.gf||"—"}</td></tr>`;
-    });
+    regs.forEach(r => { filasDetalle+=`<tr><td>${r.horaStr||String(r.hora).padStart(2,"0")+":00"}</td><td style="text-align:center;font-weight:700">${r.bin}</td><td>${r.lote||"—"}</td><td>${r.finca||"—"}</td><td>${r.gf||"—"}</td></tr>`; });
   }
 
-  const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Informe Diario — ${fecha}</title>
+  const html=`<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>Informe — ${fecha}</title>
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family: Arial, sans-serif; font-size: 12px; color: #222; padding: 30px; }
-  .header { background: #2C3E50; color: white; padding: 20px 24px; border-radius: 8px; margin-bottom: 20px; }
-  .header h1 { font-size: 20px; font-weight: 700; }
-  .header p { font-size: 12px; color: #7EC8E3; margin-top: 4px; }
-  .header .fecha { font-size: 14px; color: white; margin-top: 8px; font-weight: 600; }
-  .section { margin-bottom: 20px; }
-  .section h2 { font-size: 13px; font-weight: 700; color: #163F61; border-bottom: 2px solid #2ECC71; padding-bottom: 5px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
-  .resumen { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
-  .res-item { flex: 1; min-width: 110px; background: #f4f6f8; border-radius: 8px; padding: 12px; text-align: center; }
-  .res-item .val { font-size: 22px; font-weight: 700; color: #163F61; }
-  .res-item .lbl { font-size: 10px; color: #777; margin-top: 3px; }
-  .peso-box { background: #163F61; color: white; border-radius: 8px; padding: 14px; display: flex; gap: 12px; margin-bottom: 20px; }
-  .peso-item { flex: 1; text-align: center; }
-  .peso-item .pval { font-size: 18px; font-weight: 700; }
-  .peso-item .plbl { font-size: 10px; opacity: 0.8; margin-top: 3px; }
-  table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  th { background: #163F61; color: white; padding: 8px 6px; text-align: left; font-size: 11px; }
-  td { padding: 7px 6px; border-bottom: 1px solid #eee; }
-  tr:nth-child(even) td { background: #f9f9f9; }
-  .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 12px; }
-  @media print {
-    body { padding: 15px; }
-    button { display: none; }
-  }
-</style>
-</head>
-<body>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;font-size:12px;color:#222;padding:30px;}
+.header{background:#2C3E50;color:white;padding:20px 24px;border-radius:8px;margin-bottom:20px;}
+.header h1{font-size:20px;font-weight:700;}
+.header p{font-size:12px;color:#7EC8E3;margin-top:4px;}
+.header .fecha{font-size:14px;color:white;margin-top:8px;font-weight:600;}
+.section{margin-bottom:20px;}
+.section h2{font-size:13px;font-weight:700;color:#163F61;border-bottom:2px solid #2ECC71;padding-bottom:5px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;}
+.resumen{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px;}
+.res-item{flex:1;min-width:110px;background:#f4f6f8;border-radius:8px;padding:12px;text-align:center;}
+.res-item .val{font-size:22px;font-weight:700;color:#163F61;}
+.res-item .lbl{font-size:10px;color:#777;margin-top:3px;}
+.peso-box{background:#163F61;color:white;border-radius:8px;padding:14px;display:flex;gap:12px;margin-bottom:20px;}
+.peso-item{flex:1;text-align:center;}
+.peso-item .pval{font-size:18px;font-weight:700;}
+.peso-item .plbl{font-size:10px;opacity:0.8;margin-top:3px;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:#163F61;color:white;padding:8px 6px;text-align:left;font-size:11px;}
+td{padding:7px 6px;border-bottom:1px solid #eee;}
+tr:nth-child(even) td{background:#f9f9f9;}
+.footer{margin-top:30px;text-align:center;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px;}
+@media print{body{padding:15px;}button{display:none;}}
+</style></head><body>
 <div class="header">
   <h1>Agrícola Guapa S.A.S</h1>
   <p>Informe Diario de Planta Empacadora</p>
   <div class="fecha">📅 Fecha: ${fecha} &nbsp;&nbsp; 🕐 Generado: ${ahora}</div>
 </div>
-
 <div class="section">
   <h2>Resumen del turno</h2>
   <div class="resumen">
     <div class="res-item"><div class="val">${total}</div><div class="lbl">Bines procesados</div></div>
     <div class="res-item"><div class="val">${prom}</div><div class="lbl">Promedio bines/hora</div></div>
     <div class="res-item"><div class="val">${pct}%</div><div class="lbl">Cumplimiento meta</div></div>
-    <div class="res-item" style="color:#c0392b"><div class="val" style="color:#c0392b">${minPerdidos} min</div><div class="lbl">Minutos en paradas</div></div>
+    <div class="res-item"><div class="val" style="color:#c0392b">${minPerdidos} min</div><div class="lbl">Minutos en paradas</div></div>
   </div>
 </div>
-
 <div class="peso-box">
   <div class="peso-item"><div class="pval">${kgTotal.toLocaleString("es-CO")} kg</div><div class="plbl">Peso total procesado</div></div>
   <div class="peso-item"><div class="pval">${(kgTotal/1000).toFixed(2)} ton</div><div class="plbl">Toneladas</div></div>
   <div class="peso-item"><div class="pval">${kgProy.toLocaleString("es-CO")} kg</div><div class="plbl">Proyección peso cierre</div></div>
 </div>
-
 <div class="section">
   <h2>Producción por hora</h2>
-  <table>
-    <thead><tr><th>Franja horaria</th><th style="text-align:center">Bines</th><th style="text-align:center">vs Meta</th></tr></thead>
-    <tbody>${filasBinesHora}</tbody>
-  </table>
+  <table><thead><tr><th>Franja horaria</th><th style="text-align:center">Bines</th><th style="text-align:center">vs Meta</th></tr></thead>
+  <tbody>${filasBinesHora}</tbody></table>
 </div>
-
 <div class="section">
   <h2>Paradas del día</h2>
-  <table>
-    <thead><tr><th>Causa</th><th style="text-align:center">Inicio</th><th style="text-align:center">Fin</th><th style="text-align:center">Minutos</th></tr></thead>
-    <tbody>${filasParadas}</tbody>
-  </table>
+  <table><thead><tr><th>Causa</th><th style="text-align:center">Inicio</th><th style="text-align:center">Fin</th><th style="text-align:center">Minutos</th></tr></thead>
+  <tbody>${filasParadas}</tbody></table>
 </div>
-
 <div class="section">
   <h2>Detalle de registros</h2>
-  <table>
-    <thead><tr><th>Hora</th><th style="text-align:center">Bin</th><th>Lote</th><th>Finca</th><th>Grupo Forza</th></tr></thead>
-    <tbody>${filasDetalle}</tbody>
-  </table>
+  <table><thead><tr><th>Hora</th><th style="text-align:center">Bin</th><th>Lote</th><th>Finca</th><th>Grupo Forza</th></tr></thead>
+  <tbody>${filasDetalle}</tbody></table>
 </div>
-
-<div class="footer">
-  Agrícola Guapa S.A.S — NIT 900.689.885 — Control de Bines Planta Empacadora
-</div>
-
+<div class="footer">Agrícola Guapa S.A.S — NIT 900.689.885 — Control de Bines Planta Empacadora</div>
 <script>window.onload=function(){window.print();}<\/script>
-</body>
-</html>`;
+</body></html>`;
 
   const win = window.open("","_blank");
   win.document.write(html);
