@@ -346,7 +346,7 @@ function cargarTodo() {
     if (!data) { setMsg("error","Error cargando bines."); return; }
     registros = (data.registros||[]).map(r => ({
       fecha: typeof r.fecha==="string" ? r.fecha.split("T")[0] : new Date(r.fecha).toISOString().split("T")[0],
-      hora: parseInt(r.hora), bin: r.bin, gf: r.gf, lote: r.lote, finca: r.finca
+      hora: r.hora, bin: r.bin, gf: r.gf, lote: r.lote, finca: r.finca
     }));
     jsonp(SCRIPT+"?tipo=paradas", function(data2) {
       if (data2) {
@@ -376,7 +376,7 @@ function guardarBin() {
   const btn = document.getElementById("btn-bin");
   btn.disabled=true; btn.textContent="Registrando...";
   setMsg("info","Guardando...");
-  jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&hora="+hora+"&bin="+encodeURIComponent(bin)+"&gf="+encodeURIComponent(gf)+"&lote="+encodeURIComponent(lote)+"&finca="+encodeURIComponent(finca), function(data) {
+  jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&hora="+encodeURIComponent(horaStr)+"&bin="+encodeURIComponent(bin)+"&gf="+encodeURIComponent(gf)+"&lote="+encodeURIComponent(lote)+"&finca="+encodeURIComponent(finca), function(data) {
     if (data&&data.ok) {
       const ult = document.getElementById("ultimo-bin");
       ult.style.display="";
