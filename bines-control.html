@@ -97,6 +97,13 @@ tr:nth-child(even) td { background: #f9f9f9; }
       <select id="inp-gf">
         <option value="">— Selecciona —</option>
       </select>
+      <label>Tipo de Floración</label>
+      <select id="inp-floracion">
+        <option value="">— Selecciona —</option>
+        <option>INDUCCION</option>
+        <option>FLORACION NATURAL</option>
+      </select>
+
       <label>Lote</label>
       <input type="number" id="inp-lote" placeholder="Ej: 24" inputmode="numeric" oninput="detectarFinca()">
       <label>Finca (automática)</label>
@@ -325,7 +332,8 @@ function guardarBin() {
   const gf = document.getElementById("inp-gf").value;
   const lote = document.getElementById("inp-lote").value.trim();
   const finca = getFinca();
-  if (!bin||!gf||!lote||!finca) {
+  const floracion = document.getElementById("inp-floracion").value;
+  if (!bin||!gf||!floracion||!lote||!finca) {
     setMsg("warn", !finca?"Lote no reconocido — verifica el número.":"Completa todos los campos.");
     return;
   }
@@ -334,7 +342,7 @@ function guardarBin() {
   const btn = document.getElementById("btn-bin");
   btn.disabled=true; btn.textContent="Registrando...";
   setMsg("info","Guardando...");
-  jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&hora="+encodeURIComponent(horaStr)+"&bin="+encodeURIComponent(bin)+"&gf="+encodeURIComponent(gf)+"&lote="+encodeURIComponent(lote)+"&finca="+encodeURIComponent(finca), function(data) {
+  jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&hora="+encodeURIComponent(horaStr)+"&bin="+encodeURIComponent(bin)+"&gf="+encodeURIComponent(gf)+"&floracion="+encodeURIComponent(floracion)+"&lote="+encodeURIComponent(lote)+"&finca="+encodeURIComponent(finca), function(data) {
     if (data&&data.ok) {
       const ult = document.getElementById("ultimo-bin");
       ult.style.display="";
