@@ -192,6 +192,16 @@ tr:nth-child(even) td { background: #f9f9f9; }
     </div>
 
     <div class="card">
+      <label style="font-weight:600;margin-bottom:10px;">🌿 Bines por tipo de floración</label>
+      <div id="tabla-floracion"></div>
+    </div>
+
+    <div class="card">
+      <label style="font-weight:600;margin-bottom:10px;">🏡 Bines por finca</label>
+      <div id="tabla-fincas"></div>
+    </div>
+
+    <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Paradas del día</label>
       <div id="tabla-paradas"></div>
     </div>
@@ -487,6 +497,33 @@ function renderDashboard() {
       '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":cnt>=META_HORA?"#27ae60":"#e67e22")+'"></div></div>'+
       '<div class="bar-lbl">'+String(h).padStart(2,"0")+'h</div>';
     chart.appendChild(col);
+  }
+
+  // Floración
+  const tf = document.getElementById("tabla-floracion");
+  const tiposFloracion = ["INDUCCION","FLORACION NATURAL"];
+  const filasFlo = tiposFloracion.map(t=>{
+    const cnt = regs.filter(r=>(r.floracion||"").toUpperCase()===t).length;
+    const pct2 = total>0?Math.round(cnt/total*100):0;
+    return `<tr><td style="font-weight:500">${t}</td><td style="text-align:center;font-weight:700;color:#163F61">${cnt}</td><td style="text-align:center;color:#777">${pct2}%</td></tr>`;
+  }).join("");
+  tf.innerHTML = total>0
+    ? `<table><thead><tr><th>Tipo</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>${filasFlo}</tbody></table>`
+    : '<div class="empty">Sin registros</div>';
+
+  // Fincas
+  const tfi = document.getElementById("tabla-fincas");
+  const fincasUnicas = [...new Set(regs.map(r=>r.finca||"Sin finca"))].sort();
+  if (!fincasUnicas.length || (fincasUnicas.length===1&&fincasUnicas[0]==="Sin finca"&&total===0)) {
+    tfi.innerHTML='<div class="empty">Sin registros</div>';
+  } else {
+    const filasFin = fincasUnicas.map(f=>{
+      const cnt = regs.filter(r=>(r.finca||"Sin finca")===f).length;
+      const pct2 = total>0?Math.round(cnt/total*100):0;
+      const bar = `<div style="background:#e0e0e0;border-radius:99px;height:6px;margin-top:4px;overflow:hidden"><div style="width:${pct2}%;height:100%;background:#163F61;border-radius:99px"></div></div>`;
+      return `<tr><td style="font-weight:500">${f}${bar}</td><td style="text-align:center;font-weight:700;color:#163F61">${cnt}</td><td style="text-align:center;color:#777">${pct2}%</td></tr>`;
+    }).join("");
+    tfi.innerHTML=`<table><thead><tr><th>Finca</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>${filasFin}</tbody></table>`;
   }
 
   const tp=document.getElementById("tabla-paradas");
