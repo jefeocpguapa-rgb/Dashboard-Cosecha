@@ -210,7 +210,7 @@ tr:nth-child(even) td { background: #f9f9f9; }
 
 <script>
 const SCRIPT = "https://script.google.com/macros/s/AKfycbyGcGCkIrMm2ye3BQ34lF3iEVmeUYw2s7_yd3rN7Kk26NjtVV6t6GlUDE1TjuhcWOKDZA/exec";
-const KG_BIN = 1150, HORAS = 24, META_HORA_DEFAULT = 12;
+const KG_BIN = 1150, HORAS = 24, META_HORA = 12;
 
 const FINCA_LOTES = [
   { finca: "LA FE",        min: 1,  max: 27 },
@@ -222,9 +222,8 @@ const FINCA_LOTES = [
 ];
 
 let registros = [], paradas = [];
-let metaTon = 0; // toneladas estimadas del día
-let metaBines = 120; // bines meta calculados
-let metaHora = META_HORA_DEFAULT;
+let metaTon = 0;
+let metaBines = 80;
 
 function getHoy() {
   const d = new Date();
@@ -283,37 +282,42 @@ function calcularMinutos() {
 function guardarMeta() {
   const ton = parseFloat(document.getElementById("inp-meta-ton").value);
   if (isNaN(ton) || ton <= 0) { setMsg("warn","Ingresa un valor válido de toneladas."); return; }
+  const fecha = document.getElementById("dash-fecha").value;
   metaTon = ton;
   metaBines = Math.round((ton * 1000) / KG_BIN);
-  metaHora = Math.round(metaBines / 10); // distribuido en ~10 horas productivas
-  // Guardar en localStorage para persistencia
-  localStorage.setItem("meta_"+getHoy(), JSON.stringify({ton, bines: metaBines}));
+  localStorage.setItem("meta_"+fecha, JSON.stringify({ton, bines: metaBines}));
   actualizarInfoMeta();
   renderDashboard();
   setMsg("ok", "Meta actualizada: "+metaBines+" bines ("+ton+" ton) ✓");
 }
 
 function cargarMeta() {
-  const saved = localStorage.getItem("meta_"+getHoy());
+  const fecha = document.getElementById("dash-fecha").value;
+  const saved = localStorage.getItem("meta_"+fecha);
   if (saved) {
     try {
       const data = JSON.parse(saved);
       metaTon = data.ton;
       metaBines = data.bines;
-      metaHora = Math.round(metaBines / 10);
       document.getElementById("inp-meta-ton").value = metaTon;
-      actualizarInfoMeta();
-    } catch(e) {}
+    } catch(e) {
+      metaTon = 0; metaBines = 80;
+      document.getElementById("inp-meta-ton").value = "";
+    }
+  } else {
+    metaTon = 0; metaBines = 80;
+    document.getElementById("inp-meta-ton").value = "";
   }
+  actualizarInfoMeta();
 }
 
 function actualizarInfoMeta() {
   const info = document.getElementById("meta-info");
   if (metaTon > 0) {
     const kg = metaTon * 1000;
-    info.innerHTML = `<strong style="color:#155724">Meta activa:</strong> ${metaTon} ton → ${kg.toLocaleString("es-CO")} kg → <strong>${metaBines} bines</strong> (meta/hora: ~${metaHora} bines)`;
+    info.innerHTML = `<strong style="color:#155724">Meta activa:</strong> ${metaTon} ton → ${kg.toLocaleString("es-CO")} kg → <strong>${metaBines} bines</strong> &nbsp;|&nbsp; Meta/hora fija: <strong>12 bines</strong>`;
   } else {
-    info.textContent = "Sin meta definida — usando meta por defecto (120 bines)";
+    info.textContent = "Sin meta definida — usando meta por defecto (80 bines / 12 por hora)";
   }
 }
 
@@ -329,7 +333,10 @@ function initForm() {
     if (!document.getElementById("disp-hora").dataset.tocado)
       document.getElementById("disp-hora").value = getHoraActual();
   }, 30000);
-  document.getElementById("disp-hora").addEventListener("change", function() { this.dataset.tocado="1"; });
+  document.getElementById("dash-fecha").addEventListener("change", function() {
+    cargarMeta();
+    renderDashboard();
+  });
   const sel = document.getElementById("inp-gf");
   for (let i=1; i<=52; i++) {
     const o = document.createElement("option");
@@ -482,20 +489,20 @@ function renderDashboard() {
   bar.style.background = pct>=100?"#27ae60":pct>=60?"#2ECC71":"#e67e22";
   document.getElementById("prog-txt").textContent = pct+"% — "+total+" / "+metaBines+" bines"+(metaTon>0?" ("+metaTon+" ton)":"");
 
-  const maxB = Math.max(metaHora,...Array.from({length:24},(_,i)=>regs.filter(r=>r.hora===i).length),1);
+  const maxB = Math.max(META_HORA,...Array.from({length:24},(_,i)=>regs.filter(r=>r.hora===i).length),1);
   const chart = document.getElementById("chart");
   chart.innerHTML="";
   for (let h=0;h<=23;h++) {
     const cnt = regs.filter(r=>r.hora===h).length;
     if (cnt===0 && h>horaActual) continue;
     const barH = cnt>0?Math.max(4,Math.round(cnt/maxB*120)):4;
-    const metaH = Math.round(metaHora/maxB*120);
+    const metaH = Math.round(META_HORA/maxB*120);
     const col = document.createElement("div");
     col.className="bar-col";
     col.innerHTML=
-      '<div class="bar-val" style="color:'+(cnt>0?(cnt>=metaHora?"#27ae60":"#e67e22"):"transparent")+'">'+(cnt>0?cnt:"·")+'</div>'+
+      '<div class="bar-val" style="color:'+(cnt>0?(cnt>=META_HORA?"#27ae60":"#e67e22"):"transparent")+'">'+(cnt>0?cnt:"·")+'</div>'+
       '<div class="bar-wrap"><div class="bar-meta" style="bottom:'+metaH+'px"></div>'+
-      '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":cnt>=metaHora?"#27ae60":"#e67e22")+'"></div></div>'+
+      '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":cnt>=META_HORA?"#27ae60":"#e67e22")+'"></div></div>'+
       '<div class="bar-lbl">'+String(h).padStart(2,"0")+'h</div>';
     chart.appendChild(col);
   }
