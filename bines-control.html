@@ -165,14 +165,14 @@ tr:nth-child(even) td { background: #f9f9f9; }
     <div class="metrics">
       <div class="metric"><div class="val" id="d-total">—</div><div class="lbl">Bines hoy</div></div>
       <div class="metric"><div class="val" id="d-prom">—</div><div class="lbl">Prom/hora</div></div>
-      <div class="metric"><div class="val" id="d-proy">—</div><div class="lbl">Proyección</div></div>
+      <div class="metric"><div class="val" id="d-proy">—</div><div class="lbl">Bines proyectados</div></div>
       <div class="metric"><div class="val red" id="d-min-perdidos">—</div><div class="lbl">Min. paradas</div></div>
     </div>
 
     <div class="peso-card">
       <div class="peso-item"><div class="pval" id="d-kg">0 kg</div><div class="plbl">Peso acumulado</div></div>
       <div class="peso-item"><div class="pval" id="d-ton">0.00 ton</div><div class="plbl">Toneladas</div></div>
-      <div class="peso-item"><div class="pval" id="d-kg-proy">0 kg</div><div class="plbl">Proyección peso</div></div>
+      <div class="peso-item"><div class="pval" id="d-kg-proy">0 kg</div><div class="plbl">Kg proyectados día</div></div>
     </div>
 
     <div class="card">
@@ -442,22 +442,29 @@ function renderDashboard() {
   const total=regs.length;
   const horaActual=new Date().getHours();
   const esHoy=fecha===getHoy();
-  const horasT=esHoy?Math.max(1,horaActual+1):HORAS;
-  const prom=(total/horasT).toFixed(1);
-  const proy=Math.round(total+(total/horasT)*Math.max(0,HORAS-horasT));
+
+  // Promedio desde el primer bin registrado
+  const primerHora = regs.length > 0 ? regs[0].hora : horaActual;
+  const horasT = esHoy
+    ? Math.max(1, horaActual - primerHora + 1)
+    : (regs.length > 0 ? regs[regs.length-1].hora - primerHora + 1 : HORAS);
+  const prom = regs.length > 0 ? (total / horasT).toFixed(1) : "—";
+
+  // Proyección = meta del día
+  const proyBines = metaBines;
+  const proyKg = metaTon > 0 ? metaTon * 1000 : metaBines * KG_BIN;
   const pct=Math.min(100,Math.round(total/metaBines*100));
   const minPerdidos=pars.reduce((s,p)=>s+p.minutos,0);
   const kgTotal=total*KG_BIN;
-  const kgProy=proy*KG_BIN;
 
   document.getElementById("d-kg").textContent=kgTotal.toLocaleString("es-CO")+" kg";
   document.getElementById("d-ton").textContent=(kgTotal/1000).toFixed(2)+" ton";
-  document.getElementById("d-kg-proy").textContent=kgProy.toLocaleString("es-CO")+" kg";
+  document.getElementById("d-kg-proy").textContent=proyKg.toLocaleString("es-CO")+" kg";
   document.getElementById("d-total").textContent=total;
   document.getElementById("d-prom").textContent=prom;
   document.getElementById("d-prom").className="val "+(parseFloat(prom)>=META_HORA?"green":"orange");
-  document.getElementById("d-proy").textContent=proy||"—";
-  document.getElementById("d-proy").className="val "+(proy>=metaBines?"green":"orange");
+  document.getElementById("d-proy").textContent=proyBines;
+  document.getElementById("d-proy").className="val green";
   document.getElementById("d-min-perdidos").textContent=minPerdidos+" min";
 
   const bar=document.getElementById("prog-bar");
