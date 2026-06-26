@@ -465,7 +465,8 @@ function renderDashboard() {
   const pars = paradas.filter(p=>p.fecha===fecha);
   const total = regs.length;
   const horaActual = new Date().getHours();
-  const horasT = Math.max(1, horaActual+1);
+  const esHoy = fecha === getHoy();
+  const horasT = esHoy ? Math.max(1, horaActual+1) : HORAS;
   const prom = (total/horasT).toFixed(1);
   const proy = Math.round(total+(total/horasT)*Math.max(0,HORAS-horasT));
   const pct = Math.min(100,Math.round(total/metaBines*100));
@@ -494,7 +495,7 @@ function renderDashboard() {
   chart.innerHTML="";
   for (let h=0;h<=23;h++) {
     const cnt = regs.filter(r=>r.hora===h).length;
-    if (cnt===0 && h>horaActual) continue;
+    if (cnt===0 && esHoy && h>horaActual) continue;
     const barH = cnt>0?Math.max(4,Math.round(cnt/maxB*120)):4;
     const metaH = Math.round(META_HORA/maxB*120);
     const col = document.createElement("div");
@@ -531,7 +532,8 @@ function generarInforme() {
   const pars = paradas.filter(p=>p.fecha===fecha);
   const total = regs.length;
   const horaActual = new Date().getHours();
-  const horasT = Math.max(1,horaActual+1);
+  const esHoyInf = fecha === getHoy();
+  const horasT = esHoyInf ? Math.max(1,horaActual+1) : HORAS;
   const prom = (total/horasT).toFixed(1);
   const proy = Math.round(total+(total/horasT)*Math.max(0,HORAS-horasT));
   const kgTotal = total*KG_BIN;
