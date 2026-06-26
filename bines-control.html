@@ -371,7 +371,7 @@ function cargarTodo() {
             inicio:p.inicio, fin:p.fin, minutos:parseInt(p.minutos)||0, obs:p.obs
           }));
         }
-        setMsg("ok",registros.length+" bines, "+paradas.length+" paradas ✓");
+        setMsg("ok", registros.filter(r=>r.fecha===getHoy()).length+" bines hoy, "+paradas.filter(p=>p.fecha===getHoy()).length+" paradas ✓");
         renderDashboard();
       });
     });
@@ -443,11 +443,9 @@ function renderDashboard() {
   const horaActual=new Date().getHours();
   const esHoy=fecha===getHoy();
 
-  // Promedio desde el primer bin registrado
-  const primerHora = regs.length > 0 ? regs[0].hora : horaActual;
-  const horasT = esHoy
-    ? Math.max(1, horaActual - primerHora + 1)
-    : (regs.length > 0 ? regs[regs.length-1].hora - primerHora + 1 : HORAS);
+  // Promedio: bines totales ÷ horas con actividad
+  const horasConBines = new Set(regs.map(r=>r.hora)).size;
+  const horasT = Math.max(1, horasConBines);
   const prom = regs.length > 0 ? (total / horasT).toFixed(1) : "—";
 
   // Proyección = meta del día
