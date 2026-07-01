@@ -294,8 +294,8 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
     <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚙️</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-mec-ind">—</div><div class="kpi-sub">Mecánica · Inducción</div></div>
     <div class="kpi-card" data-accent="blue"><span class="kpi-icon">✋</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-man-ind">—</div><div class="kpi-sub">Manual · Inducción</div></div>
     <div class="kpi-card" data-accent="green"><span class="kpi-icon">🌿</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-nat">—</div><div class="kpi-sub">Natural (todas)</div></div>
-    <div class="kpi-card" data-accent="red"><span class="kpi-icon">⚙️</span><div class="kpi-label">Costo/kg Natural</div><div class="kpi-value" id="kpi-costo-nat">—</div><div class="kpi-sub">COP cosecha proporcional</div></div>
-    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">💵</span><div class="kpi-label">Precio/kg Vendido Natural</div><div class="kpi-value" id="kpi-precio-nat">—</div><div class="kpi-sub">COP promedio despachos</div></div>
+    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">🌿</span><div class="kpi-label">ha / Persona·Día · 7h</div><div class="kpi-value" id="kpi-hppd-7h">—</div><div class="kpi-sub">Área cubierta normalizada a 7h</div></div>
+    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⏱️</span><div class="kpi-label">ha / Persona·Día · Real</div><div class="kpi-value" id="kpi-hppd-real">—</div><div class="kpi-sub">Área cubierta en jornada real</div></div>
     <div class="kpi-card" data-accent="green"><span class="kpi-icon">📈</span><div class="kpi-label">Margen Bruto Natural</div><div class="kpi-value" id="kpi-margen-nat">—</div><div class="kpi-sub">COP/kg (precio − costo)</div></div>
   </section>
 
@@ -12117,12 +12117,21 @@ function updateNatMarginKPIs() {
 
   const margenNat = precioNatPond > 0 && costoKgNat > 0 ? precioNatPond - costoKgNat : 0;
 
-  const elCostoNat  = document.getElementById('kpi-costo-nat');
-  const elPrecioNat = document.getElementById('kpi-precio-nat');
+  const elHppd7h   = document.getElementById('kpi-hppd-7h');
+  const elHppdReal = document.getElementById('kpi-hppd-real');
   const elMargenNat = document.getElementById('kpi-margen-nat');
 
-  elCostoNat.textContent  = costoKgNat  > 0 ? '$'+fmtNum(Math.round(costoKgNat))  : '—';
-  elPrecioNat.textContent = precioNatPond > 0 ? '$'+fmtNum(Math.round(precioNatPond)) : '—';
+  // ha/PPD global: suma areas / suma HD (calculado sobre fppData filtrado)
+  const totAreaFpp   = fppData.reduce((s,d) => s + d.area, 0);
+  const totPersonasFpp = fppData.reduce((s,d) => s + d.personas, 0);
+  const totHD7Fpp    = fppData.reduce((s,d) => {
+    if (!d.haPersonaDia || d.haPersonaDia <= 0 || d.area <= 0) return s;
+    return s + d.area / d.haPersonaDia;
+  }, 0);
+  const globalHppd7h   = totHD7Fpp > 0   ? totAreaFpp / totHD7Fpp   : 0;
+  const globalHppdReal = totPersonasFpp > 0 ? totAreaFpp / totPersonasFpp : 0;
+  if (elHppd7h)   elHppd7h.textContent   = globalHppd7h   > 0 ? globalHppd7h.toFixed(3).replace('.',',')   : '—';
+  if (elHppdReal) elHppdReal.textContent = globalHppdReal > 0 ? globalHppdReal.toFixed(3).replace('.',',') : '—';
   elMargenNat.textContent = margenNat !== 0
     ? (margenNat > 0 ? '+' : '') + '$'+fmtNum(Math.round(margenNat))
     : '—';
