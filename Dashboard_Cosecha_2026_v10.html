@@ -505,6 +505,8 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
             <th data-col="frutas" style="text-align:right">Total Frutas</th>
             <th data-col="peso" style="text-align:right">Kg Cosechados</th>
             <th data-col="personas" style="text-align:right">Personas·Día</th>
+            <th data-col="area" style="text-align:right">Área (ha)</th>
+            <th data-col="haPersona" style="text-align:right">ha/Persona</th>
             <th data-col="horas" style="text-align:right">Horas Únicas</th>
             <th data-col="ratio" style="text-align:right">Frutas/Persona</th>
             <th data-col="costo" style="text-align:right">Costo Cuadrilla</th>
@@ -12256,11 +12258,18 @@ let fppData = [], fppSortKey = 'ratio';
 
 function calcFPP() {
   // Por cuadrillero y fecha: una sola vez personas y horas (aunque la cuadrilla repita en ese día)
-  const cuadFrutas = {}, cuadPeso = {}, cuadPersonasDia = {}, cuadHorasDia = {}, cuadDias = {}, cuadTipos = {};
+  const cuadFrutas = {}, cuadPeso = {}, cuadPersonasDia = {}, cuadHorasDia = {}, cuadDias = {}, cuadTipos = {}, cuadArea = {}, cuadBloques = {};
   filteredData.forEach(r => {
     const c = r['Cuadrillero']; if (!c) return;
     cuadFrutas[c] = (cuadFrutas[c]||0) + r._frutas;
     cuadPeso[c] = (cuadPeso[c]||0) + r._peso;
+    // Área por bloque único por cuadrillero
+    if (!cuadBloques[c]) cuadBloques[c] = new Set();
+    const blq = r['Bloque'];
+    if (blq && r._areaBruta > 0 && !cuadBloques[c].has(blq)) {
+      cuadBloques[c].add(blq);
+      cuadArea[c] = (cuadArea[c]||0) + r._areaBruta;
+    }
     // Track tipos de cosecha y floración
     if (!cuadTipos[c]) cuadTipos[c] = new Set();
     if (r['TipoCosecha'] && r['Floracion']) cuadTipos[c].add(r['TipoCosecha'] + '+' + r['Floracion']);
@@ -12304,7 +12313,9 @@ function calcFPP() {
       const [tipo, flor] = t.split('+');
       return (tipo==='Mecánica'?'⚙️ Mec':'✋ Man') + ' · ' + (flor==='Inducción'?'Ind':'Nat');
     }).join(' / ');
-    return { nombre: c, frutas, peso, personas: personasDia, horas: horasTotales, ratio, costo, costoPorKg, dias, tipo: tipoLabel };
+    const area = cuadArea[c] || 0;
+    const haPersona = (personasDia > 0 && area > 0) ? area / personasDia : 0;
+    return { nombre: c, frutas, peso, personas: personasDia, horas: horasTotales, ratio, costo, costoPorKg, dias, tipo: tipoLabel, area, haPersona };
   });
   sortFPP(fppSortKey, false);
 }
@@ -12323,7 +12334,7 @@ function renderFPP() {
   const maxRatio = fppData.length ? Math.max(...fppData.map(d=>d.ratio)) : 1;
   const maxCosto = fppData.length ? Math.max(...fppData.map(d=>d.costo)) : 1;
   const tbody = document.getElementById('fpp-tbody');
-  tbody.innerHTML = fppData.map((d, i) => {
+  const rows = fppData.map((d, i) => {
     const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
     const barPct = maxRatio > 0 ? (d.ratio / maxRatio * 100).toFixed(1) : 0;
     const barColor = i===0?'#2ecc71':i===1?'#1abc9c':i===2?'#f39c12':'rgba(52,152,219,0.6)';
@@ -12336,6 +12347,8 @@ function renderFPP() {
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(d.frutas)}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(Math.round(d.peso))}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(d.personas)}</td>
+      <td style="text-align:right;font-family:var(--font-mono)">${d.area > 0 ? d.area.toFixed(2).replace('.',',') : '—'}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--accent-teal)">${d.haPersona > 0 ? d.haPersona.toFixed(3).replace('.',',') : '—'}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${d.horas > 0 ? d.horas.toFixed(1) : '—'}</td>
       <td style="text-align:right;font-family:var(--font-mono);font-weight:700;color:${i===0?'var(--accent-green)':i<3?'var(--accent-teal)':'var(--text-primary)'}">${fmtNum(Math.round(d.ratio))}</td>
       <td style="text-align:right;font-family:var(--font-mono);color:var(--accent-yellow)">${fmtCOP(d.costo)}</td>
@@ -12343,7 +12356,37 @@ function renderFPP() {
       <td style="text-align:right;font-family:var(--font-mono)">${d.dias}</td>
       <td><div class="bar-cell"><div class="mini-bar" style="width:${barPct}%;background:${barColor};max-width:100px"></div><span style="font-size:.65rem;color:var(--text-secondary);font-family:var(--font-mono)">${barPct}%</span></div></td>
     </tr>`;
-  }).join('');
+  });
+
+  // ── Fila de totales ──
+  if (fppData.length) {
+    const totFrutas  = fppData.reduce((s,d) => s + d.frutas, 0);
+    const totPeso    = fppData.reduce((s,d) => s + d.peso, 0);
+    const totPersonas= fppData.reduce((s,d) => s + d.personas, 0);
+    const totHoras   = fppData.reduce((s,d) => s + d.horas, 0);
+    const totCosto   = fppData.reduce((s,d) => s + d.costo, 0);
+    const totDias    = fppData.reduce((s,d) => s + d.dias, 0);
+    const totRatio   = totPersonas > 0 ? totFrutas / totPersonas : 0;
+    const totCopKg   = totPeso > 0 ? totCosto / totPeso : 0;
+    const tdT = (v, opts='') => `<td style="text-align:right;font-family:var(--font-mono);font-weight:700;color:#ecf0f1;background:var(--bg-card);border-top:2px solid var(--accent-green);${opts}">${v}</td>`;
+    rows.push(`<tr style="background:rgba(46,204,113,0.08)">
+      <td colspan="2" style="font-weight:700;color:var(--accent-green);background:var(--bg-card);border-top:2px solid var(--accent-green);padding:6px 10px;font-size:.8rem;letter-spacing:.05em">▶ TOTAL GENERAL</td>
+      <td style="background:var(--bg-card);border-top:2px solid var(--accent-green)"></td>
+      ${tdT(fmtNum(totFrutas))}
+      ${tdT(fmtNum(Math.round(totPeso)))}
+      ${tdT(fmtNum(totPersonas))}
+      ${tdT(fppData.reduce((s,d)=>s+d.area,0).toFixed(2).replace('.',','))}
+      ${tdT((fppData.reduce((s,d)=>s+d.personas,0)>0 ? fppData.reduce((s,d)=>s+d.area,0)/fppData.reduce((s,d)=>s+d.personas,0) : 0).toFixed(3).replace('.',','), 'color:var(--accent-teal)')}
+      ${tdT(totHoras > 0 ? totHoras.toFixed(1) : '—')}
+      ${tdT(fmtNum(Math.round(totRatio)), 'color:var(--accent-green)')}
+      ${tdT(fmtCOP(totCosto), 'color:var(--accent-yellow)')}
+      ${tdT(totCopKg > 0 ? '$'+fmtNum(Math.round(totCopKg)) : '—')}
+      ${tdT(totDias)}
+      <td style="background:var(--bg-card);border-top:2px solid var(--accent-green)"></td>
+    </tr>`);
+  }
+
+  tbody.innerHTML = rows.join('');
 
   // Chart barras top 20 (cambia según sort key)
   const top20 = fppData.slice(0, 20);
