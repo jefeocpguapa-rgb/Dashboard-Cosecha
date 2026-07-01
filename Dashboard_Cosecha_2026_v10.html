@@ -506,7 +506,8 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
             <th data-col="peso" style="text-align:right">Kg Cosechados</th>
             <th data-col="personas" style="text-align:right">Personas·Día</th>
             <th data-col="area" style="text-align:right">Área (ha)</th>
-            <th data-col="haPersona" style="text-align:right">ha/Persona</th>
+            <th data-col="haPersonaDia" style="text-align:right" title="Hectárea por Persona por Día — base 7 horas">ha/PPD·7h</th>
+            <th data-col="haPersonaDiaReal" style="text-align:right" title="Hectárea por Persona por Día — horas reales trabajadas">ha/PPD·Real</th>
             <th data-col="horas" style="text-align:right">Horas Únicas</th>
             <th data-col="ratio" style="text-align:right">Frutas/Persona</th>
             <th data-col="costo" style="text-align:right">Costo Cuadrilla</th>
@@ -12275,13 +12276,13 @@ function calcFPP() {
     if (r['TipoCosecha'] && r['Floracion']) cuadTipos[c].add(r['TipoCosecha'] + '+' + r['Floracion']);
     const fecha = r['Fecha'];
     if (!cuadPersonasDia[c]) { cuadPersonasDia[c] = {}; cuadHorasDia[c] = {}; }
-    // Personas únicas por día
-    if (r._cantPersonas > 0 && !(fecha in cuadPersonasDia[c])) {
-      cuadPersonasDia[c][fecha] = r._cantPersonas;
+    // Personas únicas por día: tomar el máximo visto para esa fecha
+    if (r._cantPersonas > 0) {
+      cuadPersonasDia[c][fecha] = Math.max(cuadPersonasDia[c][fecha] || 0, r._cantPersonas);
     }
-    // Horas únicas por día (tomar la primera vez que aparezca para esa fecha)
-    if (r._horas > 0 && !(fecha in cuadHorasDia[c])) {
-      cuadHorasDia[c][fecha] = r._horas;
+    // Horas únicas por día: tomar el máximo del día
+    if (r._horas > 0) {
+      cuadHorasDia[c][fecha] = Math.max(cuadHorasDia[c][fecha] || 0, r._horas);
     }
     if (!cuadDias[c]) cuadDias[c] = new Set();
     cuadDias[c].add(fecha);
@@ -12294,7 +12295,7 @@ function calcFPP() {
     const horasDict = cuadHorasDia[c] || {};
     const dias = cuadDias[c] ? cuadDias[c].size : 0;
     const personasDia = Object.values(personasDict).reduce((s,v)=>s+v, 0);
-    // Horas únicas sumadas (solo días con datos)
+    // Horas totales sumadas por boleta
     const horasTotales = Object.values(horasDict).reduce((s,v)=>s+v, 0);
     // Costo: horas ordinarias + horas extra (>7.33h en días L-S) + dominical/festivo
     let costo = 0;
@@ -12315,7 +12316,25 @@ function calcFPP() {
     }).join(' / ');
     const area = cuadArea[c] || 0;
     const haPersona = (personasDia > 0 && area > 0) ? area / personasDia : 0;
-    return { nombre: c, frutas, peso, personas: personasDia, horas: horasTotales, ratio, costo, costoPorKg, dias, tipo: tipoLabel, area, haPersona };
+    // ha/PPD·7h: area ÷ Σ(personas_día × horas_día / 7) — ambos únicos por fecha
+    let hombresDia7h = 0;
+    Object.keys(personasDict).forEach(fecha => {
+      const p = personasDict[fecha] || 0;
+      const h = horasDict[fecha] || 0;
+      if (h > 0 && p > 0) hombresDia7h += p * (h / 7);
+    });
+    const haPersonaDia = (hombresDia7h > 0 && area > 0) ? area / hombresDia7h : 0;
+    // ha/PPD·Real: area ÷ Σ(personas_día × horas_reales / horas_reales) = area ÷ personasDia
+    // = hectáreas que cada persona cubrió en su jornada real (sin normalizar)
+    let hombresDiaReal = 0;
+    Object.keys(personasDict).forEach(fecha => {
+      const p = personasDict[fecha] || 0;
+      const h = horasDict[fecha] || 0;
+      if (p > 0 && h > 0) hombresDiaReal += p * (h / h); // = p, each person counts as 1 regardless of hours
+    });
+    // Simpler: ha/PPD·Real = area / total personas-día (sin ajuste de horas)
+    const haPersonaDiaReal = (personasDia > 0 && area > 0) ? area / personasDia : 0;
+    return { nombre: c, frutas, peso, personas: personasDia, horas: horasTotales, ratio, costo, costoPorKg, dias, tipo: tipoLabel, area, haPersona, haPersonaDia, haPersonaDiaReal };
   });
   sortFPP(fppSortKey, false);
 }
@@ -12348,7 +12367,8 @@ function renderFPP() {
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(Math.round(d.peso))}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${fmtNum(d.personas)}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${d.area > 0 ? d.area.toFixed(2).replace('.',',') : '—'}</td>
-      <td style="text-align:right;font-family:var(--font-mono);color:var(--accent-teal)">${d.haPersona > 0 ? d.haPersona.toFixed(3).replace('.',',') : '—'}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--accent-teal)" title="ha por Persona por Día base 7h">${d.haPersonaDia > 0 ? d.haPersonaDia.toFixed(3).replace('.',',') : '—'}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:#f39c12" title="ha por Persona por Día — horas reales">${d.haPersonaDiaReal > 0 ? d.haPersonaDiaReal.toFixed(3).replace('.',',') : '—'}</td>
       <td style="text-align:right;font-family:var(--font-mono)">${d.horas > 0 ? d.horas.toFixed(1) : '—'}</td>
       <td style="text-align:right;font-family:var(--font-mono);font-weight:700;color:${i===0?'var(--accent-green)':i<3?'var(--accent-teal)':'var(--text-primary)'}">${fmtNum(Math.round(d.ratio))}</td>
       <td style="text-align:right;font-family:var(--font-mono);color:var(--accent-yellow)">${fmtCOP(d.costo)}</td>
@@ -12376,7 +12396,8 @@ function renderFPP() {
       ${tdT(fmtNum(Math.round(totPeso)))}
       ${tdT(fmtNum(totPersonas))}
       ${tdT(fppData.reduce((s,d)=>s+d.area,0).toFixed(2).replace('.',','))}
-      ${tdT((fppData.reduce((s,d)=>s+d.personas,0)>0 ? fppData.reduce((s,d)=>s+d.area,0)/fppData.reduce((s,d)=>s+d.personas,0) : 0).toFixed(3).replace('.',','), 'color:var(--accent-teal)')}
+      ${tdT((() => { const totArea=fppData.reduce((s,d)=>s+d.area,0); const totHD7=fppData.reduce((s,d)=>{ if(!d.haPersonaDia||d.haPersonaDia<=0||d.area<=0) return s; return s + d.area/d.haPersonaDia; },0); return totHD7>0?(totArea/totHD7).toFixed(3).replace('.',','):'—'; })(), 'color:var(--accent-teal)')}
+      ${tdT(totPersonas > 0 ? (fppData.reduce((s,d)=>s+d.area,0)/totPersonas).toFixed(3).replace('.',',') : '—', 'color:#f39c12')}
       ${tdT(totHoras > 0 ? totHoras.toFixed(1) : '—')}
       ${tdT(fmtNum(Math.round(totRatio)), 'color:var(--accent-green)')}
       ${tdT(fmtCOP(totCosto), 'color:var(--accent-yellow)')}
