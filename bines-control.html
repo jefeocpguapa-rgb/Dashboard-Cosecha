@@ -323,13 +323,12 @@ function guardarMeta() {
 
 function initForm() {
   document.getElementById("dash-fecha").value=getHoy();
-  document.getElementById("disp-fecha").textContent=getHoy();
-  document.getElementById("disp-fecha-p").textContent=getHoy();
+  document.getElementById("disp-fecha").textContent=getFechaOperativa();
+  document.getElementById("disp-fecha-p").textContent=getFechaOperativa();
   document.getElementById("disp-hora").value=getHoraActual();
   setInterval(function(){
-    const hoy=getHoy();
-    document.getElementById("disp-fecha").textContent=hoy;
-    document.getElementById("disp-fecha-p").textContent=hoy;
+    document.getElementById("disp-fecha").textContent=getFechaOperativa();
+    document.getElementById("disp-fecha-p").textContent=getFechaOperativa();
     if (!document.getElementById("disp-hora").dataset.tocado)
       document.getElementById("disp-hora").value=getHoraActual();
   },30000);
@@ -346,7 +345,13 @@ function initForm() {
   }
 }
 
-function jsonp(url,cb) {
+function getFechaOperativa() {
+  const d = new Date();
+  const h = d.getHours();
+  // Si es antes de las 6am, la fecha operativa es el día anterior
+  if (h < 6) d.setDate(d.getDate() - 1);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
   const name="cb_"+Date.now();
   const s=document.createElement("script");
   window[name]=function(data){cb(data);document.body.removeChild(s);delete window[name];};
@@ -403,8 +408,7 @@ function guardarBin() {
   const lote=document.getElementById("inp-lote").value.trim();
   const finca=getFinca();
   if (!bin||!gf||!floracion||!lote||!finca){setMsg("warn",!finca?"Lote no reconocido.":"Completa todos los campos.");return;}
-  const fecha=getHoy();
-  const horaStr=document.getElementById("disp-hora").value||getHoraActual();
+  const fecha=getFechaOperativa();
   const btn=document.getElementById("btn-bin");
   btn.disabled=true;btn.textContent="Registrando...";
   setMsg("info","Guardando...");
@@ -433,7 +437,7 @@ function guardarParada() {
   if (!obs||!ini||!fin){setMsg("warn","Completa causa, hora inicio y hora fin.");return;}
   const mins=Math.round((new Date("2000-01-01T"+fin)-new Date("2000-01-01T"+ini))/60000);
   if (mins<=0){setMsg("warn","La hora fin debe ser mayor que la hora inicio.");return;}
-  const fecha=getHoy();
+  const fecha=getFechaOperativa();
   const btn=document.getElementById("btn-parada");
   btn.disabled=true;btn.textContent="Registrando...";
   setMsg("info","Guardando parada...");
