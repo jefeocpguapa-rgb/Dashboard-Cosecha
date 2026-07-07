@@ -337,7 +337,25 @@ function initForm() {
   }
 }
 
-function jsonp(url, cb) {
+function getDiaOperativo(fecha) {
+  // Retorna los registros del día operativo: 06:00 del fecha hasta 05:59 del día siguiente
+  const fechaSig = new Date(fecha + "T06:00:00");
+  fechaSig.setDate(fechaSig.getDate() + 1);
+  const fechaSigStr = fechaSig.toISOString().split("T")[0];
+  return {
+    fechaBase: fecha,
+    fechaSig: fechaSigStr
+  };
+}
+
+function filtrarDiaOperativo(lista, fecha) {
+  const { fechaBase, fechaSig } = getDiaOperativo(fecha);
+  return lista.filter(r => {
+    if (r.fecha === fechaBase) return r.hora >= 6;
+    if (r.fecha === fechaSig) return r.hora < 6;
+    return false;
+  });
+}
   const name="cb_"+Date.now();
   const s=document.createElement("script");
   window[name]=function(data){cb(data);document.body.removeChild(s);delete window[name];};
@@ -447,8 +465,8 @@ function guardarParada() {
 
 function renderDashboard() {
   const fecha=document.getElementById("dash-fecha").value;
-  const regs=registros.filter(r=>r.fecha===fecha).sort((a,b)=>a.hora-b.hora);
-  const pars=paradas.filter(p=>p.fecha===fecha);
+  const regs=filtrarDiaOperativo(registros, fecha).sort((a,b)=>a.hora-b.hora);
+  const pars=filtrarDiaOperativo(paradas, fecha).sort((a,b)=>a.inicio>b.inicio?1:-1);
   const total=regs.length;
   const horaActual=new Date().getHours();
   const esHoy=fecha===getHoy();
@@ -480,9 +498,14 @@ function renderDashboard() {
   bar.style.background=pct>=100?"#27ae60":pct>=60?"#2ECC71":"#e67e22";
   document.getElementById("prog-txt").textContent=pct+"% — "+total+" / "+metaBines+" bines"+(metaTon>0?" ("+metaTon+" ton)":"");
 
+  // Horas en orden operativo: 6,7,...,23,0,1,2,3,4,5
+  const ordenOperativo = [...Array.from({length:18},(_,i)=>i+6), ...Array.from({length:6},(_,i)=>i)];
   const horasAMostrar = esHoy
-    ? Array.from({length:24},(_,i)=>i).filter(h=>h<=horaActual)
-    : [...new Set(regs.map(r=>r.hora))].sort((a,b)=>a-b);
+    ? ordenOperativo.filter(h => {
+        if (h >= 6) return h <= horaActual;
+        return horaActual < 6 && h <= horaActual;
+      })
+    : ordenOperativo.filter(h => regs.some(r=>r.hora===h));
 
   const maxB=Math.max(META_HORA,...horasAMostrar.map(h=>regs.filter(r=>r.hora===h).length),1);
   const chart=document.getElementById("chart");
@@ -491,13 +514,14 @@ function renderDashboard() {
     const cnt=regs.filter(r=>r.hora===h).length;
     const barH=cnt>0?Math.max(4,Math.round(cnt/maxB*120)):4;
     const metaH=Math.round(META_HORA/maxB*120);
+    const esMadrugada = h < 6;
     const col=document.createElement("div");
     col.className="bar-col";
     col.innerHTML=
       '<div class="bar-val" style="color:'+(cnt>0?(cnt>=META_HORA?"#27ae60":"#e67e22"):"transparent")+'">'+(cnt>0?cnt:"·")+'</div>'+
       '<div class="bar-wrap"><div class="bar-meta" style="bottom:'+metaH+'px"></div>'+
-      '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":cnt>=META_HORA?"#27ae60":"#e67e22")+'"></div></div>'+
-      '<div class="bar-lbl">'+String(h).padStart(2,"0")+'h</div>';
+      '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":cnt>=META_HORA?"#27ae60":"#e67e22")+';opacity:'+(esMadrugada?0.6:1)+'"></div></div>'+
+      '<div class="bar-lbl" style="color:'+(esMadrugada?"#2980b9":"#999")+'">'+String(h).padStart(2,"0")+'h</div>';
     chart.appendChild(col);
   });
 
@@ -547,8 +571,8 @@ function renderDashboard() {
 
 function generarInforme() {
   const fecha=document.getElementById("dash-fecha").value;
-  const regs=registros.filter(r=>r.fecha===fecha).sort((a,b)=>a.hora-b.hora);
-  const pars=paradas.filter(p=>p.fecha===fecha);
+  const regs=filtrarDiaOperativo(registros, fecha).sort((a,b)=>a.hora-b.hora);
+  const pars=filtrarDiaOperativo(paradas, fecha);
   const total=regs.length;
   const horaActual=new Date().getHours();
   const esHoy=fecha===getHoy();
