@@ -257,8 +257,8 @@ function fechaSiguiente(fecha) {
 function filtrarDiaOperativo(lista, fecha) {
   const sig=fechaSiguiente(fecha);
   return lista.filter(r=>{
-    if (r.fecha===fecha) return r.hora>=6;
-    if (r.fecha===sig) return r.hora<6;
+    if (r.fecha===fecha && r.hora>=6) return true;   // mismo día desde 6am
+    if (r.fecha===sig && r.hora<6) return true;       // día siguiente madrugada
     return false;
   });
 }
