@@ -385,8 +385,10 @@ function cargarTodo() {
           }));
         }
         const hoy=getHoy();
-        const regsHoy=filtrarDiaOperativo(registros,hoy);
-        const parasHoy=filtrarDiaOperativo(paradas,hoy);
+        const diaOp=new Date().getHours()<6?ayer():hoy;
+        function ayer(){const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+        const regsHoy=filtrarDiaOperativo(registros,diaOp);
+        const parasHoy=filtrarDiaOperativo(paradas,diaOp);
         setMsg("ok",regsHoy.length+" bines hoy, "+parasHoy.length+" paradas ✓");
         renderDashboard();
       });
@@ -484,7 +486,7 @@ function renderDashboard() {
   bar.style.background=pct>=100?"#27ae60":pct>=60?"#2ECC71":"#e67e22";
   document.getElementById("prog-txt").textContent=pct+"% — "+total+" / "+metaBines+" bines"+(metaTon>0?" ("+metaTon+" ton)":"");
 
-  // Gráfica: orden operativo 06→23→00→05
+  // Orden: primero 06-23h, luego 00-05h (madrugada al final)
   const ordenOp=[...Array.from({length:18},(_,i)=>i+6),...Array.from({length:6},(_,i)=>i)];
   const horasAMostrar=esHoy
     ? ordenOp.filter(h=>regs.some(r=>r.hora===h)||(h>=6&&h<=horaActual)||(horaActual<6&&h<=horaActual))
@@ -593,11 +595,19 @@ function generarInforme() {
     filasParadas+=`<tr style="background:#fff3cd"><td colspan="3" style="font-weight:700">TOTAL MINUTOS PARADAS</td><td style="text-align:center;font-weight:700;color:#c0392b">${minPerdidos} min</td></tr>`;
   }
 
+  // Detalle: primero bines 06-23h, luego madrugada con separador
+  const regsDia=regs.filter(r=>r.hora>=6);
+  const regsMad=regs.filter(r=>r.hora<6);
   let filasDetalle="";
-  regs.forEach(r=>{
-    const esMad=r.hora<6;
-    filasDetalle+=`<tr${esMad?' style="background:#EBF5FB"':''}><td>${r.horaStr||String(r.hora).padStart(2,"0")+":00"}${esMad?' <span style="color:#2980b9;font-size:9px">▶</span>':''}</td><td style="text-align:center;font-weight:700">${r.bin}</td><td>${r.floracion||"—"}</td><td>${r.lote||"—"}</td><td>${r.finca||"—"}</td><td>${r.gf||"—"}</td></tr>`;
+  regsDia.forEach(r=>{
+    filasDetalle+=`<tr><td>${r.horaStr||String(r.hora).padStart(2,"0")+":00"}</td><td style="text-align:center;font-weight:700">${r.bin}</td><td>${r.floracion||"—"}</td><td>${r.lote||"—"}</td><td>${r.finca||"—"}</td><td>${r.gf||"—"}</td></tr>`;
   });
+  if (regsMad.length>0) {
+    filasDetalle+=`<tr style="background:#2C3E50"><td colspan="6" style="color:white;font-weight:600;padding:6px;font-size:11px">🌙 Madrugada — continuación del proceso (${fechaSig})</td></tr>`;
+    regsMad.forEach(r=>{
+      filasDetalle+=`<tr style="background:#EBF5FB"><td>${r.horaStr||String(r.hora).padStart(2,"0")+":00"}</td><td style="text-align:center;font-weight:700">${r.bin}</td><td>${r.floracion||"—"}</td><td>${r.lote||"—"}</td><td>${r.finca||"—"}</td><td>${r.gf||"—"}</td></tr>`;
+    });
+  }
   if (!filasDetalle) filasDetalle='<tr><td colspan="6" style="text-align:center;color:#aaa">Sin registros</td></tr>';
 
   const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe — ${fecha}</title>
