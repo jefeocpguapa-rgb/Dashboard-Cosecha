@@ -215,6 +215,12 @@ function getHoy() {
   var d=new Date();
   return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
+// Siempre guarda con la fecha real del calendario
+function getFechaReal() {
+  var d=new Date();
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+}
+// Fecha operativa para el dashboard: si es antes de 6am, pertenece al día anterior
 function getFechaOp() {
   var d=new Date();
   if (d.getHours()<6) d.setDate(d.getDate()-1);
@@ -242,8 +248,8 @@ function filtroDia(lista, fecha) {
   for (var i=0;i<lista.length;i++) {
     var r=lista[i];
     var h=r.hora!==undefined?r.hora:horaDeStr(r.inicio);
-    if (r.fecha===fecha && h>=6) result.push(r);
-    else if (r.fecha===sig && h<6) result.push(r);
+    if (r.fecha===fecha && h>=6) result.push(r);  // mismo día 06:00-23:59
+    else if (r.fecha===sig && h<6) result.push(r); // día siguiente 00:00-05:59
   }
   return result;
 }
@@ -366,8 +372,7 @@ function guardarBin() {
   var lote=document.getElementById("inp-lote").value.trim();
   var finca=getFinca();
   if(!bin||!gf||!flo||!lote||!finca){setMsg("warn",!finca?"Lote no reconocido.":"Completa todos los campos.");return;}
-  var fecha=getFechaOp();
-  var hs=document.getElementById("disp-hora").value||getHoraActual();
+  var fecha=getFechaReal();
   var btn=document.getElementById("btn-bin");btn.disabled=true;btn.textContent="Registrando...";
   jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&hora="+encodeURIComponent(hs)+"&bin="+encodeURIComponent(bin)+"&gf="+encodeURIComponent(gf)+"&floracion="+encodeURIComponent(flo)+"&lote="+encodeURIComponent(lote)+"&finca="+encodeURIComponent(finca),function(d){
     if(d&&d.ok){
@@ -388,7 +393,7 @@ function guardarParada() {
   if(!obs||!ini||!fin){setMsg("warn","Completa causa, hora inicio y hora fin.");return;}
   var mins=Math.round((new Date("2000-01-01T"+fin)-new Date("2000-01-01T"+ini))/60000);
   if(mins<=0){setMsg("warn","Hora fin debe ser mayor que hora inicio.");return;}
-  var fecha=getFechaOp();
+  var fecha=getFechaReal();
   var btn=document.getElementById("btn-parada");btn.disabled=true;btn.textContent="Registrando...";
   jsonp(SCRIPT+"?tipo=parada_nueva&fecha="+encodeURIComponent(fecha)+"&inicio="+encodeURIComponent(ini)+"&fin="+encodeURIComponent(fin)+"&minutos="+mins+"&obs="+encodeURIComponent(obs),function(d){
     if(d&&d.ok){
