@@ -71,22 +71,18 @@ tr:nth-child(even) td { background: #f9f9f9; }
 </style>
 </head>
 <body>
-
 <header>
   <h1>Control de Bines</h1>
   <span>Agrícola Guapa S.A.S — Planta Empacadora</span>
 </header>
-
 <div class="tabs">
   <div class="tab active" onclick="setTab('ingreso')" id="tab-ingreso">📥 Registrar Bin</div>
   <div class="tab" onclick="setTab('parada')" id="tab-parada">⏸ Parada</div>
   <div class="tab" onclick="setTab('dashboard')" id="tab-dashboard">📊 Dashboard</div>
 </div>
-
 <div class="container">
   <div id="msg" class="badge info">Cargando datos...</div>
 
-  <!-- INGRESO BIN -->
   <div id="vista-ingreso">
     <div class="card">
       <div class="auto-row">
@@ -112,7 +108,6 @@ tr:nth-child(even) td { background: #f9f9f9; }
     </div>
   </div>
 
-  <!-- PARADA -->
   <div id="vista-parada" style="display:none">
     <div class="card">
       <p style="font-size:13px;color:#777;margin-bottom:16px;">Registra una parada indicando la causa y el tiempo.</p>
@@ -145,14 +140,12 @@ tr:nth-child(even) td { background: #f9f9f9; }
     </div>
   </div>
 
-  <!-- DASHBOARD -->
   <div id="vista-dashboard" style="display:none">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
       <label style="margin:0;white-space:nowrap">Fecha:</label>
       <input type="date" id="dash-fecha" style="width:auto;margin:0;flex:1">
       <button onclick="cargarTodo()" style="padding:8px 14px;border:1px solid #ccc;border-radius:7px;background:#fff;cursor:pointer;font-size:16px;">↺</button>
     </div>
-
     <div class="meta-card">
       <label>🎯 Meta del día (toneladas estimadas de cosecha)</label>
       <div class="meta-row">
@@ -161,26 +154,22 @@ tr:nth-child(even) td { background: #f9f9f9; }
       </div>
       <div class="meta-info" id="meta-info">Cargando meta...</div>
     </div>
-
     <div class="metrics">
       <div class="metric"><div class="val" id="d-total">—</div><div class="lbl">Bines hoy</div></div>
       <div class="metric"><div class="val" id="d-prom">—</div><div class="lbl">Prom/hora</div></div>
       <div class="metric"><div class="val" id="d-proy">—</div><div class="lbl">Bines proyectados</div></div>
       <div class="metric"><div class="val red" id="d-min-perdidos">—</div><div class="lbl">Min. paradas</div></div>
     </div>
-
     <div class="peso-card">
       <div class="peso-item"><div class="pval" id="d-kg">0 kg</div><div class="plbl">Peso acumulado</div></div>
       <div class="peso-item"><div class="pval" id="d-ton">0.00 ton</div><div class="plbl">Toneladas</div></div>
       <div class="peso-item"><div class="pval" id="d-kg-proy">0 kg</div><div class="plbl">Kg proyectados día</div></div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Avance del turno</label>
       <div class="progress-wrap"><div class="progress-bar" id="prog-bar" style="width:0%"></div></div>
       <div style="font-size:12px;color:#999;" id="prog-txt">0%</div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:4px;">Bines por hora</label>
       <div class="chart" id="chart"></div>
@@ -191,22 +180,18 @@ tr:nth-child(even) td { background: #f9f9f9; }
         <span><span style="border-top:1.5px dashed #aaa;width:14px;display:inline-block"></span>Meta/hora (12)</span>
       </div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">🌿 Bines por tipo de floración</label>
       <div id="tabla-floracion"></div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">🏡 Bines por finca</label>
       <div id="tabla-fincas"></div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Paradas del día</label>
       <div id="tabla-paradas"></div>
     </div>
-
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Registros de bines</label>
       <div id="tabla-body"></div>
@@ -216,292 +201,227 @@ tr:nth-child(even) td { background: #f9f9f9; }
 </div>
 
 <script>
-const SCRIPT = "https://script.google.com/macros/s/AKfycbyGcGCkIrMm2ye3BQ34lF3iEVmeUYw2s7_yd3rN7Kk26NjtVV6t6GlUDE1TjuhcWOKDZA/exec";
-const KG_BIN = 1150, HORAS = 24, META_HORA = 12;
-
-const FINCA_LOTES = [
+var SCRIPT = "https://script.google.com/macros/s/AKfycbyGcGCkIrMm2ye3BQ34lF3iEVmeUYw2s7_yd3rN7Kk26NjtVV6t6GlUDE1TjuhcWOKDZA/exec";
+var KG_BIN = 1150, META_HORA = 12;
+var FINCA_LOTES = [
   {finca:"LA FE",min:1,max:27},{finca:"JAMAICA",min:28,max:39},
   {finca:"EGIPTO",min:40,max:55},{finca:"LAS AMERICAS",min:56,max:65},
   {finca:"BRASIL",min:66,max:76},{finca:"ARGENTINA",min:77,max:86}
 ];
-
-let registros=[], paradas=[], todasMetas={};
-let metaTon=0, metaBines=80;
+var registros=[], paradas=[], todasMetas={};
+var metaTon=0, metaBines=80;
 
 function getHoy() {
-  const d=new Date();
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  var d=new Date();
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
-
-// Fecha operativa: si es antes de las 6am, pertenece al día anterior
-function getFechaOperativa() {
-  const d=new Date();
+function getFechaOp() {
+  var d=new Date();
   if (d.getHours()<6) d.setDate(d.getDate()-1);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
-
 function getHoraActual() {
-  const d=new Date();
-  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  var d=new Date();
+  return pad(d.getHours())+":"+pad(d.getMinutes());
 }
-
-function fechaSiguiente(fecha) {
-  const d=new Date(fecha+"T12:00:00");
+function pad(n){return n<10?"0"+n:""+n;}
+function fechaSig(fecha) {
+  var d=new Date(fecha+"T12:00:00");
   d.setDate(d.getDate()+1);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+}
+function horaDeStr(s) {
+  if (!s) return 0;
+  return parseInt(String(s).split(":")[0])||0;
 }
 
 // Día operativo: 06:00 del fecha → 05:59 del día siguiente
-function filtrarDiaOperativo(lista, fecha) {
-  const sig=fechaSiguiente(fecha);
-  return lista.filter(function(r) {
-    const horaR = r.hora !== undefined ? r.hora : parseInt((r.inicio||"00:00").split(":")[0]);
-    if (r.fecha===fecha && horaR>=6) return true;
-    if (r.fecha===sig && horaR<6) return true;
-    return false;
-  });
+function filtroDia(lista, fecha) {
+  var sig=fechaSig(fecha);
+  var result=[];
+  for (var i=0;i<lista.length;i++) {
+    var r=lista[i];
+    var h=r.hora!==undefined?r.hora:horaDeStr(r.inicio);
+    if (r.fecha===fecha && h>=6) result.push(r);
+    else if (r.fecha===sig && h<6) result.push(r);
+  }
+  return result;
 }
 
-function setMsg(tipo,txt) {
-  const el=document.getElementById("msg");
-  el.className="badge "+tipo; el.textContent=txt;
-}
-
+function setMsg(t,txt){var e=document.getElementById("msg");e.className="badge "+t;e.textContent=txt;}
 function setTab(t) {
-  ["ingreso","parada","dashboard"].forEach(function(v) {
+  ["ingreso","parada","dashboard"].forEach(function(v){
     document.getElementById("vista-"+v).style.display=v===t?"":"none";
     document.getElementById("tab-"+v).className="tab"+(v===t?" active":"");
   });
-  if (t==="dashboard") renderDashboard();
+  if(t==="dashboard") renderDash();
 }
-
 function detectarFinca() {
-  const lote=parseInt(document.getElementById("inp-lote").value);
-  const el=document.getElementById("finca-auto");
+  var lote=parseInt(document.getElementById("inp-lote").value);
+  var el=document.getElementById("finca-auto");
   if (!isNaN(lote)&&lote>0) {
-    const m=FINCA_LOTES.find(function(f){return lote>=f.min&&lote<=f.max;});
-    if (m) {el.textContent="📍 "+m.finca;el.style.background="#eaf6ee";el.style.color="#155724";el.style.border="1px solid #b2dfcc";}
-    else {el.textContent="⚠ Lote no reconocido";el.style.background="#f8d7da";el.style.color="#721c24";el.style.border="1px solid #f5c6cb";}
-  } else {
-    el.textContent="— Ingresa el lote —";el.style.background="#f4f6f8";el.style.color="#aaa";el.style.border="1px solid #ccc";
-  }
+    var m=null;
+    for(var i=0;i<FINCA_LOTES.length;i++){if(lote>=FINCA_LOTES[i].min&&lote<=FINCA_LOTES[i].max){m=FINCA_LOTES[i];break;}}
+    if (m){el.textContent="📍 "+m.finca;el.style.background="#eaf6ee";el.style.color="#155724";el.style.border="1px solid #b2dfcc";}
+    else{el.textContent="⚠ Lote no reconocido";el.style.background="#f8d7da";el.style.color="#721c24";el.style.border="1px solid #f5c6cb";}
+  } else {el.textContent="— Ingresa el lote —";el.style.background="#f4f6f8";el.style.color="#aaa";el.style.border="1px solid #ccc";}
 }
-
 function getFinca() {
-  const lote=parseInt(document.getElementById("inp-lote").value);
-  if (!isNaN(lote)) {
-    const m=FINCA_LOTES.find(function(f){return lote>=f.min&&lote<=f.max;});
-    if (m) return m.finca;
-  }
+  var lote=parseInt(document.getElementById("inp-lote").value);
+  if(!isNaN(lote)){for(var i=0;i<FINCA_LOTES.length;i++){if(lote>=FINCA_LOTES[i].min&&lote<=FINCA_LOTES[i].max)return FINCA_LOTES[i].finca;}}
   return "";
 }
-
 function calcularMinutos() {
-  const ini=document.getElementById("par-inicio").value;
-  const fin=document.getElementById("par-fin").value;
-  const el=document.getElementById("min-calc");
-  if (!ini||!fin){el.style.display="none";return;}
-  const mins=Math.round((new Date("2000-01-01T"+fin)-new Date("2000-01-01T"+ini))/60000);
-  if (mins<=0){el.style.display="none";return;}
-  el.style.display="";
-  el.textContent="⏱ Duración: "+mins+" minutos";
+  var ini=document.getElementById("par-inicio").value,fin=document.getElementById("par-fin").value;
+  var el=document.getElementById("min-calc");
+  if(!ini||!fin){el.style.display="none";return;}
+  var mins=Math.round((new Date("2000-01-01T"+fin)-new Date("2000-01-01T"+ini))/60000);
+  if(mins<=0){el.style.display="none";return;}
+  el.style.display="";el.textContent="⏱ Duración: "+mins+" minutos";
 }
-
 function aplicarMeta(fecha) {
-  if (todasMetas[fecha]) {
-    metaTon=todasMetas[fecha];
-    metaBines=Math.round((metaTon*1000)/KG_BIN);
+  if(todasMetas[fecha]){
+    metaTon=todasMetas[fecha];metaBines=Math.round(metaTon*1000/KG_BIN);
     document.getElementById("inp-meta-ton").value=metaTon;
-  } else {
-    metaTon=0; metaBines=80;
-    document.getElementById("inp-meta-ton").value="";
-  }
-  actualizarInfoMeta();
+  } else {metaTon=0;metaBines=80;document.getElementById("inp-meta-ton").value="";}
+  infoMeta();
 }
-
-function actualizarInfoMeta() {
-  const info=document.getElementById("meta-info");
-  if (metaTon>0) {
-    info.innerHTML='<strong style="color:#155724">Meta activa:</strong> '+metaTon+' ton → '+(metaTon*1000).toLocaleString("es-CO")+' kg → <strong>'+metaBines+' bines</strong> &nbsp;|&nbsp; Meta/hora fija: <strong>12 bines</strong>';
-  } else {
-    info.textContent="Sin meta definida — usando 80 bines por defecto";
-  }
+function infoMeta() {
+  var el=document.getElementById("meta-info");
+  if(metaTon>0){el.innerHTML='<strong style="color:#155724">Meta activa:</strong> '+metaTon+' ton → '+(metaTon*1000).toLocaleString("es-CO")+' kg → <strong>'+metaBines+' bines</strong> | Meta/hora fija: <strong>12 bines</strong>';}
+  else{el.textContent="Sin meta definida — usando 80 bines por defecto";}
 }
-
 function guardarMeta() {
-  const ton=parseFloat(document.getElementById("inp-meta-ton").value);
-  if (isNaN(ton)||ton<=0){setMsg("warn","Ingresa un valor válido.");return;}
-  const fecha=document.getElementById("dash-fecha").value;
-  const btn=document.getElementById("btn-meta");
-  btn.disabled=true; btn.textContent="Guardando...";
-  jsonp(SCRIPT+"?tipo=meta_nueva&fecha="+encodeURIComponent(fecha)+"&ton="+ton, function(data) {
-    if (data&&data.ok) {
-      todasMetas[fecha]=ton; metaTon=ton; metaBines=Math.round((ton*1000)/KG_BIN);
-      actualizarInfoMeta(); renderDashboard();
-      setMsg("ok","Meta guardada: "+ton+" ton → "+metaBines+" bines ✓");
-    } else {setMsg("error","Error guardando meta.");}
-    btn.disabled=false; btn.textContent="Guardar";
+  var ton=parseFloat(document.getElementById("inp-meta-ton").value);
+  if(isNaN(ton)||ton<=0){setMsg("warn","Ingresa un valor válido.");return;}
+  var fecha=document.getElementById("dash-fecha").value;
+  var btn=document.getElementById("btn-meta");
+  btn.disabled=true;btn.textContent="Guardando...";
+  jsonp(SCRIPT+"?tipo=meta_nueva&fecha="+encodeURIComponent(fecha)+"&ton="+ton,function(d){
+    if(d&&d.ok){todasMetas[fecha]=ton;metaTon=ton;metaBines=Math.round(ton*1000/KG_BIN);infoMeta();renderDash();setMsg("ok","Meta guardada ✓");}
+    else setMsg("error","Error guardando meta.");
+    btn.disabled=false;btn.textContent="Guardar";
   });
 }
-
 function initForm() {
-  document.getElementById("dash-fecha").value=getFechaOperativa();
-  document.getElementById("disp-fecha").textContent=getFechaOperativa();
-  document.getElementById("disp-fecha-p").textContent=getFechaOperativa();
+  document.getElementById("dash-fecha").value=getFechaOp();
+  document.getElementById("disp-fecha").textContent=getFechaOp();
+  document.getElementById("disp-fecha-p").textContent=getFechaOp();
   document.getElementById("disp-hora").value=getHoraActual();
-
-  setInterval(function() {
-    document.getElementById("disp-fecha").textContent=getFechaOperativa();
-    document.getElementById("disp-fecha-p").textContent=getFechaOperativa();
-    if (!document.getElementById("disp-hora").dataset.tocado)
+  setInterval(function(){
+    document.getElementById("disp-fecha").textContent=getFechaOp();
+    document.getElementById("disp-fecha-p").textContent=getFechaOp();
+    if(!document.getElementById("disp-hora").dataset.tocado)
       document.getElementById("disp-hora").value=getHoraActual();
-  }, 30000);
-
+  },30000);
   document.getElementById("disp-hora").addEventListener("change",function(){this.dataset.tocado="1";});
-  document.getElementById("dash-fecha").addEventListener("change",function(){
-    aplicarMeta(this.value); renderDashboard();
-  });
-
-  const sel=document.getElementById("inp-gf");
-  for (var i=1;i<=52;i++) {
-    const o=document.createElement("option");
-    const num=String(i).padStart(2,"0");
-    o.value="GF"+num+"26"; o.textContent="GF"+num+"26";
-    sel.appendChild(o);
-  }
+  document.getElementById("dash-fecha").addEventListener("change",function(){aplicarMeta(this.value);renderDash();});
+  var sel=document.getElementById("inp-gf");
+  for(var i=1;i<=52;i++){var o=document.createElement("option");var n=pad(i);o.value="GF"+n+"26";o.textContent="GF"+n+"26";sel.appendChild(o);}
 }
-
 function jsonp(url,cb) {
-  const name="cb_"+Date.now();
-  const s=document.createElement("script");
-  window[name]=function(data){cb(data);document.body.removeChild(s);delete window[name];};
+  var name="cb_"+Date.now();var s=document.createElement("script");
+  window[name]=function(d){cb(d);document.body.removeChild(s);delete window[name];};
   s.onerror=function(){cb(null);document.body.removeChild(s);};
-  s.src=url+(url.includes("?")?"&":"?")+"callback="+name+"&t="+Date.now();
+  s.src=url+(url.indexOf("?")>=0?"&":"?")+"callback="+name+"&t="+Date.now();
   document.body.appendChild(s);
 }
-
 function parseFecha(v) {
-  if (!v) return "";
-  if (typeof v==="string"){if(v.match(/^\d{4}-\d{2}-\d{2}/))return v.substring(0,10);try{return new Date(v).toISOString().split("T")[0];}catch(e){return v;}}
+  if(!v)return"";
+  if(typeof v==="string"){if(/^\d{4}-\d{2}-\d{2}/.test(v))return v.substring(0,10);try{return new Date(v).toISOString().split("T")[0];}catch(e){return v;}}
   try{return new Date(v).toISOString().split("T")[0];}catch(e){return String(v);}
 }
-
 function parseHora(v) {
-  if (!v) return "00:00";
-  if (typeof v==="string"){if(v.match(/^\d{2}:\d{2}/))return v.substring(0,5);try{const d=new Date(v);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}catch(e){return v;}}
-  return "00:00";
+  if(!v)return"00:00";
+  if(typeof v==="string"){if(/^\d{2}:\d{2}/.test(v))return v.substring(0,5);try{var d=new Date(v);return pad(d.getHours())+":"+pad(d.getMinutes());}catch(e){return v;}}
+  return"00:00";
 }
-
 function cargarTodo() {
   setMsg("info","Cargando datos...");
-  jsonp(SCRIPT+"?tipo=metas", function(dataMetas) {
-    if (dataMetas&&dataMetas.metas) {
-      todasMetas=dataMetas.metas;
-      aplicarMeta(document.getElementById("dash-fecha").value);
-    }
-    jsonp(SCRIPT, function(data) {
-      if (!data){setMsg("error","Error cargando bines. Recarga la página.");return;}
-      registros=(data.registros||[]).map(function(r){return {
-        fecha:parseFecha(r.fecha),
-        hora:parseInt(parseHora(r.hora).split(":")[0]),
-        horaStr:parseHora(r.hora),
-        bin:r.bin,gf:r.gf,floracion:r.floracion,lote:r.lote,finca:r.finca
-      };});
-      jsonp(SCRIPT+"?tipo=paradas", function(data2) {
-        if (data2) {
-          paradas=(data2.paradas||[]).map(function(p){
-            const horaInicio=parseInt((p.inicio||"00:00").split(":")[0]);
-            return {
-              fecha:parseFecha(p.fecha),
-              hora:horaInicio,
-              inicio:p.inicio,fin:p.fin,minutos:parseInt(p.minutos)||0,obs:p.obs
-            };
+  jsonp(SCRIPT+"?tipo=metas",function(dm){
+    if(dm&&dm.metas){todasMetas=dm.metas;aplicarMeta(document.getElementById("dash-fecha").value);}
+    jsonp(SCRIPT,function(d){
+      if(!d){setMsg("error","Error cargando datos. Recarga.");return;}
+      registros=(d.registros||[]).map(function(r){
+        var hs=parseHora(r.hora);
+        return {fecha:parseFecha(r.fecha),hora:parseInt(hs.split(":")[0]),horaStr:hs,bin:r.bin,gf:r.gf,floracion:r.floracion,lote:r.lote,finca:r.finca};
+      });
+      jsonp(SCRIPT+"?tipo=paradas",function(d2){
+        if(d2&&d2.paradas){
+          paradas=(d2.paradas||[]).map(function(p){
+            return {fecha:parseFecha(p.fecha),hora:horaDeStr(p.inicio),inicio:p.inicio,fin:p.fin,minutos:parseInt(p.minutos)||0,obs:p.obs};
           });
         }
-        const diaOp=getFechaOperativa();
-        const regsHoy=filtrarDiaOperativo(registros,diaOp);
-        const parasHoy=filtrarDiaOperativo(paradas,diaOp);
-        setMsg("ok",regsHoy.length+" bines hoy, "+parasHoy.length+" paradas ✓");
-        renderDashboard();
+        var dop=getFechaOp();
+        setMsg("ok",filtroDia(registros,dop).length+" bines hoy, "+filtroDia(paradas,dop).length+" paradas ✓");
+        renderDash();
       });
     });
   });
 }
-
 function guardarBin() {
-  const bin=document.getElementById("inp-bin").value.trim();
-  const gf=document.getElementById("inp-gf").value;
-  const floracion=document.getElementById("inp-floracion").value;
-  const lote=document.getElementById("inp-lote").value.trim();
-  const finca=getFinca();
-  if (!bin||!gf||!floracion||!lote||!finca){setMsg("warn",!finca?"Lote no reconocido.":"Completa todos los campos.");return;}
-  const fecha=getFechaOperativa();
-  const horaStr=document.getElementById("disp-hora").value||getHoraActual();
-  const btn=document.getElementById("btn-bin");
-  btn.disabled=true; btn.textContent="Registrando...";
-  setMsg("info","Guardando...");
-  jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&hora="+encodeURIComponent(horaStr)+"&bin="+encodeURIComponent(bin)+"&gf="+encodeURIComponent(gf)+"&floracion="+encodeURIComponent(floracion)+"&lote="+encodeURIComponent(lote)+"&finca="+encodeURIComponent(finca), function(data) {
-    if (data&&data.ok) {
-      const ult=document.getElementById("ultimo-bin");
-      ult.style.display="";
-      ult.textContent="✓ Bin #"+bin+" — "+finca+" / Lote "+lote+" / "+gf+" / "+floracion+" a las "+horaStr;
-      document.getElementById("inp-bin").value="";
-      document.getElementById("inp-lote").value="";
-      const fa=document.getElementById("finca-auto");
-      fa.textContent="— Ingresa el lote —";fa.style.background="#f4f6f8";fa.style.color="#aaa";fa.style.border="1px solid #ccc";
-      document.getElementById("disp-hora").removeAttribute("data-tocado");
-      document.getElementById("disp-hora").value=getHoraActual();
-      setMsg("ok","¡Bin registrado ✓");
-      setTimeout(cargarTodo,1500);
-    } else {setMsg("error","Error al guardar.");}
-    btn.disabled=false; btn.textContent="Registrar Bin";
+  var bin=document.getElementById("inp-bin").value.trim();
+  var gf=document.getElementById("inp-gf").value;
+  var flo=document.getElementById("inp-floracion").value;
+  var lote=document.getElementById("inp-lote").value.trim();
+  var finca=getFinca();
+  if(!bin||!gf||!flo||!lote||!finca){setMsg("warn",!finca?"Lote no reconocido.":"Completa todos los campos.");return;}
+  var fecha=getFechaOp();
+  var hs=document.getElementById("disp-hora").value||getHoraActual();
+  var btn=document.getElementById("btn-bin");btn.disabled=true;btn.textContent="Registrando...";
+  jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&hora="+encodeURIComponent(hs)+"&bin="+encodeURIComponent(bin)+"&gf="+encodeURIComponent(gf)+"&floracion="+encodeURIComponent(flo)+"&lote="+encodeURIComponent(lote)+"&finca="+encodeURIComponent(finca),function(d){
+    if(d&&d.ok){
+      var u=document.getElementById("ultimo-bin");u.style.display="";
+      u.textContent="✓ Bin #"+bin+" — "+finca+" / Lote "+lote+" / "+gf+" / "+flo+" a las "+hs;
+      document.getElementById("inp-bin").value="";document.getElementById("inp-lote").value="";
+      var fa=document.getElementById("finca-auto");fa.textContent="— Ingresa el lote —";fa.style.background="#f4f6f8";fa.style.color="#aaa";fa.style.border="1px solid #ccc";
+      document.getElementById("disp-hora").removeAttribute("data-tocado");document.getElementById("disp-hora").value=getHoraActual();
+      setMsg("ok","¡Bin registrado ✓");setTimeout(cargarTodo,1500);
+    } else setMsg("error","Error al guardar.");
+    btn.disabled=false;btn.textContent="Registrar Bin";
   });
 }
-
 function guardarParada() {
-  const obs=document.getElementById("par-obs").value;
-  const ini=document.getElementById("par-inicio").value;
-  const fin=document.getElementById("par-fin").value;
-  if (!obs||!ini||!fin){setMsg("warn","Completa causa, hora inicio y hora fin.");return;}
-  const mins=Math.round((new Date("2000-01-01T"+fin)-new Date("2000-01-01T"+ini))/60000);
-  if (mins<=0){setMsg("warn","La hora fin debe ser mayor que la hora inicio.");return;}
-  const fecha=getFechaOperativa();
-  const btn=document.getElementById("btn-parada");
-  btn.disabled=true; btn.textContent="Registrando...";
-  setMsg("info","Guardando parada...");
-  jsonp(SCRIPT+"?tipo=parada_nueva&fecha="+encodeURIComponent(fecha)+"&inicio="+encodeURIComponent(ini)+"&fin="+encodeURIComponent(fin)+"&minutos="+mins+"&obs="+encodeURIComponent(obs), function(data) {
-    if (data&&data.ok) {
-      const ult=document.getElementById("ultimo-parada");
-      ult.style.display="";
-      ult.textContent="✓ "+obs+" — "+mins+" min ("+ini+" a "+fin+")";
-      document.getElementById("par-obs").value="";
-      document.getElementById("par-inicio").value="";
-      document.getElementById("par-fin").value="";
+  var obs=document.getElementById("par-obs").value;
+  var ini=document.getElementById("par-inicio").value;
+  var fin=document.getElementById("par-fin").value;
+  if(!obs||!ini||!fin){setMsg("warn","Completa causa, hora inicio y hora fin.");return;}
+  var mins=Math.round((new Date("2000-01-01T"+fin)-new Date("2000-01-01T"+ini))/60000);
+  if(mins<=0){setMsg("warn","Hora fin debe ser mayor que hora inicio.");return;}
+  var fecha=getFechaOp();
+  var btn=document.getElementById("btn-parada");btn.disabled=true;btn.textContent="Registrando...";
+  jsonp(SCRIPT+"?tipo=parada_nueva&fecha="+encodeURIComponent(fecha)+"&inicio="+encodeURIComponent(ini)+"&fin="+encodeURIComponent(fin)+"&minutos="+mins+"&obs="+encodeURIComponent(obs),function(d){
+    if(d&&d.ok){
+      var u=document.getElementById("ultimo-parada");u.style.display="";u.textContent="✓ "+obs+" — "+mins+" min ("+ini+" a "+fin+")";
+      document.getElementById("par-obs").value="";document.getElementById("par-inicio").value="";document.getElementById("par-fin").value="";
       document.getElementById("min-calc").style.display="none";
-      setMsg("ok","¡Parada registrada ✓");
-      setTimeout(cargarTodo,1500);
-    } else {setMsg("error","Error al guardar parada.");}
-    btn.disabled=false; btn.textContent="Registrar Parada";
+      setMsg("ok","¡Parada registrada ✓");setTimeout(cargarTodo,1500);
+    } else setMsg("error","Error al guardar parada.");
+    btn.disabled=false;btn.textContent="Registrar Parada";
   });
 }
+function renderDash() {
+  var fecha=document.getElementById("dash-fecha").value;
+  var sig=fechaSig(fecha);
+  var regs=filtroDia(registros,fecha);
+  regs.sort(function(a,b){return a.hora-b.hora;});
+  var pars=filtroDia(paradas,fecha);
+  var total=regs.length;
+  var horaActual=new Date().getHours();
+  var esHoy=fecha===getFechaOp();
 
-function renderDashboard() {
-  const fecha=document.getElementById("dash-fecha").value;
-  const regs=filtrarDiaOperativo(registros,fecha).sort(function(a,b){return a.hora-b.hora;});
-  const pars=filtrarDiaOperativo(paradas,fecha);
-  const total=regs.length;
-  const horaActual=new Date().getHours();
-  const esHoy=fecha===getFechaOperativa();
+  // Promedio por horas con actividad
+  var horasSet={};
+  for(var i=0;i<regs.length;i++) horasSet[regs[i].hora]=1;
+  var horasCount=Object.keys(horasSet).length;
+  var horasT=Math.max(1,horasCount);
+  var prom=total>0?(total/horasT).toFixed(1):"—";
 
-  const horasConBines=new Set(regs.map(function(r){return r.hora;})).size;
-  const horasT=Math.max(1,horasConBines);
-  const prom=regs.length>0?(total/horasT).toFixed(1):"—";
-
-  const proyBines=metaBines;
-  const proyKg=metaTon>0?metaTon*1000:metaBines*KG_BIN;
-  const pct=Math.min(100,Math.round(total/metaBines*100));
-  const minPerdidos=pars.reduce(function(s,p){return s+p.minutos;},0);
-  const kgTotal=total*KG_BIN;
+  var proyBines=metaBines;
+  var proyKg=metaTon>0?metaTon*1000:metaBines*KG_BIN;
+  var pct=Math.min(100,Math.round(total/metaBines*100));
+  var minPerd=0;for(var i=0;i<pars.length;i++)minPerd+=pars[i].minutos;
+  var kgTotal=total*KG_BIN;
 
   document.getElementById("d-kg").textContent=kgTotal.toLocaleString("es-CO")+" kg";
   document.getElementById("d-ton").textContent=(kgTotal/1000).toFixed(2)+" ton";
@@ -511,196 +431,182 @@ function renderDashboard() {
   document.getElementById("d-prom").className="val "+(parseFloat(prom)>=META_HORA?"green":"orange");
   document.getElementById("d-proy").textContent=proyBines;
   document.getElementById("d-proy").className="val green";
-  document.getElementById("d-min-perdidos").textContent=minPerdidos+" min";
-
-  const bar=document.getElementById("prog-bar");
+  document.getElementById("d-min-perdidos").textContent=minPerd+" min";
+  var bar=document.getElementById("prog-bar");
   bar.style.width=pct+"%";
   bar.style.background=pct>=100?"#27ae60":pct>=60?"#2ECC71":"#e67e22";
   document.getElementById("prog-txt").textContent=pct+"% — "+total+" / "+metaBines+" bines"+(metaTon>0?" ("+metaTon+" ton)":"");
 
-  // Orden operativo: 06→23 luego 00→05
-  const ordenOp=[];
-  for(var i=6;i<=23;i++) ordenOp.push(i);
-  for(var i=0;i<6;i++) ordenOp.push(i);
-
-  const horasAMostrar=esHoy
-    ? ordenOp.filter(function(h){return regs.some(function(r){return r.hora===h;})||(h>=6&&h<=horaActual);})
-    : ordenOp.filter(function(h){return regs.some(function(r){return r.hora===h;});});
-
-  const maxBarras=Math.max(META_HORA,...horasAMostrar.map(function(h){return regs.filter(function(r){return r.hora===h;}).length;}),1);
-  const chart=document.getElementById("chart");
-  chart.innerHTML="";
-  horasAMostrar.forEach(function(h) {
-    const cnt=regs.filter(function(r){return r.hora===h;}).length;
-    const barH=cnt>0?Math.max(4,Math.round(cnt/maxBarras*120)):4;
-    const metaH=Math.round(META_HORA/maxBarras*120);
-    const esMadrugada=h<6;
-    const col=document.createElement("div");
-    col.className="bar-col";
-    col.innerHTML=
-      '<div class="bar-val" style="color:'+(cnt>0?(cnt>=META_HORA?"#27ae60":"#e67e22"):"transparent")+'">'+(cnt>0?cnt:"·")+'</div>'+
+  // Gráfica orden operativo 06→23→00→05
+  var ordenOp=[];
+  for(var h=6;h<=23;h++)ordenOp.push(h);
+  for(var h=0;h<6;h++)ordenOp.push(h);
+  var horasMostrar=[];
+  for(var i=0;i<ordenOp.length;i++){
+    var h=ordenOp[i];
+    var cnt=0;for(var j=0;j<regs.length;j++)if(regs[j].hora===h)cnt++;
+    if(cnt>0)horasMostrar.push(h);
+    else if(esHoy&&h>=6&&h<=horaActual)horasMostrar.push(h);
+  }
+  var maxB=META_HORA;
+  for(var i=0;i<horasMostrar.length;i++){
+    var cnt=0;for(var j=0;j<regs.length;j++)if(regs[j].hora===horasMostrar[i])cnt++;
+    if(cnt>maxB)maxB=cnt;
+  }
+  var chart=document.getElementById("chart");chart.innerHTML="";
+  for(var i=0;i<horasMostrar.length;i++){
+    var h=horasMostrar[i];
+    var cnt=0;for(var j=0;j<regs.length;j++)if(regs[j].hora===h)cnt++;
+    var barH=cnt>0?Math.max(4,Math.round(cnt/maxB*120)):4;
+    var metaH=Math.round(META_HORA/maxB*120);
+    var esMad=h<6;
+    var col=document.createElement("div");col.className="bar-col";
+    col.innerHTML='<div class="bar-val" style="color:'+(cnt>0?(cnt>=META_HORA?"#27ae60":"#e67e22"):"transparent")+'">'+(cnt>0?cnt:"·")+'</div>'+
       '<div class="bar-wrap"><div class="bar-meta" style="bottom:'+metaH+'px"></div>'+
-      '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":esMadrugada?"#2980b9":cnt>=META_HORA?"#27ae60":"#e67e22")+';opacity:'+(esMadrugada?0.7:1)+'"></div></div>'+
-      '<div class="bar-lbl" style="color:'+(esMadrugada?"#2980b9":"#999")+'">'+String(h).padStart(2,"0")+'h</div>';
+      '<div class="bar" style="height:'+barH+'px;background:'+(cnt===0?"#e0e0e0":esMad?"#2980b9":cnt>=META_HORA?"#27ae60":"#e67e22")+';opacity:'+(esMad?0.7:1)+'"></div></div>'+
+      '<div class="bar-lbl" style="color:'+(esMad?"#2980b9":"#999")+'">'+pad(h)+'h</div>';
     chart.appendChild(col);
-  });
+  }
 
   // Floración
-  const tf=document.getElementById("tabla-floracion");
-  const tipos=["INDUCCION","FLORACION NATURAL"];
-  const filasFlo=tipos.map(function(t){
-    const cnt=regs.filter(function(r){return (r.floracion||"").toUpperCase()===t;}).length;
-    const p=total>0?Math.round(cnt/total*100):0;
-    return '<tr><td style="font-weight:500">'+t+'</td><td style="text-align:center;font-weight:700;color:#163F61">'+cnt+'</td><td style="text-align:center;color:#777">'+p+'%</td></tr>';
-  }).join("");
-  tf.innerHTML=total>0
-    ?'<table><thead><tr><th>Tipo</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>'+filasFlo+'</tbody></table>'
-    :'<div class="empty">Sin registros</div>';
+  var tf=document.getElementById("tabla-floracion");
+  var tipos=["INDUCCION","FLORACION NATURAL"];
+  var flo="";
+  for(var i=0;i<tipos.length;i++){
+    var t=tipos[i];var cnt=0;
+    for(var j=0;j<regs.length;j++)if((regs[j].floracion||"").toUpperCase()===t)cnt++;
+    var p=total>0?Math.round(cnt/total*100):0;
+    flo+='<tr><td style="font-weight:500">'+t+'</td><td style="text-align:center;font-weight:700;color:#163F61">'+cnt+'</td><td style="text-align:center;color:#777">'+p+'%</td></tr>';
+  }
+  tf.innerHTML=total>0?'<table><thead><tr><th>Tipo</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>'+flo+'</tbody></table>':'<div class="empty">Sin registros</div>';
 
   // Fincas
-  const tfi=document.getElementById("tabla-fincas");
-  const fincasU=[...new Set(regs.map(function(r){return r.finca||"Sin finca";}))].sort();
-  if (!fincasU.length){tfi.innerHTML='<div class="empty">Sin registros</div>';}
-  else {
-    const filasFin=fincasU.map(function(f){
-      const cnt=regs.filter(function(r){return (r.finca||"Sin finca")===f;}).length;
-      const p=total>0?Math.round(cnt/total*100):0;
-      const barra='<div style="background:#e0e0e0;border-radius:99px;height:6px;margin-top:4px;overflow:hidden"><div style="width:'+p+'%;height:100%;background:#163F61;border-radius:99px"></div></div>';
-      return '<tr><td style="font-weight:500">'+f+barra+'</td><td style="text-align:center;font-weight:700;color:#163F61">'+cnt+'</td><td style="text-align:center;color:#777">'+p+'%</td></tr>';
-    }).join("");
-    tfi.innerHTML='<table><thead><tr><th>Finca</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>'+filasFin+'</tbody></table>';
+  var tfi=document.getElementById("tabla-fincas");
+  var fincasMap={};
+  for(var i=0;i<regs.length;i++){var f=regs[i].finca||"Sin finca";fincasMap[f]=(fincasMap[f]||0)+1;}
+  var fincasKeys=Object.keys(fincasMap).sort();
+  if(!fincasKeys.length){tfi.innerHTML='<div class="empty">Sin registros</div>';}
+  else{
+    var finH="";
+    for(var i=0;i<fincasKeys.length;i++){
+      var f=fincasKeys[i];var cnt=fincasMap[f];var p=total>0?Math.round(cnt/total*100):0;
+      var barra='<div style="background:#e0e0e0;border-radius:99px;height:6px;margin-top:4px;overflow:hidden"><div style="width:'+p+'%;height:100%;background:#163F61;border-radius:99px"></div></div>';
+      finH+='<tr><td style="font-weight:500">'+f+barra+'</td><td style="text-align:center;font-weight:700;color:#163F61">'+cnt+'</td><td style="text-align:center;color:#777">'+p+'%</td></tr>';
+    }
+    tfi.innerHTML='<table><thead><tr><th>Finca</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>'+finH+'</tbody></table>';
   }
 
   // Paradas
-  const tp=document.getElementById("tabla-paradas");
-  if (!pars.length){tp.innerHTML='<div class="empty">Sin paradas registradas</div>';}
-  else {
-    const totalMin=pars.reduce(function(s,p){return s+p.minutos;},0);
-    tp.innerHTML='<table><thead><tr><th>Causa</th><th>Inicio</th><th>Fin</th><th>Min.</th></tr></thead><tbody>'+
-      pars.map(function(p){return '<tr><td style="font-size:10px">'+p.obs+'</td><td>'+p.inicio+'</td><td>'+p.fin+'</td><td><strong>'+p.minutos+'</strong></td></tr>';}).join("")+
-      '<tr style="background:#fff3cd"><td colspan="3" style="font-weight:600;padding:6px 5px">Total paradas</td><td style="font-weight:700;color:#c0392b">'+totalMin+' min</td></tr>'+
-      '</tbody></table>';
+  var tp=document.getElementById("tabla-paradas");
+  if(!pars.length){tp.innerHTML='<div class="empty">Sin paradas registradas</div>';}
+  else{
+    var totalMin=0;for(var i=0;i<pars.length;i++)totalMin+=pars[i].minutos;
+    var pH="";
+    for(var i=0;i<pars.length;i++){var p=pars[i];pH+='<tr><td style="font-size:10px">'+p.obs+'</td><td>'+p.inicio+'</td><td>'+p.fin+'</td><td><strong>'+p.minutos+'</strong></td></tr>';}
+    pH+='<tr style="background:#fff3cd"><td colspan="3" style="font-weight:600;padding:6px 5px">Total paradas</td><td style="font-weight:700;color:#c0392b">'+totalMin+' min</td></tr>';
+    tp.innerHTML='<table><thead><tr><th>Causa</th><th>Inicio</th><th>Fin</th><th>Min.</th></tr></thead><tbody>'+pH+'</tbody></table>';
   }
 
-  // Tabla bines: primero 06-23h, luego madrugada
-  const tb=document.getElementById("tabla-body");
-  if (!regs.length){tb.innerHTML='<div class="empty">Sin registros para esta fecha</div>';return;}
-  const regsDia=regs.filter(function(r){return r.hora>=6;});
-  const regsMad=regs.filter(function(r){return r.hora<6;});
-  let filas='<table><thead><tr><th>Hora</th><th>Bin</th><th>Tipo</th><th>Lote</th><th>Finca</th><th>GF</th></tr></thead><tbody>';
-  regsDia.forEach(function(r){
-    filas+='<tr><td>'+(r.horaStr||String(r.hora).padStart(2,"0")+":00")+'</td><td><strong>'+r.bin+'</strong></td><td style="font-size:10px">'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';
-  });
-  if (regsMad.length>0) {
-    filas+='<tr style="background:#2C3E50"><td colspan="6" style="color:white;font-weight:600;padding:6px;font-size:10px">🌙 Madrugada — continuación del proceso ('+fechaSiguiente(fecha)+')</td></tr>';
-    regsMad.forEach(function(r){
-      filas+='<tr style="background:#EBF5FB"><td>'+(r.horaStr||String(r.hora).padStart(2,"0")+":00")+'</td><td><strong>'+r.bin+'</strong></td><td style="font-size:10px">'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';
-    });
+  // Tabla bines: 06-23h primero, luego madrugada
+  var tb=document.getElementById("tabla-body");
+  if(!regs.length){tb.innerHTML='<div class="empty">Sin registros para esta fecha</div>';return;}
+  var regsDia=[],regsMad=[];
+  for(var i=0;i<regs.length;i++){if(regs[i].hora>=6)regsDia.push(regs[i]);else regsMad.push(regs[i]);}
+  var rows='<table><thead><tr><th>Hora</th><th>Bin</th><th>Tipo</th><th>Lote</th><th>Finca</th><th>GF</th></tr></thead><tbody>';
+  for(var i=0;i<regsDia.length;i++){var r=regsDia[i];rows+='<tr><td>'+(r.horaStr||pad(r.hora)+":00")+'</td><td><strong>'+r.bin+'</strong></td><td style="font-size:10px">'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';}
+  if(regsMad.length>0){
+    rows+='<tr style="background:#2C3E50"><td colspan="6" style="color:white;font-weight:600;padding:6px;font-size:10px">🌙 Madrugada — continuación del proceso ('+sig+')</td></tr>';
+    for(var i=0;i<regsMad.length;i++){var r=regsMad[i];rows+='<tr style="background:#EBF5FB"><td>'+(r.horaStr||pad(r.hora)+":00")+'</td><td><strong>'+r.bin+'</strong></td><td style="font-size:10px">'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';}
   }
-  filas+='</tbody></table>';
-  tb.innerHTML=filas;
+  rows+='</tbody></table>';
+  tb.innerHTML=rows;
 }
 
 function generarInforme() {
-  const fecha=document.getElementById("dash-fecha").value;
-  const sig=fechaSiguiente(fecha);
-  const regs=filtrarDiaOperativo(registros,fecha).sort(function(a,b){return a.hora-b.hora;});
-  const pars=filtrarDiaOperativo(paradas,fecha);
-  const total=regs.length;
-  const horasConBines=new Set(regs.map(function(r){return r.hora;})).size;
-  const horasT=Math.max(1,horasConBines);
-  const prom=regs.length>0?(total/horasT).toFixed(1):"—";
-  const kgTotal=total*KG_BIN;
-  const proyKg=metaTon>0?metaTon*1000:metaBines*KG_BIN;
-  const minPerdidos=pars.reduce(function(s,p){return s+p.minutos;},0);
-  const pct=Math.min(100,Math.round(total/metaBines*100));
-  const ahora=new Date().toLocaleString("es-CO");
-  const metaInfo=metaTon>0?metaTon+" ton → "+(metaTon*1000).toLocaleString("es-CO")+" kg → "+metaBines+" bines":"80 bines (default)";
+  var fecha=document.getElementById("dash-fecha").value;
+  var sig=fechaSig(fecha);
+  var regs=filtroDia(registros,fecha);
+  regs.sort(function(a,b){return a.hora-b.hora;});
+  var pars=filtroDia(paradas,fecha);
+  var total=regs.length;
+  var horasSet={};for(var i=0;i<regs.length;i++)horasSet[regs[i].hora]=1;
+  var horasT=Math.max(1,Object.keys(horasSet).length);
+  var prom=total>0?(total/horasT).toFixed(1):"—";
+  var kgTotal=total*KG_BIN;
+  var proyKg=metaTon>0?metaTon*1000:metaBines*KG_BIN;
+  var minPerd=0;for(var i=0;i<pars.length;i++)minPerd+=pars[i].minutos;
+  var pct=Math.min(100,Math.round(total/metaBines*100));
+  var ahora=new Date().toLocaleString("es-CO");
+  var metaInfo=metaTon>0?metaTon+" ton → "+(metaTon*1000).toLocaleString("es-CO")+" kg → "+metaBines+" bines":"80 bines (default)";
 
-  const ordenOp=[];
-  for(var i=6;i<=23;i++) ordenOp.push(i);
-  for(var i=0;i<6;i++) ordenOp.push(i);
-  const horasInf=ordenOp.filter(function(h){return regs.some(function(r){return r.hora===h;});});
-
-  let filasBinesHora="";
-  horasInf.forEach(function(h){
-    const cnt=regs.filter(function(r){return r.hora===h;}).length;
-    if (!cnt) return;
-    const color=cnt>=META_HORA?"#27ae60":"#e67e22";
-    const vs=cnt>=META_HORA?"+"+(cnt-META_HORA):(cnt-META_HORA);
-    const esMad=h<6;
-    filasBinesHora+='<tr'+(esMad?' style="background:#EBF5FB"':'')+'><td>'+String(h).padStart(2,"0")+':00'+(esMad?' <span style="color:#2980b9;font-size:10px">(madrugada)</span>':'')+'</td><td style="text-align:center;font-weight:700;color:'+color+'">'+cnt+'</td><td style="text-align:center;color:'+color+'">'+vs+'</td></tr>';
-  });
-
-  let filasParadas="";
-  if (!pars.length){filasParadas='<tr><td colspan="4" style="text-align:center;color:#aaa">Sin paradas</td></tr>';}
-  else {
-    pars.forEach(function(p){filasParadas+='<tr><td>'+p.obs+'</td><td style="text-align:center">'+p.inicio+'</td><td style="text-align:center">'+p.fin+'</td><td style="text-align:center;font-weight:700;color:#c0392b">'+p.minutos+'</td></tr>';});
-    filasParadas+='<tr style="background:#fff3cd"><td colspan="3" style="font-weight:700">TOTAL MINUTOS PARADAS</td><td style="text-align:center;font-weight:700;color:#c0392b">'+minPerdidos+' min</td></tr>';
+  var ordenOp=[];for(var h=6;h<=23;h++)ordenOp.push(h);for(var h=0;h<6;h++)ordenOp.push(h);
+  var fbh="";
+  for(var i=0;i<ordenOp.length;i++){
+    var h=ordenOp[i];var cnt=0;for(var j=0;j<regs.length;j++)if(regs[j].hora===h)cnt++;
+    if(!cnt)continue;
+    var color=cnt>=META_HORA?"#27ae60":"#e67e22";
+    var vs=cnt>=META_HORA?"+"+(cnt-META_HORA):(cnt-META_HORA);
+    var esMad=h<6;
+    fbh+='<tr'+(esMad?' style="background:#EBF5FB"':'')+'><td>'+pad(h)+':00'+(esMad?' <span style="color:#2980b9;font-size:10px">(madrugada)</span>':'')+'</td><td style="text-align:center;font-weight:700;color:'+color+'">'+cnt+'</td><td style="text-align:center;color:'+color+'">'+vs+'</td></tr>';
   }
-
-  const regsDia=regs.filter(function(r){return r.hora>=6;});
-  const regsMad=regs.filter(function(r){return r.hora<6;});
-  let filasDetalle="";
-  regsDia.forEach(function(r){
-    filasDetalle+='<tr><td>'+(r.horaStr||String(r.hora).padStart(2,"0")+":00")+'</td><td style="text-align:center;font-weight:700">'+r.bin+'</td><td>'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';
-  });
-  if (regsMad.length>0) {
-    filasDetalle+='<tr style="background:#2C3E50"><td colspan="6" style="color:white;font-weight:600;padding:6px;font-size:11px">🌙 Madrugada — continuación del proceso ('+sig+')</td></tr>';
-    regsMad.forEach(function(r){
-      filasDetalle+='<tr style="background:#EBF5FB"><td>'+(r.horaStr||String(r.hora).padStart(2,"0")+":00")+'</td><td style="text-align:center;font-weight:700">'+r.bin+'</td><td>'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';
-    });
+  var fp="";
+  if(!pars.length){fp='<tr><td colspan="4" style="text-align:center;color:#aaa">Sin paradas</td></tr>';}
+  else{
+    var tm=0;for(var i=0;i<pars.length;i++){var p=pars[i];tm+=p.minutos;fp+='<tr><td>'+p.obs+'</td><td style="text-align:center">'+p.inicio+'</td><td style="text-align:center">'+p.fin+'</td><td style="text-align:center;font-weight:700;color:#c0392b">'+p.minutos+'</td></tr>';}
+    fp+='<tr style="background:#fff3cd"><td colspan="3" style="font-weight:700">TOTAL MINUTOS PARADAS</td><td style="text-align:center;font-weight:700;color:#c0392b">'+tm+' min</td></tr>';
   }
-  if (!filasDetalle) filasDetalle='<tr><td colspan="6" style="text-align:center;color:#aaa">Sin registros</td></tr>';
+  var regsDia=[],regsMad=[];
+  for(var i=0;i<regs.length;i++){if(regs[i].hora>=6)regsDia.push(regs[i]);else regsMad.push(regs[i]);}
+  var fd="";
+  for(var i=0;i<regsDia.length;i++){var r=regsDia[i];fd+='<tr><td>'+(r.horaStr||pad(r.hora)+":00")+'</td><td style="text-align:center;font-weight:700">'+r.bin+'</td><td>'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';}
+  if(regsMad.length>0){
+    fd+='<tr style="background:#2C3E50"><td colspan="6" style="color:white;font-weight:600;padding:6px;font-size:11px">🌙 Madrugada — continuación del proceso ('+sig+')</td></tr>';
+    for(var i=0;i<regsMad.length;i++){var r=regsMad[i];fd+='<tr style="background:#EBF5FB"><td>'+(r.horaStr||pad(r.hora)+":00")+'</td><td style="text-align:center;font-weight:700">'+r.bin+'</td><td>'+(r.floracion||"—")+'</td><td>'+(r.lote||"—")+'</td><td>'+(r.finca||"—")+'</td><td>'+(r.gf||"—")+'</td></tr>';}
+  }
+  if(!fd)fd='<tr><td colspan="6" style="text-align:center;color:#aaa">Sin registros</td></tr>';
 
-  const html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe — '+fecha+'</title>'+
+  var html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe — '+fecha+'</title>'+
 '<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;font-size:12px;color:#222;padding:30px;}'+
-'.header{background:#2C3E50;color:white;padding:20px 24px;border-radius:8px;margin-bottom:20px;}'+
-'.header h1{font-size:20px;font-weight:700;}.header p{font-size:12px;color:#7EC8E3;margin-top:4px;}'+
-'.header .fecha{font-size:14px;color:white;margin-top:8px;font-weight:600;}'+
-'.section{margin-bottom:20px;}.section h2{font-size:13px;font-weight:700;color:#163F61;border-bottom:2px solid #2ECC71;padding-bottom:5px;margin-bottom:12px;text-transform:uppercase;}'+
-'.resumen{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}'+
-'.res-item{flex:1;min-width:110px;background:#f4f6f8;border-radius:8px;padding:12px;text-align:center;}'+
-'.res-item .val{font-size:22px;font-weight:700;color:#163F61;}.res-item .lbl{font-size:10px;color:#777;margin-top:3px;}'+
-'.peso-box{background:#163F61;color:white;border-radius:8px;padding:14px;display:flex;gap:12px;margin-bottom:20px;}'+
-'.peso-item{flex:1;text-align:center;}.peso-item .pval{font-size:18px;font-weight:700;}.peso-item .plbl{font-size:10px;opacity:0.8;margin-top:3px;}'+
-'.meta-box{background:#eaf6ee;border:1px solid #b2dfcc;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#155724;}'+
-'.mad-note{background:#EBF5FB;border:1px solid #AED6F1;border-radius:6px;padding:8px 12px;margin-bottom:16px;font-size:11px;color:#2980b9;}'+
+'.hdr{background:#2C3E50;color:white;padding:20px 24px;border-radius:8px;margin-bottom:20px;}'+
+'.hdr h1{font-size:20px;font-weight:700;}.hdr p{font-size:12px;color:#7EC8E3;margin-top:4px;}'+
+'.hdr .f{font-size:14px;color:white;margin-top:8px;font-weight:600;}'+
+'.sec{margin-bottom:20px;}.sec h2{font-size:13px;font-weight:700;color:#163F61;border-bottom:2px solid #2ECC71;padding-bottom:5px;margin-bottom:12px;text-transform:uppercase;}'+
+'.res{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}'+
+'.ri{flex:1;min-width:110px;background:#f4f6f8;border-radius:8px;padding:12px;text-align:center;}'+
+'.ri .v{font-size:22px;font-weight:700;color:#163F61;}.ri .l{font-size:10px;color:#777;margin-top:3px;}'+
+'.pb{background:#163F61;color:white;border-radius:8px;padding:14px;display:flex;gap:12px;margin-bottom:20px;}'+
+'.pi{flex:1;text-align:center;}.pi .pv{font-size:18px;font-weight:700;}.pi .pl{font-size:10px;opacity:0.8;margin-top:3px;}'+
+'.mb{background:#eaf6ee;border:1px solid #b2dfcc;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#155724;}'+
+'.mn{background:#EBF5FB;border:1px solid #AED6F1;border-radius:6px;padding:8px 12px;margin-bottom:16px;font-size:11px;color:#2980b9;}'+
 'table{width:100%;border-collapse:collapse;font-size:11px;}th{background:#163F61;color:white;padding:8px 6px;text-align:left;}'+
 'td{padding:7px 6px;border-bottom:1px solid #eee;}tr:nth-child(even) td{background:#f9f9f9;}'+
-'.footer{margin-top:30px;text-align:center;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px;}'+
+'.ft{margin-top:30px;text-align:center;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px;}'+
 '@media print{body{padding:15px;}}</style></head><body>'+
-'<div class="header"><h1>Agrícola Guapa S.A.S</h1><p>Informe Diario de Planta Empacadora</p>'+
-'<div class="fecha">📅 Día operativo: '+fecha+' (06:00) → '+sig+' (05:59) &nbsp;&nbsp; 🕐 Generado: '+ahora+'</div></div>'+
-'<div class="meta-box">🎯 <strong>Meta del día:</strong> '+metaInfo+' &nbsp;|&nbsp; <strong>Meta/hora:</strong> 12 bines</div>'+
-'<div class="mad-note">🌙 Las filas en azul corresponden a proceso de madrugada (00:00–05:59 del '+sig+'), atribuidas operacionalmente al día '+fecha+'.</div>'+
-'<div class="section"><h2>Resumen del turno</h2><div class="resumen">'+
-'<div class="res-item"><div class="val">'+total+'</div><div class="lbl">Bines procesados</div></div>'+
-'<div class="res-item"><div class="val">'+prom+'</div><div class="lbl">Promedio bines/hora</div></div>'+
-'<div class="res-item"><div class="val">'+pct+'%</div><div class="lbl">Cumplimiento meta</div></div>'+
-'<div class="res-item"><div class="val" style="color:#c0392b">'+minPerdidos+' min</div><div class="lbl">Minutos en paradas</div></div>'+
+'<div class="hdr"><h1>Agrícola Guapa S.A.S</h1><p>Informe Diario de Planta Empacadora</p>'+
+'<div class="f">📅 Día operativo: '+fecha+' (06:00) → '+sig+' (05:59) &nbsp;&nbsp; 🕐 Generado: '+ahora+'</div></div>'+
+'<div class="mb">🎯 <strong>Meta del día:</strong> '+metaInfo+' | <strong>Meta/hora:</strong> 12 bines</div>'+
+'<div class="mn">🌙 Filas en azul = proceso de madrugada (00:00–05:59 del '+sig+'), atribuidas al día '+fecha+'.</div>'+
+'<div class="sec"><h2>Resumen del turno</h2><div class="res">'+
+'<div class="ri"><div class="v">'+total+'</div><div class="l">Bines procesados</div></div>'+
+'<div class="ri"><div class="v">'+prom+'</div><div class="l">Promedio bines/hora</div></div>'+
+'<div class="ri"><div class="v">'+pct+'%</div><div class="l">Cumplimiento meta</div></div>'+
+'<div class="ri"><div class="v" style="color:#c0392b">'+minPerd+' min</div><div class="l">Minutos en paradas</div></div>'+
 '</div></div>'+
-'<div class="peso-box">'+
-'<div class="peso-item"><div class="pval">'+kgTotal.toLocaleString("es-CO")+' kg</div><div class="plbl">Peso total procesado</div></div>'+
-'<div class="peso-item"><div class="pval">'+(kgTotal/1000).toFixed(2)+' ton</div><div class="plbl">Toneladas</div></div>'+
-'<div class="peso-item"><div class="pval">'+proyKg.toLocaleString("es-CO")+' kg</div><div class="plbl">Kg proyectados día</div></div>'+
+'<div class="pb">'+
+'<div class="pi"><div class="pv">'+kgTotal.toLocaleString("es-CO")+' kg</div><div class="pl">Peso total procesado</div></div>'+
+'<div class="pi"><div class="pv">'+(kgTotal/1000).toFixed(2)+' ton</div><div class="pl">Toneladas</div></div>'+
+'<div class="pi"><div class="pv">'+proyKg.toLocaleString("es-CO")+' kg</div><div class="pl">Kg proyectados día</div></div>'+
 '</div>'+
-'<div class="section"><h2>Producción por hora</h2>'+
-'<table><thead><tr><th>Franja horaria</th><th style="text-align:center">Bines</th><th style="text-align:center">vs Meta</th></tr></thead>'+
-'<tbody>'+filasBinesHora+'</tbody></table></div>'+
-'<div class="section"><h2>Paradas del día</h2>'+
-'<table><thead><tr><th>Causa</th><th style="text-align:center">Inicio</th><th style="text-align:center">Fin</th><th style="text-align:center">Minutos</th></tr></thead>'+
-'<tbody>'+filasParadas+'</tbody></table></div>'+
-'<div class="section"><h2>Detalle de registros</h2>'+
-'<table><thead><tr><th>Hora</th><th style="text-align:center">Bin</th><th>Tipo Floración</th><th>Lote</th><th>Finca</th><th>Grupo Forza</th></tr></thead>'+
-'<tbody>'+filasDetalle+'</tbody></table></div>'+
-'<div class="footer">Agrícola Guapa S.A.S — NIT 900.689.885 — Control de Bines Planta Empacadora</div>'+
-'<scr'+'ipt>window.onload=function(){window.print();}</scr'+'ipt>'+
-'</body></html>';
+'<div class="sec"><h2>Producción por hora</h2>'+
+'<table><thead><tr><th>Franja</th><th style="text-align:center">Bines</th><th style="text-align:center">vs Meta</th></tr></thead><tbody>'+fbh+'</tbody></table></div>'+
+'<div class="sec"><h2>Paradas del día</h2>'+
+'<table><thead><tr><th>Causa</th><th style="text-align:center">Inicio</th><th style="text-align:center">Fin</th><th style="text-align:center">Min.</th></tr></thead><tbody>'+fp+'</tbody></table></div>'+
+'<div class="sec"><h2>Detalle de registros</h2>'+
+'<table><thead><tr><th>Hora</th><th style="text-align:center">Bin</th><th>Tipo Floración</th><th>Lote</th><th>Finca</th><th>Grupo Forza</th></tr></thead><tbody>'+fd+'</tbody></table></div>'+
+'<div class="ft">Agrícola Guapa S.A.S — NIT 900.689.885 — Control de Bines Planta Empacadora</div>'+
+'<scr'+'ipt>window.onload=function(){window.print();}</scr'+'ipt></body></html>';
 
-  const win=window.open("","_blank");
-  win.document.write(html);
-  win.document.close();
+  var win=window.open("","_blank");win.document.write(html);win.document.close();
 }
 
 initForm();
