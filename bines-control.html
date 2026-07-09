@@ -345,15 +345,16 @@ function jsonp(url,cb){
 }
 function cargarTodo(){
   setMsg("info","Cargando datos...");
+  var fecha=document.getElementById("dash-fecha").value;
   jsonp(SCRIPT+"?tipo=metas",function(dm){
-    if(dm&&dm.metas){todasMetas=dm.metas;aplicarMeta(document.getElementById("dash-fecha").value);}
-    jsonp(SCRIPT,function(d){
+    if(dm&&dm.metas){todasMetas=dm.metas;aplicarMeta(fecha);}
+    jsonp(SCRIPT+"?fecha="+encodeURIComponent(fecha)+"&t="+Date.now(),function(d){
       if(!d){setMsg("error","Error cargando datos. Recarga.");return;}
       registros=(d.registros||[]).map(function(r){
         var hs=parseHora(r.hora);
         return{fecha:parseFecha(r.fecha),hora:parseInt(hs.split(":")[0]),horaStr:hs,bin:r.bin,gf:r.gf,floracion:r.floracion,lote:r.lote,finca:r.finca};
       });
-      jsonp(SCRIPT+"?tipo=paradas",function(d2){
+      jsonp(SCRIPT+"?tipo=paradas&fecha="+encodeURIComponent(fecha),function(d2){
         if(d2&&d2.paradas){
           paradas=(d2.paradas||[]).map(function(p){
             return{fecha:parseFecha(p.fecha),hora:horaDeStr(p.inicio),inicio:p.inicio,fin:p.fin,minutos:parseInt(p.minutos)||0,obs:p.obs};
