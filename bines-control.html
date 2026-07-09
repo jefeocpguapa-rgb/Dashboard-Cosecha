@@ -409,10 +409,14 @@ function cargarTodo() {
       };});
       jsonp(SCRIPT+"?tipo=paradas", function(data2) {
         if (data2) {
-          paradas=(data2.paradas||[]).map(function(p){return {
-            fecha:parseFecha(p.fecha),
-            inicio:p.inicio,fin:p.fin,minutos:parseInt(p.minutos)||0,obs:p.obs
-          };});
+          paradas=(data2.paradas||[]).map(function(p){
+            const horaInicio=parseInt((p.inicio||"00:00").split(":")[0]);
+            return {
+              fecha:parseFecha(p.fecha),
+              hora:horaInicio,
+              inicio:p.inicio,fin:p.fin,minutos:parseInt(p.minutos)||0,obs:p.obs
+            };
+          });
         }
         const diaOp=getFechaOperativa();
         const regsHoy=filtrarDiaOperativo(registros,diaOp);
@@ -522,12 +526,6 @@ function renderDashboard() {
   const horasAMostrar=esHoy
     ? ordenOp.filter(function(h){return regs.some(function(r){return r.hora===h;})||(h>=6&&h<=horaActual);})
     : ordenOp.filter(function(h){return regs.some(function(r){return r.hora===h;});});
-
-  const maxB=Math.max(META_HORA,1);
-  horasAMostrar.forEach(function(h){
-    const cnt=regs.filter(function(r){return r.hora===h;}).length;
-    if (cnt>maxB) maxB=cnt; // won't work with const, use let below
-  });
 
   const maxBarras=Math.max(META_HORA,...horasAMostrar.map(function(h){return regs.filter(function(r){return r.hora===h;}).length;}),1);
   const chart=document.getElementById("chart");
