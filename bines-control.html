@@ -321,9 +321,10 @@ function guardarMeta(){
   });
 }
 function initForm(){
-  document.getElementById("dash-fecha").value=getFechaOp();
-  document.getElementById("disp-fecha").textContent=getFechaOp();
-  document.getElementById("disp-fecha-p").textContent=getFechaOp();
+  var fechaOp=getFechaOp();
+  document.getElementById("dash-fecha").value=fechaOp;
+  document.getElementById("disp-fecha").textContent=fechaOp;
+  document.getElementById("disp-fecha-p").textContent=fechaOp;
   document.getElementById("disp-hora").value=getHoraActual();
   setInterval(function(){
     document.getElementById("disp-fecha").textContent=getFechaOp();
@@ -332,7 +333,10 @@ function initForm(){
       document.getElementById("disp-hora").value=getHoraActual();
   },30000);
   document.getElementById("disp-hora").addEventListener("change",function(){this.dataset.tocado="1";});
-  document.getElementById("dash-fecha").addEventListener("change",function(){aplicarMeta(this.value);renderDash();});
+  document.getElementById("dash-fecha").addEventListener("change",function(){
+    aplicarMeta(this.value);
+    cargarTodo();
+  });
   var sel=document.getElementById("inp-gf");
   for(var i=1;i<=52;i++){var o=document.createElement("option");var n=pad(i);o.value="GF"+n+"26";o.textContent="GF"+n+"26";sel.appendChild(o);}
 }
