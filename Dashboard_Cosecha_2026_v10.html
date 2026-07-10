@@ -13099,6 +13099,7 @@ function median(arr) {
 }
 
 function countUp(el, target, duration=500) {
+  if (!el) return;
   const start = performance.now();
   const isFloat = Math.abs(target - Math.round(target)) > 0.001;
   function step(now) {
@@ -13670,7 +13671,7 @@ function updateChartDona() {
   const e=filteredData.filter(r=>r['TipoCosecha']==='Mecánica').reduce((s,r)=>s+r._peso,0);
   charts.dona.data.datasets[0].data=[m,e];
   charts.dona.update('none');
-  document.getElementById('dona-total').textContent=fmtNum(m+e);
+  const donaTot=document.getElementById('dona-total'); if(donaTot) donaTot.textContent=fmtNum(m+e);
 }
 
 // ── G3: TOP CUADRILLEROS ──
@@ -14728,7 +14729,7 @@ function applyDespFiltros() { return; // disabled
     if (cat     && r.categoria !== cat) return false;
     return true;
   });
-  document.getElementById('desp-counter').textContent = `${filtDespachos.length} registros`;
+  {const _desp_counter=document.getElementById('desp-counter');if(_desp_counter)_desp_counter.textContent=`${filtDespachos.length} registros`;}
   updateDespachos();
 }
 
@@ -14736,7 +14737,7 @@ function resetDespFiltros() { return; // disabled — section removed
   document.getElementById('desp-filter-cliente').value = '';
   document.getElementById('desp-filter-cat').value = '';
   filtDespachos = [...allDespachos];
-  document.getElementById('desp-counter').textContent = `${filtDespachos.length} registros`;
+  {const _desp_counter=document.getElementById('desp-counter');if(_desp_counter)_desp_counter.textContent=`${filtDespachos.length} registros`;}
   updateDespachos();
 }
 window.resetDespFiltros = resetDespFiltros;
@@ -14839,11 +14840,11 @@ function updateDespachos() { return; // disabled — section removed
   const conPrecio = data.filter(r=>r.precio>0 && r.cliente !== 'descarte');
   const kgConPrecio = conPrecio.reduce((s,r)=>s+r.kilos,0);
   const precioAvg = kgConPrecio > 0 ? conPrecio.reduce((s,r)=>s+r.precio*r.kilos,0)/kgConPrecio : 0;
-  document.getElementById('desp-kg-total').textContent = fmtNum(Math.round(totalKg));
-  document.getElementById('desp-precio-avg').textContent = precioAvg > 0 ? '$'+fmtNum(Math.round(precioAvg)) : '—';
-  document.getElementById('desp-clientes').textContent = new Set(data.map(r=>r.cliente)).size;
-  document.getElementById('desp-cats').textContent = new Set(data.map(r=>r.categoria)).size;
-  document.getElementById('desp-dias').textContent = new Set(data.map(r=>r.fechaDespacho)).size;
+  {const _desp_kg_total=document.getElementById('desp-kg-total');if(_desp_kg_total)_desp_kg_total.textContent=fmtNum(Math.round(totalKg));}
+  {const _desp_precio_avg=document.getElementById('desp-precio-avg');if(_desp_precio_avg)_desp_precio_avg.textContent=precioAvg > 0 ? '$'+fmtNum(Math.round(precioAvg)) : '—';}
+  {const _desp_clientes=document.getElementById('desp-clientes');if(_desp_clientes)_desp_clientes.textContent=new Set(data.map(r=>r.cliente)).size;}
+  {const _desp_cats=document.getElementById('desp-cats');if(_desp_cats)_desp_cats.textContent=new Set(data.map(r=>r.categoria)).size;}
+  {const _desp_dias=document.getElementById('desp-dias');if(_desp_dias)_desp_dias.textContent=new Set(data.map(r=>r.fechaDespacho)).size;}
 
   const fechas = [...new Set(data.map(r=>r.fechaDespacho))].sort();
   const cats   = [...new Set(data.map(r=>r.categoria))].sort();
