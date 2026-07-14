@@ -205,6 +205,19 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
 @keyframes loadbar{0%{width:0}50%{width:70%}100%{width:100%}}
 @media(max-width:768px){.charts-grid{grid-template-columns:1fr}#kpis{grid-template-columns:repeat(2,1fr)}#header{padding:10px 14px}.brand h1{font-size:1.1rem}#main{padding:14px 12px}#filters-bar{padding:10px 12px;top:54px}#combo-matrix{grid-template-columns:1fr}}
 </style>
+
+<style id="print-styles">
+@media print {
+  /* Hide everything except the report */
+  body > *:not(#informe-gerencial-modal) { display: none !important; }
+  #informe-gerencial-modal { display: block !important; position: static !important;
+    background: white !important; margin: 0 !important; padding: 0 !important; }
+  #informe-print-content { display: block !important; }
+  .informe-no-print { display: none !important; }
+  @page { size: A4 portrait; margin: 15mm 12mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+</style>
 </head>
 <body>
 
@@ -220,6 +233,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
     <div><h1>Dashboard de Cosecha 2026</h1><p>Análisis de producción · Piña/Fruta</p></div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
+    <button id="btn-informe" onclick="generarInformeGerencial()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">📄 Informe Gerencial</button>
     <button id="btn-presentacion" onclick="togglePresentacion()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:var(--accent-green);padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--accent-green)';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='var(--accent-green)'">⛶ Modo Presentación</button>
     <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
   </div>
@@ -12394,6 +12408,194 @@ Boleta;Bloque;Desarrollo;GrupoForza;Bin;Fecha;Frutas;Peso;PesoMedio;Floracion;Cu
 50412;PC731725;PC;GF1526;52 verde;9/07/2026;258;430;1.6667;Natural;REYES RIVERA NELSON DAVID;15;66;7;Manual;Camión;28;73;0.1146;PESCA
 50412;PC732525;PC;GF1226;131 verde;9/07/2026;778;1474;1.8946;Natural;REYES RIVERA NELSON DAVID;15;66;7;Manual;Camión;28;73;0.4449;PESCA
 50412;PC732525;PC;GF1226;60 verde;9/07/2026;812;1570;1.9335;Natural;REYES RIVERA NELSON DAVID;15;66;7;Manual;Camión;28;73;0.4449;PESCA
+50188;SC031523;SC;GF0826;139 verde;10/07/2026;946;946;1;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4306;BARRIDA
+50188;SC031523;SC;GF0826;26 verde;10/07/2026;978;1022;1.045;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4306;BARRIDA
+50188;SC031523;SC;GF0826;2 verde;10/07/2026;1050;940;0.8952;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4306;BARRIDA
+50188;SC031523;SC;GF0826;114 verde;10/07/2026;1100;912;0.8291;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4306;BARRIDA
+50189;SC031523;SC;GF0826;131 verde;10/07/2026;800;870;1.0875;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4306;BARRIDA
+50189;SC030423;SC;GF0826;131 verde;10/07/2026;92;100;1.087;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3164;BARRIDA
+50189;SC031523;SC;GF0826;43 verde;10/07/2026;880;863;0.9807;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4306;BARRIDA
+50189;SC030423;SC;GF0826;43 verde;10/07/2026;140;137;0.9786;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3164;BARRIDA
+50190;SC030723;SC;GF0826;109 verde;10/07/2026;900;954;1.06;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50190;SC030723;SC;GF0826;80 verde;10/07/2026;940;1102;1.1723;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50190;SC030423;SC;GF0826;64 verde;10/07/2026;1018;1155;1.1346;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3164;BARRIDA
+50190;SC031923;SC;GF0926;158 verde;10/07/2026;624;1104;1.7692;Natural;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3619;PESCA
+50191;SC030723;SC;GF0826;87 verde;10/07/2026;770;1064;1.3818;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50191;SC030723;SC;GF0826;4 verde;10/07/2026;912;996;1.0921;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50191;SC030723;SC;GF0826;24 verde;10/07/2026;904;1123;1.2423;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50191;SC030723;SC;GF0826;92 verde;10/07/2026;922;1135;1.231;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50192;SC030723;SC;GF0826;88 verde;10/07/2026;352;482;1.3693;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50192;SC030423;SC;GF0826;88 verde;10/07/2026;464;635;1.3685;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3164;BARRIDA
+50192;SC030423;SC;GF0826;157 verde;10/07/2026;980;1133;1.1561;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3164;BARRIDA
+50193;SC030123;SC;GF0826;27 verde;10/07/2026;980;1030;1.051;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3685;BARRIDA
+50193;SC030123;SC;GF0826;49 verde;10/07/2026;980;1023;1.0439;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;16;10.5;Mecánica;Tractor;28;03;0.3685;BARRIDA
+50194;SC030723;SC;GF0826;7 verde;12/07/2026;900;1049;1.1656;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50194;SC030723;SC;GF0826;67 verde;12/07/2026;926;1091;1.1782;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50194;SC030723;SC;GF0826;62 verde;12/07/2026;922;1024;1.1106;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50194;SC030723;SC;GF0826;139 verde;12/07/2026;900;1024;1.1378;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50195;SC030723;SC;GF0826;110 verde;12/07/2026;512;559;1.0918;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50195;SC030123;SC;GF0826;110 verde;12/07/2026;400;437;1.0925;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.3685;BARRIDA
+50195;SC030723;SC;GF0826;140 verde;12/07/2026;492;547;1.1118;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4093;BARRIDA
+50195;SC030123;SC;GF0826;140 verde;12/07/2026;430;479;1.114;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.3685;BARRIDA
+50196;SC030123;SC;GF0826;28 verde;12/07/2026;836;1072;1.2823;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.3685;BARRIDA
+50196;SC030123;SC;GF0826;22 verde;12/07/2026;986;1008;1.0223;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.3685;BARRIDA
+50196;SC030123;SC;GF0826;40 verde;12/07/2026;100;138;1.38;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.3685;JERONIMO MARTINS COLOMBIA SAS
+50196;SC030123;SC;GF0826;19 verde;12/07/2026;100;149;1.49;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.3685;JERONIMO MARTINS COLOMBIA SAS
+50197;SC032423;SC;GF0926;40 verde;12/07/2026;774;1067;1.3786;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4149;JERONIMO MARTINS COLOMBIA SAS
+50197;SC032423;SC;GF0926;19 verde;12/07/2026;710;1059;1.4915;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4149;JERONIMO MARTINS COLOMBIA SAS
+50197;SC032423;SC;GF0926;123 verde;12/07/2026;742;1127;1.5189;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4149;ALMACENES EXITO S.A.
+50197;SC032423;SC;GF0926;141 verde;12/07/2026;752;1171;1.5572;Inducción;MANUEL ANTONIO MONTALVO LOPEZ;8;12;6.5;Mecánica;Tractor;28;03;0.4149;ALMACENES EXITO S.A.
+50234;PC730325;PC;GF1526;41 verde;10/07/2026;210;351;1.6714;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50234;PC730425;PC;GF1626;41 verde;10/07/2026;534;891;1.6685;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50234;PC730425;PC;GF1626;67 verde;10/07/2026;254;343;1.3504;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50234;PC730225;PC;GF1426;67 verde;10/07/2026;614;829;1.3502;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50235;PC730425;PC;GF1626;85 verde;10/07/2026;652;1219;1.8696;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50235;PC730325;PC;GF1526;113 verde;10/07/2026;386;613;1.5881;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50235;PC730425;PC;GF1626;113 verde;10/07/2026;362;575;1.5884;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50235;PC730325;PC;GF1526;35 verde;10/07/2026;286;521;1.8217;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50236;PC730425;PC;GF1626;35 verde;10/07/2026;240;437;1.8208;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50236;PC730225;PC;GF1426;35 verde;10/07/2026;142;259;1.8239;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50236;PC730225;PC;GF1426;120 verde;10/07/2026;642;1178;1.8349;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50236;PC732625;PC;GF1426;153 verde;10/07/2026;702;1167;1.6624;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4582;PESCA
+50237;PC732625;PC;GF1426;48 verde;10/07/2026;720;1127;1.5653;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4582;PESCA
+50237;PC732625;PC;GF1426;90 verde;10/07/2026;712;1135;1.5941;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4582;PESCA
+50237;PC731425;PC;GF1526;24 verde;10/07/2026;800;1129;1.4112;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.5615;PESCA
+50237;PC731425;PC;GF1526;92 verde;10/07/2026;922;1157;1.2549;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.5615;PESCA
+50238;PC730225;PC;GF1426;95 verde;10/07/2026;736;1204;1.6359;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50238;PC730225;PC;GF1426;36 verde;10/07/2026;784;1128;1.4388;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50238;PC730325;PC;GF1526;78 verde;10/07/2026;200;318;1.59;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50238;PC730425;PC;GF1626;78 verde;10/07/2026;600;955;1.5917;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50240;PC731525;PC;GF1426;73 verde;12/07/2026;660;1108;1.6788;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.1742;PESCA
+50240;PC731525;PC;GF1426;6 verde;12/07/2026;412;667;1.6189;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.1742;PESCA
+50240;PC731625;PC;GF1526;6 verde;12/07/2026;354;574;1.6215;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.1587;PESCA
+50240;PC731525;PC;GF1426;145 verde;12/07/2026;684;1083;1.5833;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.1742;PESCA
+50241;PC731825;PC;GF1426;101 verde;12/07/2026;710;1149;1.6183;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.0943;PESCA
+50241;PC731825;PC;GF1426;35 verde;12/07/2026;214;329;1.5374;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.0943;PESCA
+50241;PC731925;PC;GF1426;35 verde;12/07/2026;500;770;1.54;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.0252;PESCA
+50241;PC731925;PC;GF1426;133 verde;12/07/2026;194;316;1.6289;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.0252;PESCA
+50242;PC731225;PC;GF1526;133 verde;12/07/2026;502;817;1.6275;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.5978;PESCA
+50242;PC723525;PC;GF1026;60 verde;12/07/2026;640;1133;1.7703;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1943;PESCA
+50242;PC723525;PC;GF1026;51 verde;12/07/2026;700;1258;1.7971;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1943;PESCA
+50242;PC723525;PC;GF1026;55 verde;12/07/2026;722;1129;1.5637;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1943;PESCA
+50245;PC723525;PC;GF1026;66 verde;12/07/2026;680;1076;1.5824;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1943;PESCA
+50245;PC731125;PC;GF1426;66 verde;12/07/2026;140;221;1.5786;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.5969;PESCA
+50245;PC731125;PC;GF1426;49 verde;12/07/2026;640;1186;1.8531;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.5969;PESCA
+50245;PC731125;PC;GF1426;25 verde;12/07/2026;548;917;1.6734;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.5969;PESCA
+50270;PC751525;PC;GF0826;14 verde;10/07/2026;852;1094;1.284;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50270;PC751525;PC;GF0826;75 verde;10/07/2026;862;1049;1.2169;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50270;PC751525;PC;GF0826;66 verde;10/07/2026;802;1062;1.3242;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50270;PC751525;PC;GF0826;55 verde;10/07/2026;814;1015;1.2469;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50271;PC751525;PC;GF0826;130 verde;10/07/2026;804;1118;1.3905;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50271;PC751525;PC;GF0826;39 verde;10/07/2026;792;1043;1.3169;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50271;PC751525;PC;GF0826;101 verde;10/07/2026;746;1051;1.4088;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50271;PC751525;PC;GF0826;145 verde;10/07/2026;744;1050;1.4113;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50272;PC751525;PC;GF0826;86 verde;10/07/2026;772;1179;1.5272;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50272;PC751525;PC;GF0826;94 verde;10/07/2026;752;958;1.2739;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50272;PC751725;PC;GF0826;88 verde;10/07/2026;774;1165;1.5052;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.2695;BARRIDA
+50272;PC751725;PC;GF0826;157 verde;10/07/2026;756;980;1.2963;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.2695;BARRIDA
+50273;PC751525;PC;GF0826;153 verde;10/07/2026;432;600;1.3889;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50273;PC751525;PC;GF0826;90 verde;10/07/2026;334;483;1.4461;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.4513;BARRIDA
+50273;PC751725;PC;GF0826;153 verde;10/07/2026;256;356;1.3906;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.2695;BARRIDA
+50273;PC751725;PC;GF0826;90 verde;10/07/2026;404;584;1.4455;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.2695;BARRIDA
+50275;PC751725;PC;GF0826;146 verde;10/07/2026;888;1154;1.2995;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.2695;BARRIDA
+50275;PC751725;PC;GF0826;120 verde;10/07/2026;940;1118;1.1894;Inducción;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;75;0.2695;BARRIDA
+50275;PC720425;PC;GF0926;28 verde;10/07/2026;694;1262;1.8184;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.4562;ALMACENES EXITO S.A.
+50275;PC720425;PC;GF0926;51 verde;10/07/2026;704;1186;1.6847;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.4562;ALMACENES EXITO S.A.
+50276;PC720425;PC;GF0926;60 verde;10/07/2026;684;1266;1.8509;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.4562;ALMACENES EXITO S.A.
+50276;PC720425;PC;GF0926;100 verde;10/07/2026;688;1236;1.7965;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.4562;ALMACENES EXITO S.A.
+50276;PC720725;PC;GF0926;48 verde;10/07/2026;676;1153;1.7056;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.5434;ALMACENES EXITO S.A.
+50276;PC720725;PC;GF0926;22 verde;10/07/2026;680;1145;1.6838;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.5434;ALMACENES EXITO S.A.
+50277;PC720725;PC;GF0926;147 verde;10/07/2026;746;1095;1.4678;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.5434;JERONIMO MARTINS COLOMBIA SAS
+50277;PC720725;PC;GF0926;11 verde;10/07/2026;766;1082;1.4125;Natural;ANDERSON CORDOBA CAICEDO;1;12;10.5;Mecánica;Camión;28;72;0.5434;JERONIMO MARTINS COLOMBIA SAS
+50278;PC720225;PC;GF0926;4 verde;12/07/2026;674;1168;1.7329;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50278;PC720225;PC;GF0926;109 verde;12/07/2026;708;1103;1.5579;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50278;PC720225;PC;GF0926;50 verde;12/07/2026;722;1204;1.6676;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50278;PC720225;PC;GF0926;75 verde;12/07/2026;714;1174;1.6443;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50279;PC720225;PC;GF0926;113 verde;12/07/2026;704;1130;1.6051;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50279;PC720225;PC;GF0926;41 verde;12/07/2026;702;1192;1.698;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50279;PC720225;PC;GF0926;45 verde;12/07/2026;694;1164;1.6772;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50279;PC720225;PC;GF0926;85 verde;12/07/2026;648;1145;1.767;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50280;PC720225;PC;GF0926;7 verde;12/07/2026;694;1127;1.6239;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50280;PC720225;PC;GF0926;24 verde;12/07/2026;726;1209;1.6653;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50280;PC720825;PC;GF0926;46 verde;12/07/2026;716;1142;1.595;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50280;PC720825;PC;GF0926;138 verde;12/07/2026;730;1164;1.5945;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50281;PC720225;PC;GF0926;53 verde;12/07/2026;414;708;1.7101;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50281;PC720225;PC;GF0926;30 verde;12/07/2026;398;646;1.6231;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4934;BARRIDA
+50281;PC720825;PC;GF0926;53 verde;12/07/2026;260;444;1.7077;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50281;PC720825;PC;GF0926;30 verde;12/07/2026;310;504;1.6258;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50282;PC720825;PC;GF0926;128 verde;12/07/2026;688;1156;1.6802;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50282;PC720825;PC;GF0926;82 verde;12/07/2026;696;1200;1.7241;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50283;PC720825;PC;GF0926;94 verde;12/07/2026;470;847;1.8021;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50283;PC720825;PC;GF0926;84 verde;12/07/2026;412;783;1.9005;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.4884;BARRIDA
+50283;PC722125;PC;GF0926;94 verde;12/07/2026;170;307;1.8059;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.0744;BARRIDA
+50283;PC722125;PC;GF0926;84 verde;12/07/2026;248;472;1.9032;Inducción;ANDERSON CORDOBA CAICEDO;1;14;9;Mecánica;Camión;28;72;0.0744;BARRIDA
+50361;SC031723;SC;GF0826;134 verde;10/07/2026;870;1022;1.1747;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50361;SC031723;SC;GF0826;119 verde;10/07/2026;874;1076;1.2311;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50361;SC031723;SC;GF0826;17 verde;10/07/2026;936;1095;1.1699;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50361;SC031723;SC;GF0826;13 verde;10/07/2026;936;1086;1.1603;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50362;SC031723;SC;GF0826;33 verde;10/07/2026;904;1100;1.2168;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50362;SC031723;SC;GF0826;36 verde;10/07/2026;942;1088;1.155;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50362;SC031723;SC;GF0826;32 verde;10/07/2026;874;1058;1.2105;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50362;SC031723;SC;GF0826;68 verde;10/07/2026;930;1068;1.1484;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50363;SC031723;SC;GF0826;81 verde;10/07/2026;914;1118;1.2232;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50363;SC031723;SC;GF0826;125 verde;10/07/2026;902;1075;1.1918;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;BARRIDA
+50363;SC031723;SC;GF0826;5 verde;10/07/2026;96;122;1.2708;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;JERONIMO MARTINS COLOMBIA SAS
+50363;SC031023;SC;GF0826;5 verde;10/07/2026;348;443;1.273;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.396;JERONIMO MARTINS COLOMBIA SAS
+50364;SC030623;SC;GF0826;5 verde;10/07/2026;430;548;1.2744;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.4456;JERONIMO MARTINS COLOMBIA SAS
+50364;SC031723;SC;GF0826;52 verde;10/07/2026;88;112;1.2727;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.439;JERONIMO MARTINS COLOMBIA SAS
+50364;SC031023;SC;GF0826;52 verde;10/07/2026;324;412;1.2716;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.396;JERONIMO MARTINS COLOMBIA SAS
+50364;SC030623;SC;GF0826;52 verde;10/07/2026;478;609;1.2741;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.4456;JERONIMO MARTINS COLOMBIA SAS
+50365;SC030623;SC;GF0826;84 verde;10/07/2026;924;1040;1.1255;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.4456;BARRIDA
+50365;SC030623;SC;GF0826;25 verde;10/07/2026;924;1029;1.1136;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.4456;BARRIDA
+50365;SC030623;SC;GF0826;131 verde;10/07/2026;862;1016;1.1787;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.4456;BARRIDA
+50365;SC030623;SC;GF0826;43 verde;10/07/2026;906;1080;1.1921;Inducción;YESID ALCIRIA VERGARA;6;12;10.5;Mecánica;Tractor;28;03;0.4456;BARRIDA
+50413;PC730325;PC;GF1526;76 verde;10/07/2026;720;1293;1.7958;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50413;PC730325;PC;GF1526;137 verde;10/07/2026;732;1146;1.5656;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50413;PC730325;PC;GF1526;45 verde;10/07/2026;756;1160;1.5344;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50413;PC730325;PC;GF1526;7 verde;10/07/2026;740;1095;1.4797;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50414;PC730325;PC;GF1526;63 verde;10/07/2026;300;512;1.7067;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50414;PC730425;PC;GF1626;63 verde;10/07/2026;420;718;1.7095;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50414;PC730325;PC;GF1526;12 verde;10/07/2026;344;648;1.8837;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50414;PC730425;PC;GF1626;12 verde;10/07/2026;260;489;1.8808;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50415;PC730325;PC;GF1526;69 verde;10/07/2026;522;835;1.5996;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50415;PC730225;PC;GF1426;69 verde;10/07/2026;160;256;1.6;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50415;PC730425;PC;GF1626;69 verde;10/07/2026;98;157;1.602;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3041;PESCA
+50415;PC730325;PC;GF1526;103 verde;10/07/2026;412;645;1.5655;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50416;PC730225;PC;GF1426;103 verde;10/07/2026;254;397;1.563;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50416;PC730325;PC;GF1526;133 verde;10/07/2026;340;651;1.9147;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50416;PC730225;PC;GF1426;133 verde;10/07/2026;276;529;1.9167;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.8047;PESCA
+50416;PC730325;PC;GF1526;136 verde;10/07/2026;330;558;1.6909;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50417;PC730325;PC;GF1526;136 verde;10/07/2026;340;575;1.6912;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.4276;PESCA
+50417;PC732425;PC;GF1526;87 verde;10/07/2026;318;504;1.5849;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3532;PESCA
+50417;PC723225;PC;GF1226;87 verde;10/07/2026;436;692;1.5872;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;72;0.0816;PESCA
+50417;PC732425;PC;GF1526;39 verde;10/07/2026;440;713;1.6205;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;73;0.3532;PESCA
+50418;PC723225;PC;GF1226;39 verde;10/07/2026;268;435;1.6231;Natural;REYES RIVERA NELSON DAVID;15;61;7;Manual;Camión;28;72;0.0816;PESCA
+50419;PC722925;PC;GF1226;27 verde;12/07/2026;150;208;1.3867;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1111;PESCA
+50419;PC732325;PC;GF1626;27 verde;12/07/2026;186;258;1.3871;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.129;PESCA
+50419;PC732025;PC;GF1626;27 verde;12/07/2026;460;639;1.3891;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.3895;PESCA
+50419;PC722925;PC;GF1226;84 verde;12/07/2026;258;392;1.5194;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1111;PESCA
+50420;PC732325;PC;GF1626;84 verde;12/07/2026;374;567;1.516;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.129;PESCA
+50420;PC732025;PC;GF1626;84 verde;12/07/2026;148;225;1.5203;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.3895;PESCA
+50420;PC722925;PC;GF1226;52 verde;12/07/2026;306;475;1.5523;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1111;PESCA
+50420;PC723125;PC;GF1226;52 verde;12/07/2026;422;655;1.5521;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50421;PC722925;PC;GF1226;5 verde;12/07/2026;344;571;1.6599;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.1111;PESCA
+50421;PC723125;PC;GF1226;5 verde;12/07/2026;344;571;1.6599;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50421;PC732025;PC;GF1626;86 verde;12/07/2026;374;590;1.5775;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.3895;PESCA
+50421;PC732425;PC;GF1526;86 verde;12/07/2026;390;615;1.5769;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.3532;PESCA
+50422;PC732025;PC;GF1626;94 verde;12/07/2026;508;773;1.5217;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.3895;PESCA
+50422;PC732425;PC;GF1526;94 verde;12/07/2026;254;387;1.5236;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.3532;PESCA
+50422;PC723025;PC;GF1226;87 verde;12/07/2026;476;719;1.5105;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.2689;PESCA
+50422;PC723125;PC;GF1226;87 verde;12/07/2026;256;387;1.5117;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50423;PC723025;PC;GF1226;92 verde;12/07/2026;528;831;1.5739;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.2689;PESCA
+50423;PC723125;PC;GF1226;92 verde;12/07/2026;160;252;1.575;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50423;PC723125;PC;GF1226;69 verde;12/07/2026;760;1192;1.5684;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50423;PC723125;PC;GF1226;103 verde;12/07/2026;698;1063;1.5229;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50424;PC723125;PC;GF1226;64 verde;12/07/2026;152;242;1.5921;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50424;PC723025;PC;GF1226;64 verde;12/07/2026;512;814;1.5898;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.2689;PESCA
+50424;PC723125;PC;GF1226;81 verde;12/07/2026;120;229;1.9083;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.3072;PESCA
+50424;PC723025;PC;GF1226;81 verde;12/07/2026;430;820;1.907;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;72;0.2689;PESCA
+50425;PC731125;PC;GF1426;37 verde;12/07/2026;700;1162;1.66;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.5969;PESCA
+50425;PC731125;PC;GF1426;14 verde;12/07/2026;752;1170;1.5559;Natural;REYES RIVERA NELSON DAVID;15;51;6;Manual;Camión;28;73;0.5969;PESCA
 `;
 
 // === DATOS DESPACHOS ===
@@ -14446,6 +14648,10 @@ const DATE_SEMANA_MAP = {
   '8/07/2026': 28,
   '09/07/2026': 28,
   '9/07/2026': 28,
+  '10/07/2026': 28,
+  '10/7/2026': 28,
+  '12/07/2026': 28,
+  '12/7/2026': 28,
 };
 
 function parseDespachos(raw) {
@@ -15152,6 +15358,312 @@ function updateSemFruChart() {
   });
 }
 
+
+// ══════════════════════════════════════════════════════
+// INFORME GERENCIAL — generación dinámica desde filtros
+// ══════════════════════════════════════════════════════
+let infChartKg   = null;
+let infChartFru  = null;
+let infChartFlor = null;
+let infChartTipo = null;
+
+function cerrarInforme() {
+  document.getElementById('informe-gerencial-modal').style.display = 'none';
+  [infChartKg, infChartFru, infChartFlor, infChartTipo].forEach(c => { if(c) c.destroy(); });
+  infChartKg = infChartFru = infChartFlor = infChartTipo = null;
+}
+
+function generarInformeGerencial() {
+  const modal = document.getElementById('informe-gerencial-modal');
+  modal.style.display = 'block';
+
+  // ── Filtros aplicados ──
+  const fd = filterState.dateFrom ? new Date(filterState.dateFrom).toLocaleDateString('es-CO') : '—';
+  const ft = filterState.dateTo   ? new Date(filterState.dateTo).toLocaleDateString('es-CO')   : '—';
+  const flor = filterState.floracion || 'Todas';
+  const tipo = filterState.tipo || 'Todos';
+  const desc = `Período: ${fd} – ${ft}  ·  Floración: ${flor}  ·  Tipo: ${tipo}  ·  ${fmtNum(filteredData.length)} registros`;
+  document.getElementById('inf-filtros-desc').textContent = desc;
+  document.getElementById('inf-fecha-gen').textContent = 'Generado: ' + new Date().toLocaleString('es-CO');
+  document.getElementById('inf-footer-records').textContent = fmtNum(filteredData.length) + ' registros filtrados';
+
+  // ── KPIs principales ──
+  const peso    = filteredData.reduce((s,r) => s + r._peso, 0);
+  const frutas  = filteredData.reduce((s,r) => s + r._frutas, 0);
+  const pm      = frutas > 0 ? peso / frutas : 0;
+  const semanas = new Set(filteredData.map(r => r._semana)).size;
+  const area    = filteredData.reduce((s,r) => s + (r._areaBruta || 0), 0);
+  const kgha    = area > 0 ? peso / area : 0;
+
+  // Costo
+  const costMap = {};
+  filteredData.forEach(r => {
+    const key = (r['Cuadrillero'] || '') + '_' + (r['Fecha'] || '');
+    if (!costMap[key]) {
+      const pers = r._cantPersonas || 0;
+      const hs   = r._horas || 0;
+      const hOrd = Math.min(hs, 7.33);
+      const hExt = Math.max(0, hs - 7.33);
+      costMap[key] = pers * (hOrd * 7959 + hExt * 9948);
+    }
+  });
+  const costo = Object.values(costMap).reduce((s,v) => s+v, 0);
+  const costoKg = peso > 0 ? costo / peso : 0;
+
+  // FHD
+  const fhdMap = {};
+  filteredData.forEach(r => {
+    const c = r['Cuadrillero'] || ''; const f = r['Fecha'] || '';
+    if (!fhdMap[c]) fhdMap[c] = { dias: {}, frutas: 0 };
+    if (!fhdMap[c].dias[f]) fhdMap[c].dias[f] = r._cantPersonas || 0;
+    fhdMap[c].frutas += r._frutas || 0;
+  });
+  let totalJornales = 0, totalFrutas2 = 0;
+  Object.values(fhdMap).forEach(v => {
+    const j = Object.values(v.dias).reduce((s,p) => s+p, 0);
+    totalJornales += j; totalFrutas2 += v.frutas;
+  });
+  const fhdGlobal = totalJornales > 0 ? totalFrutas2 / totalJornales : 0;
+
+  // Render KPI cards
+  const kpis1 = [
+    { icon:'⚖️', label:'Peso Cosechado', value: fmtNum(Math.round(peso)) + ' kg', color:'#27ae60' },
+    { icon:'🍍', label:'Frutas Cosechadas', value: fmtNum(frutas), color:'#1abc9c' },
+    { icon:'🌿', label:'Peso Medio', value: pm.toFixed(3).replace('.',',') + ' kg/f', color:'#2980b9' },
+    { icon:'📅', label:'Semanas Activas', value: semanas, color:'#8e44ad' },
+    { icon:'🌱', label:'Área Cosechada', value: area.toFixed(1).replace('.',',') + ' ha', color:'#e67e22' },
+    { icon:'📊', label:'Rendimiento', value: fmtNum(Math.round(kgha)) + ' kg/ha', color:'#16a085' },
+  ];
+  document.getElementById('inf-kpis-grid').innerHTML = kpis1.map(k =>
+    `<div style="background:#f8f9fa;border-radius:8px;padding:12px 14px;border-left:3px solid ${k.color}">
+      <div style="font-size:1.1rem;margin-bottom:4px">${k.icon}</div>
+      <div style="font-size:.65rem;color:#7f8c8d;text-transform:uppercase;letter-spacing:.5px;font-weight:600">${k.label}</div>
+      <div style="font-size:1.15rem;font-weight:700;color:#2c3e50;font-family:monospace">${k.value}</div>
+    </div>`).join('');
+
+  const kpis2 = [
+    { icon:'💰', label:'Costo Total', value:'$'+fmtNum(Math.round(costo/1e6))+'M', color:'#e74c3c' },
+    { icon:'⚡', label:'Costo/kg', value:'$'+fmtNum(Math.round(costoKg)), color:'#e74c3c' },
+    { icon:'👷', label:'FHD Global', value: Math.round(fhdGlobal), color:'#f39c12' },
+    { icon:'📦', label:'Registros', value: fmtNum(filteredData.length), color:'#95a5a6' },
+  ];
+  document.getElementById('inf-kpis-grid2').innerHTML = kpis2.map(k =>
+    `<div style="background:#f8f9fa;border-radius:8px;padding:10px 12px;border-left:3px solid ${k.color}">
+      <div style="font-size:.65rem;color:#7f8c8d;text-transform:uppercase;letter-spacing:.5px;font-weight:600">${k.icon} ${k.label}</div>
+      <div style="font-size:1.05rem;font-weight:700;color:#2c3e50;font-family:monospace">${k.value}</div>
+    </div>`).join('');
+
+  // ── Sem a sem data ──
+  const sems = {}; 
+  filteredData.forEach(r => {
+    const s = r._semana; if(!s) return;
+    const fl = r['Floracion'];
+    if(!['Natural','Inducción'].includes(fl)) return;
+    if(!sems[s]) sems[s] = {Natural:{kg:0,fru:0},'Inducción':{kg:0,fru:0}};
+    sems[s][fl].kg  += r._peso;
+    sems[s][fl].fru += r._frutas;
+  });
+  const semNums = Object.keys(sems).map(Number).sort((a,b)=>a-b);
+  const semLabels = semNums.map(s => 'S'+s);
+  const natKg  = semNums.map(s => Math.round(sems[s].Natural.kg));
+  const indKg  = semNums.map(s => Math.round(sems[s]['Inducción'].kg));
+  const natFru = semNums.map(s => +(sems[s].Natural.fru/1000).toFixed(1));
+  const indFru = semNums.map(s => +(sems[s]['Inducción'].fru/1000).toFixed(1));
+
+  const chartOpts = (yFmt) => ({
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
+              datalabels:{display:false} },
+    scales:{
+      x:{ticks:{font:{size:9}},grid:{display:false}},
+      y:{ticks:{font:{size:9},callback: v => yFmt(v)},grid:{color:'rgba(0,0,0,.06)'}}
+    }
+  });
+
+  if(infChartKg) infChartKg.destroy();
+  infChartKg = new Chart(document.getElementById('inf-chart-kg'), {
+    type:'line', data:{ labels:semLabels, datasets:[
+      {label:'Natural',data:natKg,borderColor:'#1e8449',backgroundColor:'rgba(30,132,73,.1)',
+       borderWidth:2,pointRadius:4,pointBackgroundColor:'#1e8449',tension:.4,fill:true},
+      {label:'Inducción',data:indKg,borderColor:'#1a5276',backgroundColor:'rgba(26,82,118,.1)',
+       borderWidth:2,pointRadius:4,pointBackgroundColor:'#1a5276',tension:.4,fill:true},
+    ]},
+    options: chartOpts(v => v>=1000?Math.round(v/1000)+'k':v)
+  });
+
+  if(infChartFru) infChartFru.destroy();
+  infChartFru = new Chart(document.getElementById('inf-chart-fru'), {
+    type:'line', data:{ labels:semLabels, datasets:[
+      {label:'Natural (k)',data:natFru,borderColor:'#27ae60',backgroundColor:'rgba(39,174,96,.1)',
+       borderWidth:2,pointRadius:4,pointBackgroundColor:'#27ae60',tension:.4,fill:true},
+      {label:'Inducción (k)',data:indFru,borderColor:'#2980b9',backgroundColor:'rgba(41,128,185,.1)',
+       borderWidth:2,pointRadius:4,pointBackgroundColor:'#2980b9',tension:.4,fill:true},
+    ]},
+    options: chartOpts(v => v+'k')
+  });
+
+  // ── Top 10 cuadrilleros ──
+  const cuadMap = {};
+  filteredData.forEach(r => {
+    const c = r['Cuadrillero'] || '—';
+    if (!cuadMap[c]) cuadMap[c] = {kg:0,fru:0,tipo:r['TipoCosecha']||'—',dias:{}};
+    cuadMap[c].kg  += r._peso;
+    cuadMap[c].fru += r._frutas;
+    const f = r['Fecha'] || '';
+    if (!cuadMap[c].dias[f]) cuadMap[c].dias[f] = r._cantPersonas || 0;
+  });
+  const top10 = Object.entries(cuadMap).sort((a,b)=>b[1].kg-a[1].kg).slice(0,10);
+  const tbody = document.getElementById('inf-tbody-cuad');
+  tbody.innerHTML = top10.map(([nombre,v],i) => {
+    const pm2 = v.fru > 0 ? (v.kg/v.fru).toFixed(3).replace('.',',') : '—';
+    const jorn = Object.values(v.dias).reduce((s,p)=>s+p,0);
+    const fhd  = jorn > 0 ? Math.round(v.fru/jorn) : '—';
+    const bg   = i%2===0 ? '#f8f9fa' : '#fff';
+    const shortName = nombre.split(' ').slice(0,3).join(' ');
+    return `<tr style="background:${bg}">
+      <td style="padding:5px 10px;color:#7f8c8d">${i+1}</td>
+      <td style="padding:5px 10px;font-weight:600">${shortName}</td>
+      <td style="padding:5px 10px;text-align:right">${fmtNum(Math.round(v.kg))}</td>
+      <td style="padding:5px 10px;text-align:right">${fmtNum(v.fru)}</td>
+      <td style="padding:5px 10px;text-align:right">${pm2}</td>
+      <td style="padding:5px 10px;text-align:right">${fhd}</td>
+      <td style="padding:5px 10px;text-align:right;color:${v.tipo==='Mecánica'?'#2980b9':'#27ae60'}">${v.tipo}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Pie charts ──
+  const florMap = {};
+  const tipoMap = {};
+  filteredData.forEach(r => {
+    const fl = r['Floracion'] || '—'; florMap[fl] = (florMap[fl]||0) + r._peso;
+    const ti = r['TipoCosecha'] || '—'; tipoMap[ti] = (tipoMap[ti]||0) + r._peso;
+  });
+
+  if(infChartFlor) infChartFlor.destroy();
+  infChartFlor = new Chart(document.getElementById('inf-chart-flor-pie'), {
+    type:'doughnut',
+    data:{ labels:Object.keys(florMap), datasets:[{
+      data:Object.values(florMap),
+      backgroundColor:['#27ae60','#2980b9','#e67e22'],
+      borderWidth:2, borderColor:'#fff'
+    }]},
+    options:{ plugins:{ legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
+      datalabels:{display:false},
+      tooltip:{callbacks:{label:ctx=>' '+fmtNum(Math.round(ctx.raw))+' kg'}} },
+      maintainAspectRatio:false }
+  });
+
+  if(infChartTipo) infChartTipo.destroy();
+  infChartTipo = new Chart(document.getElementById('inf-chart-tipo-pie'), {
+    type:'doughnut',
+    data:{ labels:Object.keys(tipoMap), datasets:[{
+      data:Object.values(tipoMap),
+      backgroundColor:['#8e44ad','#16a085','#e74c3c'],
+      borderWidth:2, borderColor:'#fff'
+    }]},
+    options:{ plugins:{ legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
+      datalabels:{display:false},
+      tooltip:{callbacks:{label:ctx=>' '+fmtNum(Math.round(ctx.raw))+' kg'}} },
+      maintainAspectRatio:false }
+  });
+}
+
 </script>
+
+<!-- ══ INFORME GERENCIAL MODAL ══ -->
+<div id="informe-gerencial-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);overflow-y:auto;padding:30px 20px">
+  <div style="max-width:820px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <!-- Toolbar -->
+    <div class="informe-no-print" style="background:#1a2332;padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
+      <span style="color:#ecf0f1;font-family:Arial,sans-serif;font-size:.85rem;font-weight:600">📄 Informe Gerencial — Vista Previa</span>
+      <div style="display:flex;gap:10px">
+        <button onclick="window.print()" style="background:#27ae60;color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:.82rem;cursor:pointer;font-family:Arial">🖨️ Imprimir / Guardar PDF</button>
+        <button onclick="cerrarInforme()" style="background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.4);padding:7px 14px;border-radius:6px;font-size:.82rem;cursor:pointer;font-family:Arial">✕ Cerrar</button>
+      </div>
+    </div>
+    <!-- Report content -->
+    <div id="informe-print-content" style="padding:28px 32px;font-family:Arial,sans-serif;color:#1a1a1a;background:#fff">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #2c3e50">
+        <div>
+          <div style="font-size:1.35rem;font-weight:700;color:#2c3e50;letter-spacing:.5px">AGRÍCOLA GUAPA S.A.S</div>
+          <div style="font-size:.78rem;color:#7f8c8d;margin-top:3px">NIT: 900.689.885 · Análisis de Producción · Piña/Fruta</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.95rem;font-weight:700;color:#2c3e50">Informe Gerencial de Cosecha 2026</div>
+          <div id="inf-filtros-desc" style="font-size:.72rem;color:#7f8c8d;margin-top:4px"></div>
+          <div id="inf-fecha-gen" style="font-size:.72rem;color:#95a5a6;margin-top:2px"></div>
+        </div>
+      </div>
+
+      <!-- KPIs grid 3x2 -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #27ae60;padding-left:8px;margin-bottom:10px">Indicadores Clave de Producción</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px" id="inf-kpis-grid"></div>
+      </div>
+
+      <!-- KPIs row 2 -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px" id="inf-kpis-grid2"></div>
+
+      <!-- Divider -->
+      <div style="border-top:1px solid #ecf0f1;margin-bottom:16px"></div>
+
+      <!-- Charts row -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #2980b9;padding-left:8px;margin-bottom:12px">Producción Semana a Semana</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div>
+            <div style="font-size:.7rem;color:#7f8c8d;margin-bottom:6px;font-weight:600">Kg Cosechados — Natural vs Inducción</div>
+            <canvas id="inf-chart-kg" height="160"></canvas>
+          </div>
+          <div>
+            <div style="font-size:.7rem;color:#7f8c8d;margin-bottom:6px;font-weight:600">Frutas Cosechadas (miles) — Natural vs Inducción</div>
+            <canvas id="inf-chart-fru" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #ecf0f1;margin-bottom:16px"></div>
+
+      <!-- Top cuadrilleros table -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #e67e22;padding-left:8px;margin-bottom:10px">Top 10 Cuadrilleros por Volumen</div>
+        <table id="inf-table-cuad" style="width:100%;border-collapse:collapse;font-size:.75rem">
+          <thead>
+            <tr style="background:#2c3e50;color:#fff">
+              <th style="padding:6px 10px;text-align:left">#</th>
+              <th style="padding:6px 10px;text-align:left">Cuadrillero</th>
+              <th style="padding:6px 10px;text-align:right">Kg</th>
+              <th style="padding:6px 10px;text-align:right">Frutas</th>
+              <th style="padding:6px 10px;text-align:right">PM (kg/f)</th>
+              <th style="padding:6px 10px;text-align:right">FHD</th>
+              <th style="padding:6px 10px;text-align:right">Tipo</th>
+            </tr>
+          </thead>
+          <tbody id="inf-tbody-cuad"></tbody>
+        </table>
+      </div>
+
+      <!-- Pie chart row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div>
+          <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #8e44ad;padding-left:8px;margin-bottom:10px">Floración</div>
+          <canvas id="inf-chart-flor-pie" height="140"></canvas>
+        </div>
+        <div>
+          <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #16a085;padding-left:8px;margin-bottom:10px">Tipo de Cosecha</div>
+          <canvas id="inf-chart-tipo-pie" height="140"></canvas>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="border-top:2px solid #ecf0f1;padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:.65rem;color:#bdc3c7">Dashboard de Cosecha 2026 · Agrícola Guapa S.A.S</div>
+        <div style="font-size:.65rem;color:#bdc3c7" id="inf-footer-records"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
