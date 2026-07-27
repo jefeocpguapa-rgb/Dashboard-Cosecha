@@ -14515,9 +14515,10 @@ function updateKPIs() {
   countUp(document.getElementById('kpi-bins'), bins);
   document.getElementById('kpi-semanas').textContent = new Set(filteredData.map(r=>r._semana)).size;
 
-  // Peso medio gerencial
-  const pmVals = filteredData.map(r=>r._pesoMedio).filter(v=>v>0);
-  const pmAvg = pmVals.length ? pmVals.reduce((s,v)=>s+v,0)/pmVals.length : 0;
+  // Peso medio gerencial (ponderado: Peso total / Frutas totales)
+  const pmFrutasTot = filteredData.reduce((s,r)=>s+r._frutas,0);
+  const pmPesoTot = filteredData.reduce((s,r)=>s+r._peso,0);
+  const pmAvg = pmFrutasTot > 0 ? pmPesoTot/pmFrutasTot : 0;
   document.getElementById('kpi-pm-geren').textContent = pmAvg > 0 ? fmtDec(pmAvg) : '—';
 
   // Costos totales
@@ -14681,14 +14682,17 @@ function updatePesoMedio() {
     ['pm-avg','pm-max','pm-min','pm-med','pm-manual','pm-mec','pm-ind','pm-nat'].forEach(id=>document.getElementById(id).textContent='—');
     return;
   }
-  const avg = vals.reduce((s,v)=>s+v,0)/vals.length;
+  const frutasTot = filteredData.reduce((s,r)=>s+r._frutas,0);
+  const pesoTot = filteredData.reduce((s,r)=>s+r._peso,0);
+  const avg = frutasTot > 0 ? pesoTot/frutasTot : 0;
   const mx = Math.max(...vals), mn = Math.min(...vals), med = median(vals);
   document.getElementById('pm-avg').textContent = fmtDec(avg);
   document.getElementById('pm-max').textContent = fmtDec(mx);
   document.getElementById('pm-min').textContent = fmtDec(mn);
   document.getElementById('pm-med').textContent = fmtDec(med);
 
-  const pm = v => { const a=v.filter(r=>r._pesoMedio>0); return a.length?fmtDec(a.reduce((s,r)=>s+r._pesoMedio,0)/a.length):'—'; };
+  // Ponderado: Peso total / Frutas totales del subconjunto (no promedio simple de PesoMedio)
+  const pm = v => { const f=v.reduce((s,r)=>s+r._frutas,0); const p=v.reduce((s,r)=>s+r._peso,0); return f>0?fmtDec(p/f):'—'; };
   document.getElementById('pm-manual').textContent  = pm(filteredData.filter(r=>r['TipoCosecha']==='Manual'));
   document.getElementById('pm-mec').textContent     = pm(filteredData.filter(r=>r['TipoCosecha']==='Mecánica'));
   document.getElementById('pm-ind').textContent     = pm(filteredData.filter(r=>r['Floracion']==='Inducción'));
@@ -14698,8 +14702,10 @@ function updatePesoMedio() {
   const semanas = [...new Set(filteredData.map(r=>r._semana))].sort((a,b)=>a-b);
   charts.pmSemana.data.labels = semanas.map(s=>`S${s}`);
   charts.pmSemana.data.datasets[0].data = semanas.map(s=>{
-    const rows = filteredData.filter(r=>r._semana===s&&r._pesoMedio>0);
-    return rows.length?rows.reduce((acc,r)=>acc+r._pesoMedio,0)/rows.length:null;
+    const rows = filteredData.filter(r=>r._semana===s);
+    const f = rows.reduce((acc,r)=>acc+r._frutas,0);
+    const p = rows.reduce((acc,r)=>acc+r._peso,0);
+    return f>0?p/f:null;
   });
   charts.pmSemana.update('none');
 
@@ -14986,25 +14992,24 @@ function initChartBloque() {
   });
 }
 function updateChartBloque() {
-  // Peso medio por bloque: promedio de pesoMedio de todos los bins del bloque
+  // Peso medio por bloque: ponderado (Peso total / Frutas totales de los bins del bloque)
   const aggPC = {}, aggSC = {};
   filteredData.forEach(r => {
     const b = r['Bloque'];
-    const pm = r._pesoMedio;
-    if (pm <= 0) return;
+    if (r._pesoMedio <= 0) return;
     const dest = r['Desarrollo'] === 'PC' ? aggPC : aggSC;
-    if (!dest[b]) dest[b] = {sum: 0, count: 0};
-    dest[b].sum   += pm;
-    dest[b].count += 1;
+    if (!dest[b]) dest[b] = {peso: 0, frutas: 0};
+    dest[b].peso   += r._peso;
+    dest[b].frutas += r._frutas;
   });
-  // Combine both PC and SC to rank by overall avg peso medio
+  // Combine both PC and SC to rank by overall weighted peso medio
   const allBloques = new Set([...Object.keys(aggPC), ...Object.keys(aggSC)]);
   const ranked = [...allBloques].map(b => {
-    const pc = aggPC[b] ? aggPC[b].sum / aggPC[b].count : 0;
-    const sc = aggSC[b] ? aggSC[b].sum / aggSC[b].count : 0;
-    const total = (aggPC[b]?.sum || 0) + (aggSC[b]?.sum || 0);
-    const cnt   = (aggPC[b]?.count || 0) + (aggSC[b]?.count || 0);
-    return {b, avg: cnt > 0 ? total/cnt : 0, pc, sc};
+    const pc = aggPC[b] && aggPC[b].frutas > 0 ? aggPC[b].peso / aggPC[b].frutas : 0;
+    const sc = aggSC[b] && aggSC[b].frutas > 0 ? aggSC[b].peso / aggSC[b].frutas : 0;
+    const totalPeso   = (aggPC[b]?.peso   || 0) + (aggSC[b]?.peso   || 0);
+    const totalFrutas = (aggPC[b]?.frutas || 0) + (aggSC[b]?.frutas || 0);
+    return {b, avg: totalFrutas > 0 ? totalPeso/totalFrutas : 0, pc, sc};
   }).filter(x => x.avg > 0).sort((a,b) => b.avg - a.avg).slice(0, 20);
 
   charts.bloque.data.labels = ranked.map(e => e.b);
@@ -15197,7 +15202,7 @@ function exportDespCSV() { return; // disabled — section removed
 
 function exportCSV() {
   // Encabezados legibles
-  const header = ['Fecha','Boleta','Bloque','Grupo Forza','Cuadrillero','Bin','Frutas','Peso (kg)','Peso Medio (kg/fruta)','Tipo Cosecha','Floracion','Modo Transporte','Semana','LOTE','Area Bruta (ha)','Cliente'];
+  const header = ['Fecha','Boleta','Bloque','Grupo Forza','Cuadrillero','Bin','Frutas','Peso (kg)','Peso Medio (kg/fruta)','Numero Personas','Tipo Cosecha','Floracion','Modo Transporte','Semana','LOTE','Area Bruta (ha)','Cliente'];
   const rows = filteredData.map(r => [
     r['Fecha'] || '',
     r['Boleta'] || '',
@@ -15209,6 +15214,7 @@ function exportCSV() {
     r._peso,
     // Peso medio: usar el valor del CSV, si es 0 recalcular desde Peso/Frutas
     r._pesoMedio > 0 ? r._pesoMedio.toFixed(4).replace('.',',') : (r._frutas > 0 ? (r._peso / r._frutas).toFixed(4).replace('.',',') : ''),
+    r._cantPersonas || '',
     r['TipoCosecha'] || '',
     r['Floracion'] || '',
     r['ModoTransporte'] || '',
@@ -15456,9 +15462,10 @@ function updateGerenCharts() {
   const labels = sems.map(s=>`S${s}`);
 
   // G-A: Peso medio por semana
-  const pmAll = sems.map(s=>{const r=filteredData.filter(x=>x._semana===s&&x._pesoMedio>0);return r.length?r.reduce((a,x)=>a+x._pesoMedio,0)/r.length:null;});
-  const pmMan = sems.map(s=>{const r=filteredData.filter(x=>x._semana===s&&x._pesoMedio>0&&x['TipoCosecha']==='Manual');return r.length?r.reduce((a,x)=>a+x._pesoMedio,0)/r.length:null;});
-  const pmMec = sems.map(s=>{const r=filteredData.filter(x=>x._semana===s&&x._pesoMedio>0&&x['TipoCosecha']==='Mecánica');return r.length?r.reduce((a,x)=>a+x._pesoMedio,0)/r.length:null;});
+  const wPM = (rows) => { const f=rows.reduce((a,x)=>a+x._frutas,0); const p=rows.reduce((a,x)=>a+x._peso,0); return f>0?p/f:null; };
+  const pmAll = sems.map(s=>wPM(filteredData.filter(x=>x._semana===s)));
+  const pmMan = sems.map(s=>wPM(filteredData.filter(x=>x._semana===s&&x['TipoCosecha']==='Manual')));
+  const pmMec = sems.map(s=>wPM(filteredData.filter(x=>x._semana===s&&x['TipoCosecha']==='Mecánica')));
   charts.gerenPm.data.labels = labels;
   charts.gerenPm.data.datasets[0].data = pmAll;
   charts.gerenPm.data.datasets[1].data = pmMan;
@@ -15466,14 +15473,8 @@ function updateGerenCharts() {
   charts.gerenPm.update('none');
 
   // G-B: Peso MEDIO de fruta PC vs SC por semana
-  const pmPC = sems.map(s=>{
-    const r=filteredData.filter(x=>x._semana===s&&x['Desarrollo']==='PC'&&x._pesoMedio>0);
-    return r.length ? r.reduce((a,x)=>a+x._pesoMedio,0)/r.length : null;
-  });
-  const pmSC = sems.map(s=>{
-    const r=filteredData.filter(x=>x._semana===s&&x['Desarrollo']==='SC'&&x._pesoMedio>0);
-    return r.length ? r.reduce((a,x)=>a+x._pesoMedio,0)/r.length : null;
-  });
+  const pmPC = sems.map(s=>wPM(filteredData.filter(x=>x._semana===s&&x['Desarrollo']==='PC')));
+  const pmSC = sems.map(s=>wPM(filteredData.filter(x=>x._semana===s&&x['Desarrollo']==='SC')));
   charts.gerenPeso.data.labels = labels;
   charts.gerenPeso.data.datasets[0].data = pmPC;
   charts.gerenPeso.data.datasets[1].data = pmSC;
@@ -15629,19 +15630,19 @@ function updateGerenCharts() {
   const catColors = ['#2ecc71','#3498db','#f39c12','#9b59b6','#1abc9c','#7f8c8d'];
   const catNames  = ['Primera >1.525','Segunda 1.215-1.524','Tercera 1.015-1.214','Guapita 0.715-1.014','Baby Guapa 0.500-0.714','Sin dato/Fuera rango'];
 
-  // Agrupar por bloque → calcular promedio de pesos medios de sus bins
+  // Agrupar por bloque → calcular peso medio ponderado (Peso total / Frutas totales) de sus bins
   const bloqueAgg = {};
   filteredData.forEach(r => {
     if (r._pesoMedio <= 0) return;
     const b = r['Bloque'];
-    if (!bloqueAgg[b]) bloqueAgg[b] = {sum: 0, count: 0};
-    bloqueAgg[b].sum   += r._pesoMedio;
-    bloqueAgg[b].count += 1;
+    if (!bloqueAgg[b]) bloqueAgg[b] = {peso: 0, frutas: 0};
+    bloqueAgg[b].peso   += r._peso;
+    bloqueAgg[b].frutas += r._frutas;
   });
-  // Clasificar cada bloque por su peso medio promedio
+  // Clasificar cada bloque por su peso medio ponderado
   const catCounts = [0,0,0,0,0,0];
   Object.values(bloqueAgg).forEach(v => {
-    const pmBloque = v.sum / v.count;
+    const pmBloque = v.frutas > 0 ? v.peso / v.frutas : 0;
     catCounts[classifyPesoMedio(pmBloque)]++;
   });
   const totalBloques = Object.keys(bloqueAgg).length;
