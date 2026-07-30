@@ -189,8 +189,21 @@ tr:nth-child(even) td { background: #f9f9f9; }
       <div id="tabla-fincas"></div>
     </div>
     <div class="card">
+      <label style="font-weight:600;margin-bottom:10px;">⚙️ GF procesados</label>
+      <div id="tabla-gf"></div>
+    </div>
+    <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Paradas del día</label>
       <div id="tabla-paradas"></div>
+    </div>
+    <div class="card">
+      <label style="font-weight:600;margin-bottom:4px;">⏱️ Minutos de parada por hora</label>
+      <div class="chart" id="chart-paradas"></div>
+      <div class="legend" id="legend-paradas">
+        <span><span class="dot" style="background:#f1c40f"></span>≤10 min</span>
+        <span><span class="dot" style="background:#e67e22"></span>11–30 min</span>
+        <span><span class="dot" style="background:#c0392b"></span>>30 min</span>
+      </div>
     </div>
     <div class="card">
       <label style="font-weight:600;margin-bottom:10px;">Registros de bines</label>
@@ -212,6 +225,21 @@ var registros=[],paradas=[],todasMetas={};
 var metaTon=0,metaBines=80;
 
 function pad(n){return n<10?"0"+n:""+n;}
+function calcMinPorHora(pars){
+  var minHora={};for(var h=0;h<24;h++)minHora[h]=0;
+  for(var i=0;i<pars.length;i++){
+    var p=pars[i];
+    var ip=(p.inicio||"0:00").split(":"),fp=(p.fin||"0:00").split(":");
+    var startMin=(parseInt(ip[0],10)||0)*60+(parseInt(ip[1],10)||0);
+    var endMin=(parseInt(fp[0],10)||0)*60+(parseInt(fp[1],10)||0);
+    if(endMin<=startMin)endMin+=24*60;
+    for(var m=startMin;m<endMin;m++){
+      var hh=Math.floor(m/60)%24;
+      minHora[hh]++;
+    }
+  }
+  return minHora;
+}
 
 function getHoy(){
   var d=new Date();
@@ -414,6 +442,26 @@ function guardarParada(){
     btn.disabled=false;btn.textContent="Registrar Parada";
   });
 }
+function renderParadasChart(pars,horasMostrar){
+  var cont=document.getElementById("chart-paradas");
+  cont.innerHTML="";
+  if(!pars.length){cont.innerHTML='<div class="empty">Sin paradas registradas</div>';return;}
+  var minHora=calcMinPorHora(pars);
+  var horas=(horasMostrar&&horasMostrar.length)?horasMostrar:Object.keys(minHora).map(Number);
+  for(var i=0;i<horas.length;i++){
+    var h=horas[i];
+    var mins=minHora[h]||0;
+    var barH=mins>0?Math.max(4,Math.round(mins/60*120)):4;
+    var esMad=h<6;
+    var color=mins===0?"#e0e0e0":mins>30?"#c0392b":mins>10?"#e67e22":"#f1c40f";
+    var col=document.createElement("div");col.className="bar-col";
+    col.innerHTML='<div class="bar-val" style="color:'+(mins>0?"#c0392b":"transparent")+'">'+(mins>0?mins+"m":"·")+'</div>'+
+      '<div class="bar-wrap"><div class="bar" style="height:'+barH+'px;background:'+color+';opacity:'+(esMad?0.85:1)+'"></div></div>'+
+      '<div class="bar-lbl" style="color:'+(esMad?"#2980b9":"#999")+'">'+pad(h)+'h</div>';
+    cont.appendChild(col);
+  }
+}
+
 function renderDash(){
   var fecha=document.getElementById("dash-fecha").value;
   var sig=fechaSig(fecha);
@@ -498,6 +546,20 @@ function renderDash(){
     tfi.innerHTML='<table><thead><tr><th>Finca</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>'+finH+'</tbody></table>';
   }
 
+  var tgf=document.getElementById("tabla-gf");
+  var gfMap={};for(var i=0;i<regs.length;i++){var g=regs[i].gf||"Sin GF";gfMap[g]=(gfMap[g]||0)+1;}
+  var gfKeys=Object.keys(gfMap).sort(function(a,b){return gfMap[b]-gfMap[a];});
+  if(!gfKeys.length){tgf.innerHTML='<div class="empty">Sin registros</div>';}
+  else{
+    var gfH="";
+    for(var i=0;i<gfKeys.length;i++){
+      var g=gfKeys[i];var cnt=gfMap[g];var p=total>0?Math.round(cnt/total*100):0;
+      var barra='<div style="background:#e0e0e0;border-radius:99px;height:6px;margin-top:4px;overflow:hidden"><div style="width:'+p+'%;height:100%;background:#8e44ad;border-radius:99px"></div></div>';
+      gfH+='<tr><td style="font-weight:500">'+g+barra+'</td><td style="text-align:center;font-weight:700;color:#8e44ad">'+cnt+'</td><td style="text-align:center;color:#777">'+p+'%</td></tr>';
+    }
+    tgf.innerHTML='<table><thead><tr><th>Grupo Forza</th><th style="text-align:center">Bines</th><th style="text-align:center">%</th></tr></thead><tbody>'+gfH+'</tbody></table>';
+  }
+
   var tp=document.getElementById("tabla-paradas");
   if(!pars.length){tp.innerHTML='<div class="empty">Sin paradas registradas</div>';}
   else{
@@ -507,6 +569,7 @@ function renderDash(){
     pH+='<tr style="background:#fff3cd"><td colspan="3" style="font-weight:600;padding:6px 5px">Total paradas</td><td style="font-weight:700;color:#c0392b">'+totalMin+' min</td></tr>';
     tp.innerHTML='<table><thead><tr><th>Causa</th><th>Inicio</th><th>Fin</th><th>Min.</th></tr></thead><tbody>'+pH+'</tbody></table>';
   }
+  renderParadasChart(pars,horasMostrar);
 
   var tb=document.getElementById("tabla-body");
   if(!regs.length){tb.innerHTML='<div class="empty">Sin registros para esta fecha</div>';return;}
