@@ -328,6 +328,14 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
       <div class="chart-title">🍍 Frutas Cosechadas por Semana — Natural vs Inducción <span class="badge">en miles · Tendencia</span></div>
       <div class="chart-container tall"><canvas id="chart-sem-fru"></canvas></div>
     </div>
+    <div class="chart-card full-width">
+      <div class="chart-title">🌾 HA Caminadas por Semana <span class="badge">Bloques únicos · según filtros activos</span></div>
+      <div class="chart-container tall"><canvas id="chart-sem-ha"></canvas></div>
+    </div>
+    <div class="chart-card full-width">
+      <div class="chart-title">🌱 HA / Persona-Día Real por Semana <span class="badge">Área única ÷ Personas-Día · según filtros activos</span></div>
+      <div class="chart-container tall"><canvas id="chart-sem-ha-ppd"></canvas></div>
+    </div>
   </div>
 
 
@@ -16570,6 +16578,8 @@ function updateAllCharts() {
   updateChartFlor(); updateHeatmap(); updateGauge();
   try { updateSemKgChart(); } catch(e) { console.error('semKg:', e); }
   try { updateSemFruChart(); } catch(e) { console.error('semFru:', e); }
+  try { updateSemHaChart(); } catch(e) { console.error('semHa:', e); }
+  try { updateHaPpdChart(); } catch(e) { console.error('haPpd:', e); }
   updateTable();
 }
 
@@ -16704,6 +16714,8 @@ window.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════════════════════════════════
 let chartSemKg  = null;
 let chartSemFru = null;
+let chartSemHa  = null;
+let chartHaPpd  = null;
 
 function buildSemData() {
   // Aggregate by semana and floracion from filteredData
@@ -16726,6 +16738,140 @@ function buildSemData() {
   const indFru  = semNums.map(s => +(sems[s]['Inducción'].fru / 1000).toFixed(1));
 
   return { labels, natKg, indKg, natFru, indFru };
+}
+
+function buildAreaSemData() {
+  // Área única por semana: cada Bloque cuenta una sola vez por semana (no se duplica si se cosechó varios días)
+  const bySem = {};
+  filteredData.forEach(r => {
+    const s = r._semana; if (!s) return;
+    const blq = r['Bloque'];
+    if (!blq || r._areaBruta <= 0) return;
+    if (!bySem[s]) bySem[s] = {};
+    if (!(blq in bySem[s])) bySem[s][blq] = r._areaBruta;
+  });
+  const semNums = Object.keys(bySem).map(Number).sort((a,b)=>a-b);
+  const labels = semNums.map(s => 'S' + s);
+  const area = semNums.map(s => +Object.values(bySem[s]).reduce((a,v)=>a+v,0).toFixed(2));
+  return { labels, area };
+}
+
+function updateSemHaChart() {
+  const ctx = document.getElementById('chart-sem-ha');
+  if (!ctx) return;
+  const { labels, area } = buildAreaSemData();
+
+  if (chartSemHa) chartSemHa.destroy();
+  chartSemHa = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'HA caminadas',
+        data: area,
+        backgroundColor: '#1baf7a',
+        borderRadius: 4,
+        datalabels: { display: true, anchor: 'end', align: 'top', color: '#1baf7a',
+          font: { weight: 'bold', size: 11 },
+          formatter: v => v > 0 ? v.toFixed(2) : '' }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: true },
+        tooltip: {
+          backgroundColor: 'rgba(15,25,35,0.95)',
+          titleColor: '#ecf0f1',
+          bodyColor: '#bdc3c7',
+          callbacks: { label: ctx => ` HA caminadas: ${ctx.raw.toFixed(2)} ha` }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#95a5a6', font: { weight: 'bold', size: 12 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
+        y: { ticks: { color: '#95a5a6' }, grid: { color: 'rgba(255,255,255,0.06)' },
+          title: { display: true, text: 'hectáreas (ha)', color: '#95a5a6' } }
+      }
+    }
+  });
+}
+
+function buildHaPpdSemData() {
+  // Misma fórmula que la columna HA/PPD-REAL del ranking Frutas/Persona/Cuadrilla:
+  // por cuadrillero, área = suma de bloques únicos que tocó; personas-día = Σ máximo de personas por fecha única.
+  // Se agrupa todo esto por semana, respetando filteredData (o sea, respeta los filtros activos).
+  const bySem = {};
+  filteredData.forEach(r => {
+    const s = r._semana; if (!s) return;
+    const cq = r['Cuadrillero']; if (!cq) return;
+    if (!bySem[s]) bySem[s] = { cuadArea: {}, cuadBloques: {}, cuadPersonasDia: {} };
+    const S = bySem[s];
+    const blq = r['Bloque'];
+    if (!S.cuadBloques[cq]) S.cuadBloques[cq] = new Set();
+    if (blq && r._areaBruta > 0 && !S.cuadBloques[cq].has(blq)) {
+      S.cuadBloques[cq].add(blq);
+      S.cuadArea[cq] = (S.cuadArea[cq] || 0) + r._areaBruta;
+    }
+    const fecha = r['Fecha'];
+    if (!S.cuadPersonasDia[cq]) S.cuadPersonasDia[cq] = {};
+    if (r._cantPersonas > 0) {
+      S.cuadPersonasDia[cq][fecha] = Math.max(S.cuadPersonasDia[cq][fecha] || 0, r._cantPersonas);
+    }
+  });
+
+  const semNums = Object.keys(bySem).map(Number).sort((a,b)=>a-b);
+  const labels = semNums.map(s => 'S' + s);
+  const haPpd = semNums.map(s => {
+    const S = bySem[s];
+    const totalArea = Object.values(S.cuadArea).reduce((a,v)=>a+v, 0);
+    const totalPersonasDia = Object.values(S.cuadPersonasDia).reduce((a,dias)=>a+Object.values(dias).reduce((x,y)=>x+y,0), 0);
+    return totalPersonasDia > 0 ? +(totalArea/totalPersonasDia).toFixed(3) : 0;
+  });
+  return { labels, haPpd };
+}
+
+function updateHaPpdChart() {
+  const ctx = document.getElementById('chart-sem-ha-ppd');
+  if (!ctx) return;
+  const { labels, haPpd } = buildHaPpdSemData();
+
+  if (chartHaPpd) chartHaPpd.destroy();
+  chartHaPpd = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'HA / Persona-Día real',
+        data: haPpd,
+        backgroundColor: '#8e6fd6',
+        borderRadius: 4,
+        datalabels: { display: true, anchor: 'end', align: 'top', color: '#8e6fd6',
+          font: { weight: 'bold', size: 11 },
+          formatter: v => v > 0 ? v.toFixed(3) : '' }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: true },
+        tooltip: {
+          backgroundColor: 'rgba(15,25,35,0.95)',
+          titleColor: '#ecf0f1',
+          bodyColor: '#bdc3c7',
+          callbacks: { label: ctx => ` HA/PPD-real: ${ctx.raw.toFixed(3)}` }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#95a5a6', font: { weight: 'bold', size: 12 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
+        y: { ticks: { color: '#95a5a6' }, grid: { color: 'rgba(255,255,255,0.06)' },
+          title: { display: true, text: 'ha / persona-día', color: '#95a5a6' } }
+      }
+    }
+  });
 }
 
 // Trendline helper (linear regression)
