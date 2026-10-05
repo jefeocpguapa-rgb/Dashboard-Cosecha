@@ -210,18 +210,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
 @media(max-width:768px){.charts-grid{grid-template-columns:1fr}#kpis{grid-template-columns:repeat(2,1fr)}#header{padding:10px 14px}.brand h1{font-size:1.1rem}#main{padding:14px 12px}#filters-bar{padding:10px 12px;top:54px}#combo-matrix{grid-template-columns:1fr}}
 </style>
 
-<style id="print-styles">
-@media print {
-  /* Hide everything except the report */
-  body > *:not(#informe-gerencial-modal) { display: none !important; }
-  #informe-gerencial-modal { display: block !important; position: static !important;
-    background: white !important; margin: 0 !important; padding: 0 !important; }
-  #informe-print-content { display: block !important; }
-  .informe-no-print { display: none !important; }
-  @page { size: A4 portrait; margin: 15mm 12mm; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -237,7 +226,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
     <div><h1>Dashboard de Cosecha 2026</h1><p>Análisis de producción · Piña/Fruta</p></div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-informe" onclick="generarInformeGerencial()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">📄 Informe Gerencial</button>
+    <button id="btn-meta220" onclick="abrirMeta220()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">🎯 Meta 220 kg/HH</button>
     <button id="btn-presentacion" onclick="togglePresentacion()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:var(--accent-green);padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--accent-green)';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='var(--accent-green)'">⛶ Modo Presentación</button>
     <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
   </div>
@@ -20435,311 +20424,443 @@ function updateSemFruChart() {
 }
 
 
-// ══════════════════════════════════════════════════════
-// INFORME GERENCIAL — generación dinámica desde filtros
-// ══════════════════════════════════════════════════════
-let infChartKg   = null;
-let infChartFru  = null;
-let infChartFlor = null;
-let infChartTipo = null;
-
-function cerrarInforme() {
-  document.getElementById('informe-gerencial-modal').style.display = 'none';
-  [infChartKg, infChartFru, infChartFlor, infChartTipo].forEach(c => { if(c) c.destroy(); });
-  infChartKg = infChartFru = infChartFlor = infChartTipo = null;
-}
-
-function generarInformeGerencial() {
-  const modal = document.getElementById('informe-gerencial-modal');
-  modal.style.display = 'block';
-
-  // ── Filtros aplicados ──
-  const fd = filterState.dateFrom ? new Date(filterState.dateFrom).toLocaleDateString('es-CO') : '—';
-  const ft = filterState.dateTo   ? new Date(filterState.dateTo).toLocaleDateString('es-CO')   : '—';
-  const flor = filterState.floracion || 'Todas';
-  const tipo = filterState.tipo || 'Todos';
-  const desc = `Período: ${fd} – ${ft}  ·  Floración: ${flor}  ·  Tipo: ${tipo}  ·  ${fmtNum(filteredData.length)} registros`;
-  document.getElementById('inf-filtros-desc').textContent = desc;
-  document.getElementById('inf-fecha-gen').textContent = 'Generado: ' + new Date().toLocaleString('es-CO');
-  document.getElementById('inf-footer-records').textContent = fmtNum(filteredData.length) + ' registros filtrados';
-
-  // ── KPIs principales ──
-  const peso    = filteredData.reduce((s,r) => s + r._peso, 0);
-  const frutas  = filteredData.reduce((s,r) => s + r._frutas, 0);
-  const pm      = frutas > 0 ? peso / frutas : 0;
-  const semanas = new Set(filteredData.map(r => r._semana)).size;
-  const area    = filteredData.reduce((s,r) => s + (r._areaBruta || 0), 0);
-  const kgha    = area > 0 ? peso / area : 0;
-
-  // Costo
-  const costMap = {};
-  filteredData.forEach(r => {
-    const key = (r['Cuadrillero'] || '') + '_' + (r['Fecha'] || '');
-    if (!costMap[key]) {
-      const pers = r._cantPersonas || 0;
-      const hs   = r._horas || 0;
-      const hOrd = Math.min(hs, 7.33);
-      const hExt = Math.max(0, hs - 7.33);
-      costMap[key] = pers * (hOrd * 7959 + hExt * 9948);
-    }
-  });
-  const costo = Object.values(costMap).reduce((s,v) => s+v, 0);
-  const costoKg = peso > 0 ? costo / peso : 0;
-
-  // FHD
-  const fhdMap = {};
-  filteredData.forEach(r => {
-    const c = r['Cuadrillero'] || ''; const f = r['Fecha'] || '';
-    if (!fhdMap[c]) fhdMap[c] = { dias: {}, frutas: 0 };
-    if (!fhdMap[c].dias[f]) fhdMap[c].dias[f] = r._cantPersonas || 0;
-    fhdMap[c].frutas += r._frutas || 0;
-  });
-  let totalJornales = 0, totalFrutas2 = 0;
-  Object.values(fhdMap).forEach(v => {
-    const j = Object.values(v.dias).reduce((s,p) => s+p, 0);
-    totalJornales += j; totalFrutas2 += v.frutas;
-  });
-  const fhdGlobal = totalJornales > 0 ? totalFrutas2 / totalJornales : 0;
-
-  // Render KPI cards
-  const kpis1 = [
-    { icon:'⚖️', label:'Peso Cosechado', value: fmtNum(Math.round(peso)) + ' kg', color:'#27ae60' },
-    { icon:'🍍', label:'Frutas Cosechadas', value: fmtNum(frutas), color:'#1abc9c' },
-    { icon:'🌿', label:'Peso Medio', value: pm.toFixed(3).replace('.',',') + ' kg/f', color:'#2980b9' },
-    { icon:'📅', label:'Semanas Activas', value: semanas, color:'#8e44ad' },
-    { icon:'🌱', label:'Área Cosechada', value: area.toFixed(1).replace('.',',') + ' ha', color:'#e67e22' },
-    { icon:'📊', label:'Rendimiento', value: fmtNum(Math.round(kgha)) + ' kg/ha', color:'#16a085' },
-  ];
-  document.getElementById('inf-kpis-grid').innerHTML = kpis1.map(k =>
-    `<div style="background:#f8f9fa;border-radius:8px;padding:12px 14px;border-left:3px solid ${k.color}">
-      <div style="font-size:1.1rem;margin-bottom:4px">${k.icon}</div>
-      <div style="font-size:.65rem;color:#7f8c8d;text-transform:uppercase;letter-spacing:.5px;font-weight:600">${k.label}</div>
-      <div style="font-size:1.15rem;font-weight:700;color:#2c3e50;font-family:monospace">${k.value}</div>
-    </div>`).join('');
-
-  const kpis2 = [
-    { icon:'💰', label:'Costo Total', value:'$'+fmtNum(Math.round(costo/1e6))+'M', color:'#e74c3c' },
-    { icon:'⚡', label:'Costo/kg', value:'$'+fmtNum(Math.round(costoKg)), color:'#e74c3c' },
-    { icon:'👷', label:'FHD Global', value: Math.round(fhdGlobal), color:'#f39c12' },
-    { icon:'📦', label:'Registros', value: fmtNum(filteredData.length), color:'#95a5a6' },
-  ];
-  document.getElementById('inf-kpis-grid2').innerHTML = kpis2.map(k =>
-    `<div style="background:#f8f9fa;border-radius:8px;padding:10px 12px;border-left:3px solid ${k.color}">
-      <div style="font-size:.65rem;color:#7f8c8d;text-transform:uppercase;letter-spacing:.5px;font-weight:600">${k.icon} ${k.label}</div>
-      <div style="font-size:1.05rem;font-weight:700;color:#2c3e50;font-family:monospace">${k.value}</div>
-    </div>`).join('');
-
-  // ── Sem a sem data ──
-  const sems = {}; 
-  filteredData.forEach(r => {
-    const s = r._semana; if(!s) return;
-    const fl = r['Floracion'];
-    if(!['Natural','Inducción'].includes(fl)) return;
-    if(!sems[s]) sems[s] = {Natural:{kg:0,fru:0},'Inducción':{kg:0,fru:0}};
-    sems[s][fl].kg  += r._peso;
-    sems[s][fl].fru += r._frutas;
-  });
-  const semNums = Object.keys(sems).map(Number).sort((a,b)=>a-b);
-  const semLabels = semNums.map(s => 'S'+s);
-  const natKg  = semNums.map(s => Math.round(sems[s].Natural.kg));
-  const indKg  = semNums.map(s => Math.round(sems[s]['Inducción'].kg));
-  const natFru = semNums.map(s => +(sems[s].Natural.fru/1000).toFixed(1));
-  const indFru = semNums.map(s => +(sems[s]['Inducción'].fru/1000).toFixed(1));
-
-  const chartOpts = (yFmt) => ({
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
-              datalabels:{display:false} },
-    scales:{
-      x:{ticks:{font:{size:9}},grid:{display:false}},
-      y:{ticks:{font:{size:9},callback: v => yFmt(v)},grid:{color:'rgba(0,0,0,.06)'}}
-    }
-  });
-
-  if(infChartKg) infChartKg.destroy();
-  infChartKg = new Chart(document.getElementById('inf-chart-kg'), {
-    type:'line', data:{ labels:semLabels, datasets:[
-      {label:'Natural',data:natKg,borderColor:'#1e8449',backgroundColor:'rgba(30,132,73,.1)',
-       borderWidth:2,pointRadius:4,pointBackgroundColor:'#1e8449',tension:.4,fill:true},
-      {label:'Inducción',data:indKg,borderColor:'#1a5276',backgroundColor:'rgba(26,82,118,.1)',
-       borderWidth:2,pointRadius:4,pointBackgroundColor:'#1a5276',tension:.4,fill:true},
-    ]},
-    options: chartOpts(v => v>=1000?Math.round(v/1000)+'k':v)
-  });
-
-  if(infChartFru) infChartFru.destroy();
-  infChartFru = new Chart(document.getElementById('inf-chart-fru'), {
-    type:'line', data:{ labels:semLabels, datasets:[
-      {label:'Natural (k)',data:natFru,borderColor:'#27ae60',backgroundColor:'rgba(39,174,96,.1)',
-       borderWidth:2,pointRadius:4,pointBackgroundColor:'#27ae60',tension:.4,fill:true},
-      {label:'Inducción (k)',data:indFru,borderColor:'#2980b9',backgroundColor:'rgba(41,128,185,.1)',
-       borderWidth:2,pointRadius:4,pointBackgroundColor:'#2980b9',tension:.4,fill:true},
-    ]},
-    options: chartOpts(v => v+'k')
-  });
-
-  // ── Top 10 cuadrilleros ──
-  const cuadMap = {};
-  filteredData.forEach(r => {
-    const c = r['Cuadrillero'] || '—';
-    if (!cuadMap[c]) cuadMap[c] = {kg:0,fru:0,tipo:r['TipoCosecha']||'—',dias:{}};
-    cuadMap[c].kg  += r._peso;
-    cuadMap[c].fru += r._frutas;
-    const f = r['Fecha'] || '';
-    if (!cuadMap[c].dias[f]) cuadMap[c].dias[f] = r._cantPersonas || 0;
-  });
-  const top10 = Object.entries(cuadMap).sort((a,b)=>b[1].kg-a[1].kg).slice(0,10);
-  const tbody = document.getElementById('inf-tbody-cuad');
-  tbody.innerHTML = top10.map(([nombre,v],i) => {
-    const pm2 = v.fru > 0 ? (v.kg/v.fru).toFixed(3).replace('.',',') : '—';
-    const jorn = Object.values(v.dias).reduce((s,p)=>s+p,0);
-    const fhd  = jorn > 0 ? Math.round(v.fru/jorn) : '—';
-    const bg   = i%2===0 ? '#f8f9fa' : '#fff';
-    const shortName = nombre.split(' ').slice(0,3).join(' ');
-    return `<tr style="background:${bg}">
-      <td style="padding:5px 10px;color:#7f8c8d">${i+1}</td>
-      <td style="padding:5px 10px;font-weight:600">${shortName}</td>
-      <td style="padding:5px 10px;text-align:right">${fmtNum(Math.round(v.kg))}</td>
-      <td style="padding:5px 10px;text-align:right">${fmtNum(v.fru)}</td>
-      <td style="padding:5px 10px;text-align:right">${pm2}</td>
-      <td style="padding:5px 10px;text-align:right">${fhd}</td>
-      <td style="padding:5px 10px;text-align:right;color:${v.tipo==='Mecánica'?'#2980b9':'#27ae60'}">${v.tipo}</td>
-    </tr>`;
-  }).join('');
-
-  // ── Pie charts ──
-  const florMap = {};
-  const tipoMap = {};
-  filteredData.forEach(r => {
-    const fl = r['Floracion'] || '—'; florMap[fl] = (florMap[fl]||0) + r._peso;
-    const ti = r['TipoCosecha'] || '—'; tipoMap[ti] = (tipoMap[ti]||0) + r._peso;
-  });
-
-  if(infChartFlor) infChartFlor.destroy();
-  infChartFlor = new Chart(document.getElementById('inf-chart-flor-pie'), {
-    type:'doughnut',
-    data:{ labels:Object.keys(florMap), datasets:[{
-      data:Object.values(florMap),
-      backgroundColor:['#27ae60','#2980b9','#e67e22'],
-      borderWidth:2, borderColor:'#fff'
-    }]},
-    options:{ plugins:{ legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
-      datalabels:{display:false},
-      tooltip:{callbacks:{label:ctx=>' '+fmtNum(Math.round(ctx.raw))+' kg'}} },
-      maintainAspectRatio:false }
-  });
-
-  if(infChartTipo) infChartTipo.destroy();
-  infChartTipo = new Chart(document.getElementById('inf-chart-tipo-pie'), {
-    type:'doughnut',
-    data:{ labels:Object.keys(tipoMap), datasets:[{
-      data:Object.values(tipoMap),
-      backgroundColor:['#8e44ad','#16a085','#e74c3c'],
-      borderWidth:2, borderColor:'#fff'
-    }]},
-    options:{ plugins:{ legend:{position:'bottom',labels:{font:{size:9},boxWidth:10}},
-      datalabels:{display:false},
-      tooltip:{callbacks:{label:ctx=>' '+fmtNum(Math.round(ctx.raw))+' kg'}} },
-      maintainAspectRatio:false }
-  });
-}
-
 </script>
 
-<!-- ══ INFORME GERENCIAL MODAL ══ -->
-<div id="informe-gerencial-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);overflow-y:auto;padding:30px 20px">
-  <div style="max-width:820px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">
-    <!-- Toolbar -->
-    <div class="informe-no-print" style="background:#1a2332;padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
-      <span style="color:#ecf0f1;font-family:Arial,sans-serif;font-size:.85rem;font-weight:600">📄 Informe Gerencial — Vista Previa</span>
-      <div style="display:flex;gap:10px">
-        <button onclick="window.print()" style="background:#27ae60;color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:.82rem;cursor:pointer;font-family:Arial">🖨️ Imprimir / Guardar PDF</button>
-        <button onclick="cerrarInforme()" style="background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.4);padding:7px 14px;border-radius:6px;font-size:.82rem;cursor:pointer;font-family:Arial">✕ Cerrar</button>
-      </div>
-    </div>
-    <!-- Report content -->
-    <div id="informe-print-content" style="padding:28px 32px;font-family:Arial,sans-serif;color:#1a1a1a;background:#fff">
-      <!-- Header -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #2c3e50">
-        <div>
-          <div style="font-size:1.35rem;font-weight:700;color:#2c3e50;letter-spacing:.5px">AGRÍCOLA GUAPA S.A.S</div>
-          <div style="font-size:.78rem;color:#7f8c8d;margin-top:3px">NIT: 900.689.885 · Análisis de Producción · Piña/Fruta</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:.95rem;font-weight:700;color:#2c3e50">Informe Gerencial de Cosecha 2026</div>
-          <div id="inf-filtros-desc" style="font-size:.72rem;color:#7f8c8d;margin-top:4px"></div>
-          <div id="inf-fecha-gen" style="font-size:.72rem;color:#95a5a6;margin-top:2px"></div>
-        </div>
-      </div>
 
-      <!-- KPIs grid 3x2 -->
-      <div style="margin-bottom:18px">
-        <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #27ae60;padding-left:8px;margin-bottom:10px">Indicadores Clave de Producción</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px" id="inf-kpis-grid"></div>
-      </div>
+<!-- ══ TABLERO META 220 KG/HH (CC-001.2) ══ -->
+<style id="m220-styles">
+/* Tablero Meta 220 · estilos aislados en #m220 */
+#m220{
+  --navy:#0E2841; --navy2:#16365A; --gold:#CC9100; --beige:#E1D5C6; --brown:#7C411E;
+  --ok:#2E7D32; --warn:#D9A100; --bad:#C0392B; --off:#8A94A3;
+  --bg:#F3F0EA; --card:#FFFFFF; --ink:#1B2430; --muted:#5F6B7A; --line:#E3DED5;
+  --fn:'Barlow',Arial,Helvetica,sans-serif; --fc:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+}
+#m220 *{box-sizing:border-box}
+#m220 .m220-wrap{margin:0;background:var(--bg);min-height:100%;color:var(--ink);font-family:var(--fn);font-size:15px;line-height:1.45}
+#m220 .m220-head{background:var(--navy);color:#fff;padding:18px 22px 16px;border-bottom:4px solid var(--gold)}
+#m220 .m220-head .row{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;max-width:1280px;margin:0 auto}
+#m220 h1{font-family:var(--fc);font-weight:700;font-size:30px;line-height:1.05;margin:0;letter-spacing:.2px}
+#m220 h1 small{display:block;font-family:var(--fn);font-weight:500;font-size:13px;color:var(--beige);letter-spacing:0;margin-top:4px}
+#m220 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#m220 .controls label{font-size:12px;color:var(--beige)}
+#m220 select,#m220 button,#m220 input[type=file]{font-family:var(--fn);font-size:14px}
+#m220 select{padding:7px 10px;border-radius:6px;border:1px solid #3B5675;background:var(--navy2);color:#fff}
+#m220 button{padding:8px 14px;border-radius:6px;border:0;background:var(--gold);color:#1b1300;font-weight:600;cursor:pointer}
+#m220 button.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+#m220 .m220-head button.sec{color:#fff;border-color:#3B5675}
+#m220 .m220-main{max-width:1280px;margin:0 auto;padding:18px 16px 40px}
+#m220 .hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr);gap:16px;margin-bottom:16px}
+@media(max-width:860px){#m220 .hero{grid-template-columns:1fr}}
+#m220 .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+#m220 .panel h2{font-family:var(--fc);font-weight:600;font-size:21px;margin:0 0 4px;color:var(--ink)}
+#m220 .panel .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+#m220 .big{font-family:var(--fc);font-weight:700;font-size:64px;line-height:.95;color:var(--ink)}
+#m220 .big span{font-size:22px;font-weight:600;color:var(--muted);margin-left:6px}
+#m220 .meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden;margin:12px 0 6px;position:relative}
+#m220 .meter i{display:block;height:100%}
+#m220 .meter b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+#m220 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+#m220 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+#m220 .counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+#m220 .counts div{border-radius:8px;padding:8px 10px;border:1px solid var(--line)}
+#m220 .counts strong{font-family:var(--fc);font-size:28px;display:block;line-height:1}
+#m220 .chartbox{position:relative;height:300px}
+#m220 .chartbox.m2tall{height:360px}
+#m220 table{width:100%;border-collapse:collapse;font-size:14px}
+#m220 .tablewrap{overflow-x:auto}
+#m220 th{font-weight:600;text-align:right;color:var(--muted);font-size:12.5px;border-bottom:2px solid var(--line);padding:8px 6px;white-space:normal;vertical-align:bottom;max-width:110px}
+#m220 th:first-child,#m220 td:first-child{text-align:left}
+#m220 td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#m220 td.name{font-weight:600;white-space:normal;min-width:180px}
+#m220 td.name em{display:block;font-style:normal;font-weight:400;font-size:12px;color:var(--muted)}
+#m220 .pill{display:inline-block;min-width:64px;text-align:center;padding:3px 8px;border-radius:12px;font-weight:600;font-size:13px;color:#fff}
+#m220 .bar{display:inline-block;width:90px;height:8px;border-radius:4px;background:var(--line);vertical-align:middle;margin-right:6px;overflow:hidden}
+#m220 .bar i{display:block;height:100%}
+#m220 .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+@media(max-width:860px){#m220 .grid2{grid-template-columns:1fr}}
+#m220 .crews{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+#m220 .crew{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+#m220 .crew h3{font-family:var(--fc);font-size:18px;font-weight:600;margin:0}
+#m220 .crew .meta{font-size:12px;color:var(--muted);margin:2px 0 6px}
+#m220 .crew .k{display:flex;gap:14px;font-size:13px;margin-top:6px;color:var(--muted)}
+#m220 .crew .k b{color:var(--ink);font-family:var(--fc);font-size:18px;display:block}
+#m220 .crew canvas{width:100%;height:56px}
+#m220 .crew button{margin-top:8px;font-size:12.5px;padding:6px 10px}
+#m220 .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+#m220 .loader{padding:40px;text-align:center;color:var(--muted)}
+#m220 .msg{background:#FFF6DB;color:#5A4500;border:1px solid #F0D27A;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:14px;display:none}
+#m220 .section-title{font-family:var(--fc);font-weight:600;font-size:22px;margin:24px 0 10px}
+#m220{position:fixed;inset:0;z-index:9998;overflow-y:auto;display:none;background:var(--bg);color:var(--ink);font-family:var(--fn);font-size:15px;line-height:1.45;-webkit-overflow-scrolling:touch}
+#m220 .m220-head{position:sticky;top:0;z-index:2;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+#m220 .m220-close{background:transparent;color:#fff;border:1px solid #3B5675}
+#m220 .m220-main{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+#m220 table{background:transparent}
+#m220 td{color:var(--ink);background:transparent}
+#m220 th{background:transparent}
 
-      <!-- KPIs row 2 -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px" id="inf-kpis-grid2"></div>
-
-      <!-- Divider -->
-      <div style="border-top:1px solid #ecf0f1;margin-bottom:16px"></div>
-
-      <!-- Charts row -->
-      <div style="margin-bottom:18px">
-        <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #2980b9;padding-left:8px;margin-bottom:12px">Producción Semana a Semana</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div>
-            <div style="font-size:.7rem;color:#7f8c8d;margin-bottom:6px;font-weight:600">Kg Cosechados — Natural vs Inducción</div>
-            <canvas id="inf-chart-kg" height="160"></canvas>
-          </div>
-          <div>
-            <div style="font-size:.7rem;color:#7f8c8d;margin-bottom:6px;font-weight:600">Frutas Cosechadas (miles) — Natural vs Inducción</div>
-            <canvas id="inf-chart-fru" height="160"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div style="border-top:1px solid #ecf0f1;margin-bottom:16px"></div>
-
-      <!-- Top cuadrilleros table -->
-      <div style="margin-bottom:18px">
-        <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #e67e22;padding-left:8px;margin-bottom:10px">Top 10 Cuadrilleros por Volumen</div>
-        <table id="inf-table-cuad" style="width:100%;border-collapse:collapse;font-size:.75rem">
-          <thead>
-            <tr style="background:#2c3e50;color:#fff">
-              <th style="padding:6px 10px;text-align:left">#</th>
-              <th style="padding:6px 10px;text-align:left">Cuadrillero</th>
-              <th style="padding:6px 10px;text-align:right">Kg</th>
-              <th style="padding:6px 10px;text-align:right">Frutas</th>
-              <th style="padding:6px 10px;text-align:right">PM (kg/f)</th>
-              <th style="padding:6px 10px;text-align:right">FHD</th>
-              <th style="padding:6px 10px;text-align:right">Tipo</th>
-            </tr>
-          </thead>
-          <tbody id="inf-tbody-cuad"></tbody>
-        </table>
-      </div>
-
-      <!-- Pie chart row -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
-        <div>
-          <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #8e44ad;padding-left:8px;margin-bottom:10px">Floración</div>
-          <canvas id="inf-chart-flor-pie" height="140"></canvas>
-        </div>
-        <div>
-          <div style="font-size:.8rem;font-weight:700;color:#2c3e50;text-transform:uppercase;letter-spacing:.8px;border-left:3px solid #16a085;padding-left:8px;margin-bottom:10px">Tipo de Cosecha</div>
-          <canvas id="inf-chart-tipo-pie" height="140"></canvas>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div style="border-top:2px solid #ecf0f1;padding-top:10px;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:.65rem;color:#bdc3c7">Dashboard de Cosecha 2026 · Agrícola Guapa S.A.S</div>
-        <div style="font-size:.65rem;color:#bdc3c7" id="inf-footer-records"></div>
-      </div>
+</style>
+<div id="m220" role="dialog" aria-modal="true" aria-label="Seguimiento meta 220 kg por hora-hombre"><div class="m220-wrap">
+<header class="m220-head">
+  <div class="row">
+    <h1>Meta 220 kg por hora-hombre
+      <small>Seguimiento diario de cuadrillas · Inducción mecanizada y manual · Agrícola Guapa S.A.S</small></h1>
+    <div class="controls">
+      <label for="m220-selPer">Periodo</label>
+      <select id="m220-selPer"><option value="dia">Día</option><option value="sem">Semana</option><option value="mes">Mes</option></select>
+      <select id="m220-selDia" aria-label="Periodo a mostrar"></select>
+      <label for="m220-selRango">Evolución</label>
+      <select id="m220-selRango">
+        <option value="inicio">Desde inicio de la meta</option>
+        <option value="30">Últimos 30 días</option>
+        <option value="base">Desde 1 de septiembre</option>
+        <option value="mar">Desde 1 de marzo (datos completos)</option>
+      </select>
+      <button id="m220-btnImg">Imagen para los grupos</button>
+      <button id="m220-btnTxt" class="sec">Copiar mensaje</button>
+      <button id="m220-close" class="m220-close" onclick="cerrarMeta220()" aria-label="Cerrar">✕ Volver al dashboard</button>
     </div>
   </div>
-</div>
+</header>
+<main class="m220-main">
+  <div id="m220-msg" class="msg"></div>
+  <div id="m220-loader" class="loader">Preparando el tablero…</div>
+  <div id="m220-app" style="display:none">
+    <section class="hero">
+      <div class="panel">
+        <h2 id="m220-heroDia">—</h2>
+        <p class="sub" id="m220-heroSub">Inducción con meta · kg ÷ (personas × horas)</p>
+        <div class="big" id="m220-heroVal">—<span>kg/HH</span></div>
+        <div class="meter"><i id="m220-heroBar"></i><b id="m220-heroMark"></b></div>
+        <div id="m220-heroTxt" class="note"></div>
+        <div class="counts">
+          <div style="border-color:var(--ok)"><strong id="m220-nOk" style="color:var(--ok)">0</strong><span id="m220-lOk">en meta (≥ 220)</span></div>
+          <div style="border-color:var(--warn)"><strong id="m220-nWarn" style="color:var(--warn)">0</strong><span id="m220-lWarn">cerca (180–219)</span></div>
+          <div style="border-color:var(--bad)"><strong id="m220-nBad" style="color:var(--bad)">0</strong><span id="m220-lBad">lejos (&lt; 180)</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Cumplimiento por cuadrilla</h2>
+        <p class="sub" id="m220-subBar">kg por hora-hombre frente a la meta</p>
+        <div class="chartbox"><canvas id="m220-chDia"></canvas></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-bottom:16px">
+      <h2 id="m220-tblTit">Detalle del día</h2>
+      <p class="sub" id="m220-tblSub">Personas y horas son las registradas en la boleta. Los días mixtos (la cuadrilla hizo Natural e Inducción) se marcan aparte.</p>
+      <div class="tablewrap"><table id="m220-tblDia"></table></div>
+    </section>
+
+    <section class="grid2">
+      <div class="panel"><h2>Evolución · Inducción mecanizada</h2>
+        <p class="sub" id="m220-subEvoMec">kg por hora-hombre por cuadrilla y día</p>
+        <div class="chartbox m2tall"><canvas id="m220-chEvoMec"></canvas></div></div>
+      <div class="panel"><h2>Evolución · Inducción manual</h2>
+        <p class="sub" id="m220-subEvoMan">kg por hora-hombre por cuadrilla y día</p>
+        <div class="chartbox m2tall"><canvas id="m220-chEvoMan"></canvas></div></div>
+    </section>
+
+    <div class="section-title">Ficha por cuadrilla</div>
+    <div class="crews" id="m220-crews"></div>
+    <p class="note" id="m220-foot"></p>
+  </div>
+</main>
+
+</div></div>
+<script>
+(function(){
+/* ================== CONFIGURACIÓN ================== */
+const CFG = {
+  DASH_FILE: 'Dashboard_Cosecha_2026_v10.html', // mismo repositorio de GitHub Pages
+  META: 220,            // kg por hora-hombre
+  AMARILLO: 180,        // desde aquí es "cerca"
+  INICIO: '2026-10-05', // inicio de la medición de la meta
+  BASE: '2026-09-01',   // línea base para comparar
+  MODALIDADES_CON_META: ['Mecánica', 'Manual'], // dentro de Inducción
+  META_POR_MODALIDAD: { 'Mecánica': 220, 'Manual': 220 } // ajustar si se aprueba una meta manual distinta
+};
+const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const css = v => getComputedStyle(document.getElementById('m220')).getPropertyValue(v).trim();
+const nf = (v,d=0) => v==null||isNaN(v)?'—':v.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const title = s => s.toLowerCase().replace(/(^|\s)\p{L}/gu,c=>c.toUpperCase());
+const corto = s => { const p=title(s).split(' '); return p.length>=3 ? p[0]+' '+p[p.length>=4?2:1] : title(s); };
+const modTxt = t => t==='Mecánica'?'Mecanizada':'Manual';
+let CD=[], FECHAS=[], charts={};
+
+/* ================== PERIODOS (semana ISO lunes–domingo, como el Seguimiento SXX) ================== */
+function isoSem(k){ const d=new Date(k+'T12:00:00Z'); const dia=(d.getUTCDay()+6)%7; d.setUTCDate(d.getUTCDate()-dia+3);
+  const y=d.getUTCFullYear(), f=new Date(Date.UTC(y,0,4)); const w=1+Math.round(((d-f)/864e5-3+((f.getUTCDay()+6)%7))/7); return y+'-W'+String(w).padStart(2,'0'); }
+function lunesDe(sk){ const [y,w]=sk.split('-W').map(Number); const f=new Date(Date.UTC(y,0,4)); const l=new Date(f); l.setUTCDate(f.getUTCDate()-((f.getUTCDay()+6)%7)+(w-1)*7); return l.toISOString().slice(0,10); }
+function sumaDias(k,n){ const d=new Date(k+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+const perDe = (k,modo) => modo==='dia'?k:modo==='sem'?isoSem(k):k.slice(0,7);
+function perIni(p,modo){ return modo==='dia'?p:modo==='sem'?lunesDe(p):p+'-01'; }
+function perFin(p,modo){ if(modo==='dia') return p; if(modo==='sem') return sumaDias(lunesDe(p),6); const [y,m]=p.split('-').map(Number); return new Date(Date.UTC(y,m,0)).toISOString().slice(0,10); }
+function perLargo(p,modo){
+  if(modo==='dia') return fLarga(p).replace(/^./,c=>c.toUpperCase());
+  if(modo==='sem'){ const a=lunesDe(p),b=sumaDias(a,6); return 'Semana '+Number(p.split('-W')[1])+' · '+fCorta(a)+' al '+fCorta(b)+' '+b.slice(0,4); }
+  const [y,m]=p.split('-').map(Number); return MESESL[m-1].replace(/^./,c=>c.toUpperCase())+' '+y; }
+function perCorto(p,modo){ if(modo==='dia') return fCorta(p); if(modo==='sem') return 'S'+Number(p.split('-W')[1]); const m=Number(p.split('-')[1]); return MESES[m-1]; }
+const nomPer = modo => modo==='dia'?'día':modo==='sem'?'semana':'mes';
+const delPer = modo => modo==='sem'?'de la semana':'del '+nomPer(modo);
+const estePer = modo => modo==='sem'?'esta semana':'este '+nomPer(modo);
+
+/* ================== CARGA ================== */
+function parse(csvTxt){
+  const lines = csvTxt.trim().split(/\r?\n/); const cab = lines.shift().split(';');
+  const rows = lines.map(l=>{const v=l.split(';'),o={};cab.forEach((c,i)=>o[c]=(v[i]||'').trim());return o;});
+  const g = {};
+  rows.forEach(r=>{
+    const f=r.Fecha.split('/'); if(f.length!==3) return;
+    const key=f[2]+'-'+f[1].padStart(2,'0')+'-'+f[0].padStart(2,'0');
+    const k=r.Cuadrillero+'|'+key;
+    const x = g[k] || (g[k]={cuad:r.Cuadrillero,fecha:key,kg:0,fr:0,pers:0,horas:0,flor:{},tipo:{},bloques:new Set(),gf:new Set()});
+    const kg=+r.Peso||0, fr=+r.Frutas||0;
+    x.kg+=kg; x.fr+=fr; x.pers=Math.max(x.pers,+r.CantPersonas||0); x.horas=Math.max(x.horas,+(r.HorasTrabajadas||'0').replace(',','.')||0);
+    x.flor[r.Floracion]=(x.flor[r.Floracion]||0)+kg; x.tipo[r.TipoCosecha]=(x.tipo[r.TipoCosecha]||0)+kg;
+    x.bloques.add(r.Bloque); x.gf.add(r.GrupoForza);
+  });
+  CD = Object.values(g).filter(x=>x.pers>0&&x.horas>0).map(x=>{
+    const top = o => Object.entries(o).sort((a,b)=>b[1]-a[1])[0][0];
+    const flor = top(x.flor), tipo = top(x.tipo);
+    const mixto = Object.keys(x.flor).length>1 || Object.keys(x.tipo).length>1;
+    const hh = x.pers*x.horas;
+    const meta = flor==='Inducción' && CFG.MODALIDADES_CON_META.includes(tipo) ? (CFG.META_POR_MODALIDAD[tipo]||CFG.META) : null;
+    return {...x, flor, tipo, mixto, hh, kgh:x.kg/hh, frh:x.fr/hh, meta, cumpl: meta? x.kg/hh/meta : null,
+            bloquesN:x.bloques.size, gfL:[...x.gf].sort().join(', ')};
+  });
+  FECHAS = [...new Set(CD.map(x=>x.fecha))].sort();
+}
+function estado(x){ if(x.meta==null) return 'off'; const v=x.kgh; return v>=x.meta?'ok':(v>=CFG.AMARILLO*(x.meta/CFG.META)?'warn':'bad'); }
+function color(e){ return css({ok:'--ok',warn:'--warn',bad:'--bad',off:'--off'}[e]); }
+function fLarga(k){ const d=new Date(k+'T12:00:00'); return DIAS[d.getDay()]+' '+d.getDate()+' '+MESES[d.getMonth()]+' '+d.getFullYear(); }
+function fCorta(k){ const d=new Date(k+'T12:00:00'); return d.getDate()+' '+MESES[d.getMonth()]; }
+function iniciar(){
+  try{ if(typeof RAW_CSV==='undefined') throw new Error('sin datos'); parse(RAW_CSV); }
+  catch(e){ document.getElementById('m220-loader').textContent='No se encontraron los datos de cosecha en este archivo.'; return; }
+  arrancar();
+}
+
+/* ================== UNIDADES: cuadrilla-día o ponderado del periodo ================== */
+// Ponderado = suma de kg ÷ suma de horas-hombre del periodo (no es el promedio de los kg/HH diarios)
+function agrupar(rows){
+  const g={};
+  rows.forEach(x=>{ const k=x.cuad+'|'+x.tipo+'|'+(x.meta!=null?'M':'N'); const u=g[k]||(g[k]={cuad:x.cuad,tipo:x.tipo,flor:x.flor,meta:x.meta,kg:0,fr:0,hh:0,jorn:0,dias:0,verdes:0,mixtos:0,fechas:[]});
+    u.kg+=x.kg; u.fr+=x.fr; u.hh+=x.hh; u.jorn+=x.pers; u.dias++; u.mixtos+=x.mixto?1:0; u.fechas.push(x.fecha); if(estado(x)==='ok') u.verdes++; });
+  return Object.values(g).map(u=>({...u,kgh:u.kg/u.hh,frh:u.fr/u.hh,cumpl:u.meta?u.kg/u.hh/u.meta:null}));
+}
+function unidades(modo,p){ const rows=CD.filter(x=>perDe(x.fecha,modo)===p); return modo==='dia'?rows:agrupar(rows); }
+const ordenar = a => a.sort((x,y)=>(y.meta!=null)-(x.meta!=null)||y.kgh-x.kgh);
+
+/* ================== RENDER ================== */
+function llenarSelector(){
+  const modo=document.getElementById('m220-selPer').value;
+  const ps=[...new Set(CD.filter(x=>x.meta!=null).map(x=>perDe(x.fecha,modo)))].sort().reverse();
+  const sel=document.getElementById('m220-selDia'); sel.innerHTML=ps.map(p=>`<option value="${p}">${perLargo(p,modo)}</option>`).join('');
+  document.getElementById('m220-btnImg').textContent='Imagen '+(modo==='dia'?'del día':modo==='sem'?'de la semana':'del mes')+' para los grupos';
+}
+function arrancar(){
+  document.getElementById('m220-loader').style.display='none'; document.getElementById('m220-app').style.display='block';
+  document.getElementById('m220-selPer').onchange=()=>{ llenarSelector(); render(); };
+  document.getElementById('m220-selDia').onchange=render; document.getElementById('m220-selRango').onchange=render;
+  llenarSelector();
+  if(!CD.some(x=>x.meta!=null&&x.fecha>=CFG.INICIO)){
+    document.getElementById('m220-selRango').value='base';
+    const m=document.getElementById('m220-msg'); m.style.display='block';
+    m.textContent='Aún no hay días cargados desde el inicio de la meta ('+fCorta(CFG.INICIO)+'). Se muestra la línea base desde el 1 de septiembre; el seguimiento arranca solo con el primer día cargado.';
+  }
+  render();
+}
+function render(){
+  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value;
+  const us=ordenar(unidades(modo,p)); const cm=us.filter(x=>x.meta!=null);
+  const kg=cm.reduce((a,x)=>a+x.kg,0), hh=cm.reduce((a,x)=>a+x.hh,0), v=hh?kg/hh:0;
+  document.getElementById('m220-heroDia').textContent=perLargo(p,modo);
+  document.getElementById('m220-heroSub').textContent=modo==='dia'?'Inducción con meta · kg ÷ (personas × horas)':'Ponderado del periodo · kg ÷ horas-hombre '+delPer(modo);
+  document.getElementById('m220-heroVal').innerHTML=nf(v,0)+'<span>kg/HH · '+nf(v/CFG.META*100,0)+'% de la meta</span>';
+  const e = v>=CFG.META?'ok':v>=CFG.AMARILLO?'warn':'bad';
+  const hb=document.getElementById('m220-heroBar'); hb.style.width=Math.min(100,v/(CFG.META*1.3)*100)+'%'; hb.style.background=color(e);
+  document.getElementById('m220-heroMark').style.left=(100/1.3)+'%';
+  const sub=t=>{const z=cm.filter(x=>x.tipo===t),k=z.reduce((a,x)=>a+x.kg,0),h=z.reduce((a,x)=>a+x.hh,0);return h?nf(k/h,0)+' kg/HH':'sin cosecha';};
+  let extra='';
+  if(modo!=='dia'){ const cd=cm.reduce((a,x)=>a+x.dias,0), vd=cm.reduce((a,x)=>a+x.verdes,0), nd=new Set(cm.flatMap(x=>x.fechas)).size;
+    extra=` ${nd} día${nd===1?'':'s'} con cosecha · ${vd} de ${cd} cuadrilla-días en verde (${nf(cd?vd/cd*100:0,0)}%).`; }
+  document.getElementById('m220-heroTxt').textContent=`${nf(kg)} kg con ${nf(hh,0)} horas-hombre en ${cm.length} cuadrilla${cm.length===1?'':'s'}. Mecanizada ${sub('Mecánica')} · manual ${sub('Manual')}.${extra} Faltan ${nf(Math.max(0,CFG.META-v),0)} kg/HH para la meta.`;
+  ['ok','warn','bad'].forEach(s=>document.getElementById({ok:'m220-nOk',warn:'m220-nWarn',bad:'m220-nBad'}[s]).textContent=cm.filter(x=>estado(x)===s).length);
+  const suf = modo==='dia'?'':' (ponderado)';
+  document.getElementById('m220-lOk').textContent='en meta (≥ '+CFG.META+')'+suf; document.getElementById('m220-lWarn').textContent='cerca ('+CFG.AMARILLO+'–'+(CFG.META-1)+')'+suf; document.getElementById('m220-lBad').textContent='lejos (< '+CFG.AMARILLO+')'+suf;
+  document.getElementById('m220-subBar').textContent=modo==='dia'?'kg por hora-hombre del día frente a la meta':'kg por hora-hombre ponderado '+delPer(modo)+' frente a la meta';
+  tabla(us,modo,p); fichas(modo,p);
+  if(typeof Chart!=='undefined'){ barras(cm); evolucion(modo,p); }
+  else { ['m220-chDia','m220-chEvoMec','m220-chEvoMan'].forEach(id=>{const c=document.getElementById(id); if(c) c.parentNode.innerHTML='<p class="note">No se pudo cargar la librería de gráficos. Revisa la conexión a internet y recarga la página.</p>';}); }
+  const ult=FECHAS[FECHAS.length-1];
+  document.getElementById('m220-foot').textContent=`Fuente: datos de este dashboard · último día cargado ${fLarga(ult)} · meta ${CFG.META} kg/HH · cuadrilla-día = personas máx. × horas máx. registradas · semana = lunes a domingo (ISO) · ponderado = kg ÷ horas-hombre del periodo · Natural se muestra sin meta.`;
+}
+function barras(cm){
+  const ctx=document.getElementById('m220-chDia'); charts.dia&&charts.dia.destroy();
+  charts.dia=new Chart(ctx,{type:'bar',data:{labels:cm.map(x=>corto(x.cuad)+(x.tipo==='Manual'?' (man.)':'')),
+    datasets:[{data:cm.map(x=>+x.kgh.toFixed(1)),backgroundColor:cm.map(x=>color(estado(x))),borderRadius:4,barPercentage:.7}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false},tooltip:{callbacks:{label:c=>{const x=cm[c.dataIndex];return `${nf(x.kgh,0)} kg/HH · ${nf(x.cumpl*100,0)}% · ${nf(x.kg)} kg`+(x.dias?` · ${x.dias} días`:'');}}}},
+      scales:{x:{min:0,suggestedMax:CFG.META*1.25,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg por hora-hombre',color:css('--muted')}},
+              y:{grid:{display:false},ticks:{color:css('--ink'),font:{family:'Barlow, Arial, sans-serif',size:13}}}}},
+    plugins:[lineaMeta('x')]});
+  const box=ctx.parentNode; box.style.height=Math.max(220,70+cm.length*46)+'px';
+}
+function lineaMeta(eje){ return {id:'meta',afterDatasetsDraw(ch){ const s=ch.scales[eje],a=ch.chartArea,c=ch.ctx; c.save();
+  [[CFG.META,css('--ok'),'Meta '+CFG.META],[CFG.AMARILLO,css('--warn'),String(CFG.AMARILLO)]].forEach(([v,col,t])=>{
+    c.strokeStyle=col;c.setLineDash([5,4]);c.lineWidth=1.5;c.beginPath();
+    if(eje==='x'){const p=s.getPixelForValue(v);c.moveTo(p,a.top);c.lineTo(p,a.bottom);c.stroke();c.fillStyle=col;c.font='600 12px Barlow, Arial';c.fillText(t,p+4,a.top+12);}
+    else{const p=s.getPixelForValue(v);c.moveTo(a.left,p);c.lineTo(a.right,p);c.stroke();c.fillStyle=col;c.font='600 12px Barlow, Arial';c.fillText(t,a.right-60,p-4);}
+  }); c.restore(); }}; }
+// comparación: mismo cuadrillero y modalidad, últimos 5 días (modo día) o periodo anterior (semana / mes)
+function comparar(x,modo,p){
+  if(x.meta==null) return null;
+  let prev;
+  if(modo==='dia') prev=CD.filter(y=>y.cuad===x.cuad&&y.tipo===x.tipo&&y.meta!=null&&y.fecha<p).sort((a,b)=>a.fecha<b.fecha?1:-1).slice(0,5);
+  else { const ps=[...new Set(CD.filter(y=>y.cuad===x.cuad&&y.tipo===x.tipo&&y.meta!=null).map(y=>perDe(y.fecha,modo)))].filter(q=>q<p).sort(); const q=ps.at(-1);
+    prev=q?CD.filter(y=>y.cuad===x.cuad&&y.tipo===x.tipo&&y.meta!=null&&perDe(y.fecha,modo)===q):[]; }
+  const kg=prev.reduce((a,y)=>a+y.kg,0),hh=prev.reduce((a,y)=>a+y.hh,0); return hh?(x.kgh/(kg/hh)-1)*100:null;
+}
+function tabla(us,modo,p){
+  const t=document.getElementById('m220-tblDia');
+  document.getElementById('m220-tblTit').textContent=modo==='dia'?'Detalle del día':'Detalle '+delPer(modo)+' por cuadrilla';
+  document.getElementById('m220-tblSub').textContent=modo==='dia'?'Personas y horas son las registradas en la boleta. Los días mixtos (la cuadrilla hizo Natural e Inducción) se marcan aparte.':'Ponderado = kg del periodo ÷ horas-hombre del periodo. Días en meta = cuadrilla-días con 220 kg/HH o más.';
+  const comp = modo==='dia'?'vs sus últimos 5 días':(modo==='sem'?'vs su semana anterior':'vs su mes anterior');
+  let h;
+  if(modo==='dia') h=`<thead><tr><th>Cuadrilla</th><th>Modalidad</th><th>Personas</th><th>Horas</th><th>Horas-hombre</th><th>Kg</th><th>Frutas</th><th>Kg/HH</th><th>Frutas/HH</th><th>Cumplimiento</th><th>${comp}</th></tr></thead><tbody>`;
+  else h=`<thead><tr><th>Cuadrilla</th><th>Modalidad</th><th>Días</th><th>Jornales</th><th>Horas-hombre</th><th>Kg</th><th>Frutas</th><th>Kg/HH ponderado</th><th>Frutas/HH</th><th>Días en meta</th><th>Cumplimiento</th><th>${comp}</th></tr></thead><tbody>`;
+  us.forEach(x=>{ const e=estado(x), d=comparar(x,modo,p);
+    const mod = x.flor==='Inducción' ? modTxt(x.tipo) : 'Natural (sin meta)';
+    const cum = x.meta?`<span class="bar"><i style="width:${Math.min(100,x.cumpl*100)}%;background:${color(e)}"></i></span><span class="pill" style="background:${color(e)}">${nf(x.cumpl*100,0)}%</span>`:'<span class="pill" style="background:var(--off)">—</span>';
+    const dd = `<td style="color:${d==null?'var(--muted)':d>=0?'var(--ok)':'var(--bad)'}">${d==null?'—':(d>=0?'+':'')+nf(d,0)+'%'}</td>`;
+    if(modo==='dia') h+=`<tr><td class="name">${title(x.cuad)}<em>${x.bloquesN} bloque${x.bloquesN===1?'':'s'} · ${x.gfL}${x.mixto?' · día mixto':''}</em></td><td>${mod}</td><td>${nf(x.pers)}</td><td>${nf(x.horas,1)}</td><td>${nf(x.hh,1)}</td><td>${nf(x.kg)}</td><td>${nf(x.fr)}</td><td><b>${nf(x.kgh,1)}</b></td><td>${nf(x.frh,1)}</td><td>${cum}</td>${dd}</tr>`;
+    else h+=`<tr><td class="name">${title(x.cuad)}${x.mixtos?`<em>${x.mixtos} día${x.mixtos===1?'':'s'} mixto${x.mixtos===1?'':'s'}</em>`:''}</td><td>${mod}</td><td>${x.dias}</td><td>${nf(x.jorn)}</td><td>${nf(x.hh,1)}</td><td>${nf(x.kg)}</td><td>${nf(x.fr)}</td><td><b>${nf(x.kgh,1)}</b></td><td>${nf(x.frh,1)}</td><td>${x.meta?x.verdes+' de '+x.dias:'—'}</td><td>${cum}</td>${dd}</tr>`;
+  });
+  t.innerHTML=h+'</tbody>';
+}
+// evolución: puntos diarios, semanales o mensuales según el periodo elegido
+function serie(modo,p){
+  const r=document.getElementById('m220-selRango').value, fin=perFin(p,modo); let desde;
+  if(r==='inicio') desde=CFG.INICIO; else if(r==='base') desde=CFG.BASE; else if(r==='mar') desde='2026-03-01'; else desde=sumaDias(fin,-30);
+  if(modo!=='dia') desde=perIni(perDe(desde,modo),modo);
+  if(desde>perIni(p,modo)) desde=perIni(p,modo); // el rango siempre incluye el periodo elegido
+  const rows=CD.filter(x=>x.meta!=null&&x.fecha>=desde&&x.fecha<=fin);
+  const ps=[...new Set(rows.map(x=>perDe(x.fecha,modo)))].sort();
+  return {ps,rows};
+}
+const PAL=['#0E2841','#CC9100','#C0392B','#2F6DB5','#6B8E23','#8E44AD','#16A085','#7C411E','#E67E22','#5D6D7E','#B03A7A','#00838F','#9E9D24','#4E342E'];
+const colCuad = c => { const todos=[...new Set(CD.filter(x=>x.meta!=null).map(x=>x.cuad))].sort(); return PAL[todos.indexOf(c)%PAL.length]; };
+function puntoDe(rows,cuad,tipo,q,modo){ const z=rows.filter(y=>y.cuad===cuad&&y.tipo===tipo&&perDe(y.fecha,modo)===q); if(!z.length) return null;
+  const kg=z.reduce((a,y)=>a+y.kg,0),hh=z.reduce((a,y)=>a+y.hh,0),fr=z.reduce((a,y)=>a+y.fr,0); return {kgh:kg/hh,frh:fr/hh,kg,hh,fr,meta:z[0].meta,dias:z.length,verdes:z.filter(y=>estado(y)==='ok').length}; }
+function evolucion(modo,p){
+  const {ps,rows}=serie(modo,p);
+  [['Mecánica','m220-chEvoMec','m220-subEvoMec','evoMec'],['Manual','m220-chEvoMan','m220-subEvoMan','evoMan']].forEach(([tipo,id,sid,key])=>{
+    const rt=rows.filter(x=>x.tipo===tipo); const px=ps.filter(q=>rt.some(x=>perDe(x.fecha,modo)===q)); const crews=[...new Set(rt.map(x=>x.cuad))];
+    const und = modo==='dia'?'por día':modo==='sem'?'ponderado por semana':'ponderado por mes';
+    document.getElementById(sid).textContent=px.length?`kg por hora-hombre ${und}, ${perCorto(px[0],modo)} a ${perCorto(px.at(-1),modo)} · línea verde = meta ${CFG.META_POR_MODALIDAD[tipo]||CFG.META}`:'Sin datos de esta modalidad en el rango';
+    charts[key]&&charts[key].destroy();
+    charts[key]=new Chart(document.getElementById(id),{type:'line',data:{labels:px.map(q=>perCorto(q,modo)),datasets:crews.map((c,i)=>({label:corto(c),
+      data:px.map(q=>{const o=puntoDe(rt,c,tipo,q,modo);return o?+o.kgh.toFixed(1):null;}),
+      borderColor:colCuad(c),backgroundColor:colCuad(c),spanGaps:modo!=='dia',tension:.2,pointRadius:modo==='dia'?3.5:5,borderWidth:2}))},
+      options:{maintainAspectRatio:false,interaction:{mode:'nearest',intersect:false},
+        plugins:{datalabels:{display:false},legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${nf(c.parsed.y,0)} kg/HH`}}},
+        scales:{y:{min:0,suggestedMax:CFG.META*1.3,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg / HH',color:css('--muted')}},
+                x:{grid:{display:false},ticks:{color:css('--muted'),maxRotation:0,autoSkip:true}}}},plugins:[lineaMeta('y')]});
+  });
+}
+function fichas(modo,p){
+  const {ps,rows}=serie(modo,p); const box=document.getElementById('m220-crews'); box.innerHTML='';
+  const und = modo==='dia'?'días':modo==='sem'?'semanas':'meses';
+  const keys=[...new Set(rows.map(x=>x.cuad+'|'+x.tipo))];
+  keys.map(k=>{const [c,tipo]=k.split('|'); const pts=ps.map(q=>({q,o:puntoDe(rows,c,tipo,q,modo)})).filter(z=>z.o);
+    const dd=rows.filter(x=>x.cuad===c&&x.tipo===tipo); const kg=dd.reduce((a,x)=>a+x.kg,0),hh=dd.reduce((a,x)=>a+x.hh,0),fr=dd.reduce((a,x)=>a+x.fr,0);
+    const act=pts.find(z=>z.q===p);
+    return {c,tipo,pts,dias:dd.length,v:kg/hh,frh:fr/hh,ok:dd.filter(x=>estado(x)==='ok').length,act:act?act.o:null};})
+  .sort((a,b)=>(a.tipo===b.tipo?0:a.tipo==='Mecánica'?-1:1)||b.v-a.v).forEach(o=>{
+    const el=document.createElement('div'); el.className='crew'; const e=o.v>=CFG.META?'ok':o.v>=CFG.AMARILLO?'warn':'bad';
+    el.innerHTML=`<h3>${title(o.c)}</h3><div class="meta">${modTxt(o.tipo)} · ${o.dias} días en el rango · ${o.ok} en meta (${nf(o.ok/o.dias*100,0)}%)</div>
+      <canvas width="500" height="112"></canvas>
+      <div class="k"><span><b style="color:${color(e)}">${nf(o.v,0)}</b>kg/HH rango</span><span><b>${o.act?nf(o.act.kgh,0):'—'}</b>kg/HH ${modo==='dia'?'del día':delPer(modo).replace(/^de la |^del /,'')}</span><span><b>${nf(o.frh,0)}</b>frutas/HH</span></div>
+      <button class="sec">Imagen de esta cuadrilla</button>`;
+    box.appendChild(el); spark(el.querySelector('canvas'),o.pts.map(z=>z.o));
+    el.querySelector('button').onclick=()=>imgCuadrilla(o,modo,p);
+  });
+}
+function estP(o){ return o.kgh>=o.meta?'ok':o.kgh>=CFG.AMARILLO*(o.meta/CFG.META)?'warn':'bad'; }
+function spark(cv,pts){ const c=cv.getContext('2d'),W=cv.width,H=cv.height,mx=Math.max(CFG.META*1.3,...pts.map(x=>x.kgh));
+  c.clearRect(0,0,W,H); const y=v=>H-6-(v/mx)*(H-12); c.strokeStyle=css('--ok');c.setLineDash([6,5]);c.lineWidth=2;c.beginPath();c.moveTo(0,y(CFG.META));c.lineTo(W,y(CFG.META));c.stroke();c.setLineDash([]);
+  const step=pts.length>1?(W-12)/(pts.length-1):0, X=i=>pts.length>1?6+i*step:W/2; c.strokeStyle=css('--ink');c.lineWidth=3;c.beginPath();
+  pts.forEach((x,i)=>{ i?c.lineTo(X(i),y(x.kgh)):c.moveTo(X(i),y(x.kgh));}); c.stroke();
+  pts.forEach((x,i)=>{c.fillStyle=color(estP(x));c.beginPath();c.arc(X(i),y(x.kgh),5,0,7);c.fill();}); }
+
+/* ================== IMÁGENES Y MENSAJE PARA LOS GRUPOS ================== */
+function lienzo(w,h){ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const c=cv.getContext('2d');
+  c.fillStyle='#FFFFFF'; c.fillRect(0,0,w,h); c.fillStyle='#0E2841'; c.fillRect(0,0,w,150); c.fillStyle='#CC9100'; c.fillRect(0,150,w,8); return [cv,c]; }
+function txt(c,s,x,y,font,col,align='left'){ c.font=font; c.fillStyle=col; c.textAlign=align; c.fillText(s,x,y); }
+function descargar(cv,nombre){ const a=document.createElement('a'); a.download=nombre; a.href=cv.toDataURL('image/png'); a.click(); }
+function imgPeriodo(){
+  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value; const cm=ordenar(unidades(modo,p)).filter(x=>x.meta!=null);
+  const W=1080,rowH=96,H=330+cm.length*rowH+120; const [cv,c]=lienzo(W,H);
+  txt(c,'AGRÍCOLA GUAPA · COSECHA INDUCCIÓN',60,56,'600 26px Barlow, Arial','#CC9100');
+  txt(c,perLargo(p,modo),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
+  txt(c,'Meta '+CFG.META+' kg por hora-hombre',60,112,'700 50px "Barlow Condensed", Arial','#FFFFFF');
+  const kg=cm.reduce((a,x)=>a+x.kg,0),hh=cm.reduce((a,x)=>a+x.hh,0),v=hh?kg/hh:0;
+  txt(c,(modo==='dia'?'Promedio del día: ':'Ponderado '+delPer(modo)+': ')+nf(v,0)+' kg/HH · '+nf(v/CFG.META*100,0)+'% de la meta',60,225,'600 34px Barlow, Arial','#1B2430');
+  let l2=cm.filter(x=>estado(x)==='ok').length+' en meta · '+cm.filter(x=>estado(x)==='warn').length+' cerca · '+cm.filter(x=>estado(x)==='bad').length+' lejos';
+  if(modo!=='dia'){ const cd=cm.reduce((a,x)=>a+x.dias,0),vd=cm.reduce((a,x)=>a+x.verdes,0); l2+=' · '+vd+' de '+cd+' cuadrilla-días en verde'; }
+  txt(c,l2,60,270,'500 28px Barlow, Arial','#5F6B7A');
+  const x0=420,x1=W-170,mx=Math.max(CFG.META*1.25,...cm.map(x=>x.kgh)); const px=v=>x0+(v/mx)*(x1-x0);
+  cm.forEach((x,i)=>{ const y=320+i*rowH, e=estado(x);
+    txt(c,corto(x.cuad),60,y+40,'600 32px Barlow, Arial','#1B2430');
+    txt(c,modTxt(x.tipo)+' · '+(modo==='dia'?nf(x.pers)+' pers × '+nf(x.horas,1)+' h':x.dias+' días · '+x.verdes+' en meta'),60,y+74,'400 22px Barlow, Arial','#5F6B7A');
+    c.fillStyle='#ECE8E1'; c.fillRect(x0,y+16,x1-x0,46); c.fillStyle=color(e); c.fillRect(x0,y+16,px(x.kgh)-x0,46);
+    txt(c,nf(x.kgh,0),W-60,y+50,'700 40px "Barlow Condensed", Arial',color(e),'right'); });
+  c.strokeStyle='#2E7D32'; c.setLineDash([10,8]); c.lineWidth=4; c.beginPath(); c.moveTo(px(CFG.META),300); c.lineTo(px(CFG.META),320+cm.length*rowH); c.stroke(); c.setLineDash([]);
+  txt(c,'Meta '+CFG.META,px(CFG.META),298,'700 22px Barlow, Arial','#2E7D32','center');
+  txt(c,'Verde ≥ '+CFG.META+' · Amarillo '+CFG.AMARILLO+'–'+(CFG.META-1)+' · Rojo < '+CFG.AMARILLO+(modo==='dia'?' · kg/HH = kg ÷ (personas × horas)':' · ponderado = kg ÷ horas-hombre del periodo'),60,H-50,'400 22px Barlow, Arial','#5F6B7A');
+  descargar(cv,'Meta220_'+modo+'_'+p+'.png');
+}
+function imgCuadrilla(o,modo,p){
+  const W=1080,H=900; const [cv,c]=lienzo(W,H);
+  txt(c,'AGRÍCOLA GUAPA · META '+CFG.META+' KG/HH',60,56,'600 26px Barlow, Arial','#CC9100');
+  txt(c,title(o.c),60,112,'700 50px "Barlow Condensed", Arial','#FFFFFF');
+  const d=o.act; const e=d?estP(d):'off';
+  txt(c,d?perLargo(p,modo):'Sin cosecha con meta en '+estePer(modo),60,225,'500 30px Barlow, Arial','#5F6B7A');
+  txt(c,d?nf(d.kgh,0):'—',60,360,'700 150px "Barlow Condensed", Arial',color(e));
+  txt(c,'kg por hora-hombre '+(modo==='dia'?'hoy':'ponderado '+delPer(modo)),60,410,'500 30px Barlow, Arial','#1B2430');
+  if(d){ txt(c,nf(d.kgh/d.meta*100,0)+'% de la meta',W-60,300,'700 52px "Barlow Condensed", Arial',color(e),'right');
+    txt(c,nf(d.kg)+' kg · '+nf(d.fr)+' frutas',W-60,350,'500 28px Barlow, Arial','#5F6B7A','right');
+    txt(c,modo==='dia'?nf(d.hh,1)+' horas-hombre':d.dias+' días · '+d.verdes+' en meta',W-60,390,'500 28px Barlow, Arial','#5F6B7A','right'); }
+  const pts=o.pts.map(z=>z.o), gx0=60,gx1=W-60,gy0=470,gy1=780,mx=Math.max(CFG.META*1.3,...pts.map(x=>x.kgh));
+  const gy=v=>gy1-(v/mx)*(gy1-gy0), stp=pts.length>1?(gx1-gx0)/(pts.length-1):0, X=i=>pts.length>1?gx0+i*stp:(gx0+gx1)/2;
+  c.strokeStyle='#2E7D32';c.setLineDash([10,8]);c.lineWidth=3;c.beginPath();c.moveTo(gx0,gy(CFG.META));c.lineTo(gx1,gy(CFG.META));c.stroke();c.setLineDash([]);
+  txt(c,'Meta '+CFG.META,gx1,gy(CFG.META)-10,'700 22px Barlow, Arial','#2E7D32','right');
+  c.strokeStyle='#0E2841';c.lineWidth=5;c.beginPath();pts.forEach((x,i)=>{i?c.lineTo(X(i),gy(x.kgh)):c.moveTo(X(i),gy(x.kgh));});c.stroke();
+  pts.forEach((x,i)=>{c.fillStyle=color(estP(x));c.beginPath();c.arc(X(i),gy(x.kgh),10,0,7);c.fill();});
+  if(o.pts.length){ txt(c,perCorto(o.pts[0].q,modo),gx0,gy1+40,'400 22px Barlow, Arial','#5F6B7A'); txt(c,perCorto(o.pts.at(-1).q,modo),gx1,gy1+40,'400 22px Barlow, Arial','#5F6B7A','right'); }
+  txt(c,modTxt(o.tipo)+' · '+o.dias+' días en el rango · '+o.ok+' en meta · ponderado '+nf(o.v,0)+' kg/HH',60,H-40,'500 26px Barlow, Arial','#1B2430');
+  descargar(cv,'Meta220_'+o.c.split(' ')[0]+'_'+(o.tipo==='Mecánica'?'mec':'man')+'_'+modo+'_'+p+'.png');
+}
+function mensaje(){
+  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value; const cm=ordenar(unidades(modo,p)).filter(x=>x.meta!=null);
+  const kg=cm.reduce((a,x)=>a+x.kg,0),hh=cm.reduce((a,x)=>a+x.hh,0),v=hh?kg/hh:0; const ic={ok:'🟢',warn:'🟡',bad:'🔴'};
+  let s=`*Cosecha Inducción · ${perLargo(p,modo)}*\nMeta: ${CFG.META} kg por hora-hombre\n${modo==='dia'?'Promedio del día':'Ponderado '+delPer(modo)}: *${nf(v,0)} kg/HH* (${nf(v/CFG.META*100,0)}% de la meta)\n\n`;
+  cm.forEach(x=>{ s+=`${ic[estado(x)]} ${title(x.cuad)} (${modTxt(x.tipo).toLowerCase()}): *${nf(x.kgh,0)} kg/HH* · ${nf(x.cumpl*100,0)}%`+(modo==='dia'?` · ${nf(x.frh,0)} frutas/HH`:` · ${x.verdes} de ${x.dias} días en meta`)+`\n`; });
+  s+=`\n🟢 ≥ ${CFG.META} · 🟡 ${CFG.AMARILLO}–${CFG.META-1} · 🔴 < ${CFG.AMARILLO}`;
+  return s;
+}
+document.getElementById('m220-btnImg').onclick=imgPeriodo;
+document.getElementById('m220-btnTxt').onclick=async()=>{ const s=mensaje(); try{ await navigator.clipboard.writeText(s); alert('Mensaje copiado. Pégalo en el grupo de WhatsApp.'); }catch(e){ prompt('Copia el mensaje:',s); } };
+
+let m220Listo=false;
+window.abrirMeta220=function(){ const m=document.getElementById('m220'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
+  if(!m220Listo){ m220Listo=true; iniciar(); } else { render(); } };
+window.cerrarMeta220=function(){ document.getElementById('m220').style.display='none'; document.body.style.overflow=''; };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('m220').style.display==='block') window.cerrarMeta220(); });
+})();
+</script>
 
 </body>
 </html>
