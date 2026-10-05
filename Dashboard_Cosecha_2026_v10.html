@@ -226,7 +226,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
     <div><h1>Dashboard de Cosecha 2026</h1><p>Análisis de producción · Piña/Fruta</p></div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-meta220" onclick="abrirMeta220()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">🎯 Meta 220 kg/HH</button>
+    <button id="btn-meta220" onclick="abrirMeta220()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">🎯 Meta kg/HH</button>
     <button id="btn-presentacion" onclick="togglePresentacion()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:var(--accent-green);padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--accent-green)';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='var(--accent-green)'">⛶ Modo Presentación</button>
     <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
   </div>
@@ -20427,7 +20427,7 @@ function updateSemFruChart() {
 </script>
 
 
-<!-- ══ TABLERO META 220 KG/HH (CC-001.2) ══ -->
+<!-- ══ TABLERO META KG/HH ESCALONADA (CC-001.2 · CC-001.3) ══ -->
 <style id="m220-styles">
 /* Tablero Meta 220 · estilos aislados en #m220 */
 #m220{
@@ -20494,6 +20494,12 @@ function updateSemFruChart() {
 #m220{position:fixed;inset:0;z-index:9998;overflow-y:auto;display:none;background:var(--bg);color:var(--ink);font-family:var(--fn);font-size:15px;line-height:1.45;-webkit-overflow-scrolling:touch}
 #m220 .m220-head{position:sticky;top:0;z-index:2;padding-top:calc(18px + env(safe-area-inset-top,0px))}
 #m220 .m220-close{background:transparent;color:#fff;border:1px solid #3B5675}
+#m220 .esc{display:flex;gap:6px;align-items:flex-end;margin:12px 0 2px;flex-wrap:wrap}
+#m220 .esc span{flex:1;min-width:58px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-family:var(--fc);font-weight:600;font-size:18px;color:var(--muted);text-align:center;line-height:1.1}
+#m220 .esc span em{display:block;font-family:var(--fn);font-style:normal;font-weight:400;font-size:11px}
+#m220 .esc span.act{border-color:var(--navy);background:var(--navy);color:#fff}
+#m220 .esc span.done{color:var(--ok);border-color:var(--ok)}
+#m220 .esc p{flex-basis:100%;margin:4px 0 0;font-size:12.5px;color:var(--muted)}
 #m220 .m220-main{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 #m220 table{background:transparent}
 #m220 td{color:var(--ink);background:transparent}
@@ -20503,7 +20509,7 @@ function updateSemFruChart() {
 <div id="m220" role="dialog" aria-modal="true" aria-label="Seguimiento meta 220 kg por hora-hombre"><div class="m220-wrap">
 <header class="m220-head">
   <div class="row">
-    <h1>Meta 220 kg por hora-hombre
+    <h1>Meta de kg por hora-hombre · 200 → 340
       <small>Seguimiento diario de cuadrillas · Inducción mecanizada y manual · Agrícola Guapa S.A.S</small></h1>
     <div class="controls">
       <label for="m220-selPer">Periodo</label>
@@ -20531,6 +20537,7 @@ function updateSemFruChart() {
         <h2 id="m220-heroDia">—</h2>
         <p class="sub" id="m220-heroSub">Inducción con meta · kg ÷ (personas × horas)</p>
         <div class="big" id="m220-heroVal">—<span>kg/HH</span></div>
+        <div id="m220-escalera" class="esc"></div>
         <div class="meter"><i id="m220-heroBar"></i><b id="m220-heroMark"></b></div>
         <div id="m220-heroTxt" class="note"></div>
         <div class="counts">
@@ -20573,13 +20580,19 @@ function updateSemFruChart() {
 /* ================== CONFIGURACIÓN ================== */
 const CFG = {
   DASH_FILE: 'Dashboard_Cosecha_2026_v10.html', // mismo repositorio de GitHub Pages
-  META: 220,            // kg por hora-hombre
-  AMARILLO: 180,        // desde aquí es "cerca"
+  // Escalera de metas (kg por hora-hombre). Cada día se compara con la meta vigente en su fecha. (CC-001.3)
+  ESCALONES: [ {desde:'2026-10-05', meta:200}, {desde:'2026-11-02', meta:240}, {desde:'2026-11-30', meta:300}, {desde:'2027-01-04', meta:340} ],
+  ESCALONES_MANUAL: null, // si se aprueba una escalera propia para manual, ponerla aquí con el mismo formato
+  AMARILLO_PCT: 0.80,     // amarillo = 80% a 99% de la meta vigente
   INICIO: '2026-10-05', // inicio de la medición de la meta
   BASE: '2026-09-01',   // línea base para comparar
   MODALIDADES_CON_META: ['Mecánica', 'Manual'], // dentro de Inducción
-  META_POR_MODALIDAD: { 'Mecánica': 220, 'Manual': 220 } // ajustar si se aprueba una meta manual distinta
 };
+function escalera(tipo){ return (tipo==='Manual'&&CFG.ESCALONES_MANUAL)||CFG.ESCALONES; }
+function metaEn(fecha,tipo){ const es=escalera(tipo); let m=es[0].meta; es.forEach(s=>{ if(fecha>=s.desde) m=s.meta; }); return m; }
+function escalonEn(fecha){ let i=0; CFG.ESCALONES.forEach((s,k)=>{ if(fecha>=s.desde) i=k; }); return i; }
+let MP=CFG.ESCALONES[0].meta; // meta (ponderada) del periodo en pantalla
+const amar = () => Math.round(MP*CFG.AMARILLO_PCT);
 const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
@@ -20627,13 +20640,13 @@ function parse(csvTxt){
     const flor = top(x.flor), tipo = top(x.tipo);
     const mixto = Object.keys(x.flor).length>1 || Object.keys(x.tipo).length>1;
     const hh = x.pers*x.horas;
-    const meta = flor==='Inducción' && CFG.MODALIDADES_CON_META.includes(tipo) ? (CFG.META_POR_MODALIDAD[tipo]||CFG.META) : null;
+    const meta = flor==='Inducción' && CFG.MODALIDADES_CON_META.includes(tipo) ? metaEn(x.fecha,tipo) : null;
     return {...x, flor, tipo, mixto, hh, kgh:x.kg/hh, frh:x.fr/hh, meta, cumpl: meta? x.kg/hh/meta : null,
             bloquesN:x.bloques.size, gfL:[...x.gf].sort().join(', ')};
   });
   FECHAS = [...new Set(CD.map(x=>x.fecha))].sort();
 }
-function estado(x){ if(x.meta==null) return 'off'; const v=x.kgh; return v>=x.meta?'ok':(v>=CFG.AMARILLO*(x.meta/CFG.META)?'warn':'bad'); }
+function estado(x){ if(x.meta==null) return 'off'; const v=x.kgh; return v>=x.meta-1e-9?'ok':(v>=x.meta*CFG.AMARILLO_PCT?'warn':'bad'); }
 function color(e){ return css({ok:'--ok',warn:'--warn',bad:'--bad',off:'--off'}[e]); }
 function fLarga(k){ const d=new Date(k+'T12:00:00'); return DIAS[d.getDay()]+' '+d.getDate()+' '+MESES[d.getMonth()]+' '+d.getFullYear(); }
 function fCorta(k){ const d=new Date(k+'T12:00:00'); return d.getDate()+' '+MESES[d.getMonth()]; }
@@ -20647,9 +20660,9 @@ function iniciar(){
 // Ponderado = suma de kg ÷ suma de horas-hombre del periodo (no es el promedio de los kg/HH diarios)
 function agrupar(rows){
   const g={};
-  rows.forEach(x=>{ const k=x.cuad+'|'+x.tipo+'|'+(x.meta!=null?'M':'N'); const u=g[k]||(g[k]={cuad:x.cuad,tipo:x.tipo,flor:x.flor,meta:x.meta,kg:0,fr:0,hh:0,jorn:0,dias:0,verdes:0,mixtos:0,fechas:[]});
-    u.kg+=x.kg; u.fr+=x.fr; u.hh+=x.hh; u.jorn+=x.pers; u.dias++; u.mixtos+=x.mixto?1:0; u.fechas.push(x.fecha); if(estado(x)==='ok') u.verdes++; });
-  return Object.values(g).map(u=>({...u,kgh:u.kg/u.hh,frh:u.fr/u.hh,cumpl:u.meta?u.kg/u.hh/u.meta:null}));
+  rows.forEach(x=>{ const k=x.cuad+'|'+x.tipo+'|'+(x.meta!=null?'M':'N'); const u=g[k]||(g[k]={cuad:x.cuad,tipo:x.tipo,flor:x.flor,meta:x.meta,kg:0,fr:0,hh:0,kgEsp:0,jorn:0,dias:0,verdes:0,mixtos:0,fechas:[]});
+    u.kg+=x.kg; u.fr+=x.fr; u.hh+=x.hh; if(x.meta!=null) u.kgEsp+=x.hh*x.meta; u.jorn+=x.pers; u.dias++; u.mixtos+=x.mixto?1:0; u.fechas.push(x.fecha); if(estado(x)==='ok') u.verdes++; });
+  return Object.values(g).map(u=>{ const meta=u.meta!=null?u.kgEsp/u.hh:null; return {...u,meta,kgh:u.kg/u.hh,frh:u.fr/u.hh,cumpl:meta?u.kg/u.kgEsp:null}; });
 }
 function unidades(modo,p){ const rows=CD.filter(x=>perDe(x.fecha,modo)===p); return modo==='dia'?rows:agrupar(rows); }
 const ordenar = a => a.sort((x,y)=>(y.meta!=null)-(x.meta!=null)||y.kgh-x.kgh);
@@ -20677,39 +20690,47 @@ function render(){
   const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value;
   const us=ordenar(unidades(modo,p)); const cm=us.filter(x=>x.meta!=null);
   const kg=cm.reduce((a,x)=>a+x.kg,0), hh=cm.reduce((a,x)=>a+x.hh,0), v=hh?kg/hh:0;
+  const esp=cm.reduce((a,x)=>a+x.hh*x.meta,0); MP = hh? esp/hh : metaEn(perFin(p,modo),'Mecánica');
+  pintarEscalera(modo,p);
   document.getElementById('m220-heroDia').textContent=perLargo(p,modo);
   document.getElementById('m220-heroSub').textContent=modo==='dia'?'Inducción con meta · kg ÷ (personas × horas)':'Ponderado del periodo · kg ÷ horas-hombre '+delPer(modo);
-  document.getElementById('m220-heroVal').innerHTML=nf(v,0)+'<span>kg/HH · '+nf(v/CFG.META*100,0)+'% de la meta</span>';
-  const e = v>=CFG.META?'ok':v>=CFG.AMARILLO?'warn':'bad';
-  const hb=document.getElementById('m220-heroBar'); hb.style.width=Math.min(100,v/(CFG.META*1.3)*100)+'%'; hb.style.background=color(e);
+  document.getElementById('m220-heroVal').innerHTML=nf(v,0)+'<span>kg/HH · '+nf(v/MP*100,0)+'% de '+nf(MP,0)+'</span>';
+  const e = v>=MP?'ok':v>=MP*CFG.AMARILLO_PCT?'warn':'bad';
+  const hb=document.getElementById('m220-heroBar'); hb.style.width=Math.min(100,v/(MP*1.3)*100)+'%'; hb.style.background=color(e);
   document.getElementById('m220-heroMark').style.left=(100/1.3)+'%';
   const sub=t=>{const z=cm.filter(x=>x.tipo===t),k=z.reduce((a,x)=>a+x.kg,0),h=z.reduce((a,x)=>a+x.hh,0);return h?nf(k/h,0)+' kg/HH':'sin cosecha';};
   let extra='';
   if(modo!=='dia'){ const cd=cm.reduce((a,x)=>a+x.dias,0), vd=cm.reduce((a,x)=>a+x.verdes,0), nd=new Set(cm.flatMap(x=>x.fechas)).size;
     extra=` ${nd} día${nd===1?'':'s'} con cosecha · ${vd} de ${cd} cuadrilla-días en verde (${nf(cd?vd/cd*100:0,0)}%).`; }
-  document.getElementById('m220-heroTxt').textContent=`${nf(kg)} kg con ${nf(hh,0)} horas-hombre en ${cm.length} cuadrilla${cm.length===1?'':'s'}. Mecanizada ${sub('Mecánica')} · manual ${sub('Manual')}.${extra} Faltan ${nf(Math.max(0,CFG.META-v),0)} kg/HH para la meta.`;
+  document.getElementById('m220-heroTxt').textContent=`${nf(kg)} kg con ${nf(hh,0)} horas-hombre en ${cm.length} cuadrilla${cm.length===1?'':'s'}. Mecanizada ${sub('Mecánica')} · manual ${sub('Manual')}.${extra} Faltan ${nf(Math.max(0,MP-v),0)} kg/HH para la meta.`;
   ['ok','warn','bad'].forEach(s=>document.getElementById({ok:'m220-nOk',warn:'m220-nWarn',bad:'m220-nBad'}[s]).textContent=cm.filter(x=>estado(x)===s).length);
   const suf = modo==='dia'?'':' (ponderado)';
-  document.getElementById('m220-lOk').textContent='en meta (≥ '+CFG.META+')'+suf; document.getElementById('m220-lWarn').textContent='cerca ('+CFG.AMARILLO+'–'+(CFG.META-1)+')'+suf; document.getElementById('m220-lBad').textContent='lejos (< '+CFG.AMARILLO+')'+suf;
+  document.getElementById('m220-lOk').textContent='en meta (≥ 100%)'+suf; document.getElementById('m220-lWarn').textContent='cerca (80–99%)'+suf; document.getElementById('m220-lBad').textContent='lejos (< 80%)'+suf;
   document.getElementById('m220-subBar').textContent=modo==='dia'?'kg por hora-hombre del día frente a la meta':'kg por hora-hombre ponderado '+delPer(modo)+' frente a la meta';
   tabla(us,modo,p); fichas(modo,p);
   if(typeof Chart!=='undefined'){ barras(cm); evolucion(modo,p); }
   else { ['m220-chDia','m220-chEvoMec','m220-chEvoMan'].forEach(id=>{const c=document.getElementById(id); if(c) c.parentNode.innerHTML='<p class="note">No se pudo cargar la librería de gráficos. Revisa la conexión a internet y recarga la página.</p>';}); }
   const ult=FECHAS[FECHAS.length-1];
-  document.getElementById('m220-foot').textContent=`Fuente: datos de este dashboard · último día cargado ${fLarga(ult)} · meta ${CFG.META} kg/HH · cuadrilla-día = personas máx. × horas máx. registradas · semana = lunes a domingo (ISO) · ponderado = kg ÷ horas-hombre del periodo · Natural se muestra sin meta.`;
+  document.getElementById('m220-foot').textContent=`Fuente: datos de este dashboard · último día cargado ${fLarga(ult)} · meta vigente ${nf(MP,0)} kg/HH (escalera ${CFG.ESCALONES.map(s=>s.meta).join(' → ')}) · cuadrilla-día = personas máx. × horas máx. registradas · semana = lunes a domingo (ISO) · ponderado = kg ÷ horas-hombre del periodo · Natural se muestra sin meta.`;
+}
+function pintarEscalera(modo,p){
+  const f=perFin(p,modo), i=escalonEn(f), pre=f<CFG.ESCALONES[0].desde;
+  const el=document.getElementById('m220-escalera');
+  el.innerHTML=CFG.ESCALONES.map((s,k)=>`<span class="${!pre&&k===i?'act':(!pre&&k<i?'done':'')}" title="Desde ${fCorta(s.desde)}">${s.meta}<em>${fCorta(s.desde)}</em></span>`).join('')+
+    `<p>${pre?'Periodo anterior al inicio de la meta: se compara con el primer escalón como referencia.':'Escalón '+(i+1)+' de '+CFG.ESCALONES.length+(i<CFG.ESCALONES.length-1?' · el siguiente ('+CFG.ESCALONES[i+1].meta+' kg/HH) arranca el '+fCorta(CFG.ESCALONES[i+1].desde):' · meta final')}</p>`;
 }
 function barras(cm){
   const ctx=document.getElementById('m220-chDia'); charts.dia&&charts.dia.destroy();
   charts.dia=new Chart(ctx,{type:'bar',data:{labels:cm.map(x=>corto(x.cuad)+(x.tipo==='Manual'?' (man.)':'')),
     datasets:[{data:cm.map(x=>+x.kgh.toFixed(1)),backgroundColor:cm.map(x=>color(estado(x))),borderRadius:4,barPercentage:.7}]},
     options:{indexAxis:'y',maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false},tooltip:{callbacks:{label:c=>{const x=cm[c.dataIndex];return `${nf(x.kgh,0)} kg/HH · ${nf(x.cumpl*100,0)}% · ${nf(x.kg)} kg`+(x.dias?` · ${x.dias} días`:'');}}}},
-      scales:{x:{min:0,suggestedMax:CFG.META*1.25,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg por hora-hombre',color:css('--muted')}},
+      scales:{x:{min:0,suggestedMax:MP*1.25,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg por hora-hombre',color:css('--muted')}},
               y:{grid:{display:false},ticks:{color:css('--ink'),font:{family:'Barlow, Arial, sans-serif',size:13}}}}},
     plugins:[lineaMeta('x')]});
   const box=ctx.parentNode; box.style.height=Math.max(220,70+cm.length*46)+'px';
 }
 function lineaMeta(eje){ return {id:'meta',afterDatasetsDraw(ch){ const s=ch.scales[eje],a=ch.chartArea,c=ch.ctx; c.save();
-  [[CFG.META,css('--ok'),'Meta '+CFG.META],[CFG.AMARILLO,css('--warn'),String(CFG.AMARILLO)]].forEach(([v,col,t])=>{
+  [[MP,css('--ok'),'Meta '+nf(MP,0)],[amar(),css('--warn'),'80%']].forEach(([v,col,t])=>{
     c.strokeStyle=col;c.setLineDash([5,4]);c.lineWidth=1.5;c.beginPath();
     if(eje==='x'){const p=s.getPixelForValue(v);c.moveTo(p,a.top);c.lineTo(p,a.bottom);c.stroke();c.fillStyle=col;c.font='600 12px Barlow, Arial';c.fillText(t,p+4,a.top+12);}
     else{const p=s.getPixelForValue(v);c.moveTo(a.left,p);c.lineTo(a.right,p);c.stroke();c.fillStyle=col;c.font='600 12px Barlow, Arial';c.fillText(t,a.right-60,p-4);}
@@ -20753,21 +20774,23 @@ function serie(modo,p){
 const PAL=['#0E2841','#CC9100','#C0392B','#2F6DB5','#6B8E23','#8E44AD','#16A085','#7C411E','#E67E22','#5D6D7E','#B03A7A','#00838F','#9E9D24','#4E342E'];
 const colCuad = c => { const todos=[...new Set(CD.filter(x=>x.meta!=null).map(x=>x.cuad))].sort(); return PAL[todos.indexOf(c)%PAL.length]; };
 function puntoDe(rows,cuad,tipo,q,modo){ const z=rows.filter(y=>y.cuad===cuad&&y.tipo===tipo&&perDe(y.fecha,modo)===q); if(!z.length) return null;
-  const kg=z.reduce((a,y)=>a+y.kg,0),hh=z.reduce((a,y)=>a+y.hh,0),fr=z.reduce((a,y)=>a+y.fr,0); return {kgh:kg/hh,frh:fr/hh,kg,hh,fr,meta:z[0].meta,dias:z.length,verdes:z.filter(y=>estado(y)==='ok').length}; }
+  const kg=z.reduce((a,y)=>a+y.kg,0),hh=z.reduce((a,y)=>a+y.hh,0),fr=z.reduce((a,y)=>a+y.fr,0); const esp=z.reduce((a,y)=>a+y.hh*y.meta,0); return {kgh:kg/hh,frh:fr/hh,kg,hh,fr,meta:esp/hh,dias:z.length,verdes:z.filter(y=>estado(y)==='ok').length}; }
 function evolucion(modo,p){
   const {ps,rows}=serie(modo,p);
   [['Mecánica','m220-chEvoMec','m220-subEvoMec','evoMec'],['Manual','m220-chEvoMan','m220-subEvoMan','evoMan']].forEach(([tipo,id,sid,key])=>{
     const rt=rows.filter(x=>x.tipo===tipo); const px=ps.filter(q=>rt.some(x=>perDe(x.fecha,modo)===q)); const crews=[...new Set(rt.map(x=>x.cuad))];
     const und = modo==='dia'?'por día':modo==='sem'?'ponderado por semana':'ponderado por mes';
-    document.getElementById(sid).textContent=px.length?`kg por hora-hombre ${und}, ${perCorto(px[0],modo)} a ${perCorto(px.at(-1),modo)} · línea verde = meta ${CFG.META_POR_MODALIDAD[tipo]||CFG.META}`:'Sin datos de esta modalidad en el rango';
+    document.getElementById(sid).textContent=px.length?`kg por hora-hombre ${und}, ${perCorto(px[0],modo)} a ${perCorto(px.at(-1),modo)} · línea verde = meta escalonada`:'Sin datos de esta modalidad en el rango';
     charts[key]&&charts[key].destroy();
     charts[key]=new Chart(document.getElementById(id),{type:'line',data:{labels:px.map(q=>perCorto(q,modo)),datasets:crews.map((c,i)=>({label:corto(c),
       data:px.map(q=>{const o=puntoDe(rt,c,tipo,q,modo);return o?+o.kgh.toFixed(1):null;}),
-      borderColor:colCuad(c),backgroundColor:colCuad(c),spanGaps:modo!=='dia',tension:.2,pointRadius:modo==='dia'?3.5:5,borderWidth:2}))},
+      borderColor:colCuad(c),backgroundColor:colCuad(c),spanGaps:modo!=='dia',tension:.2,pointRadius:modo==='dia'?3.5:5,borderWidth:2})).concat([
+        {label:'Meta',data:px.map(q=>{const z=rt.filter(y=>perDe(y.fecha,modo)===q),h=z.reduce((a,y)=>a+y.hh,0);return +(z.reduce((a,y)=>a+y.hh*y.meta,0)/h).toFixed(1);}),borderColor:css('--ok'),backgroundColor:css('--ok'),borderDash:[6,4],stepped:'middle',pointRadius:0,borderWidth:2},
+        {label:'80% de la meta',data:px.map(q=>{const z=rt.filter(y=>perDe(y.fecha,modo)===q),h=z.reduce((a,y)=>a+y.hh,0);return +(z.reduce((a,y)=>a+y.hh*y.meta,0)/h*CFG.AMARILLO_PCT).toFixed(1);}),borderColor:css('--warn'),backgroundColor:css('--warn'),borderDash:[3,4],stepped:'middle',pointRadius:0,borderWidth:1.5}])},
       options:{maintainAspectRatio:false,interaction:{mode:'nearest',intersect:false},
         plugins:{datalabels:{display:false},legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${nf(c.parsed.y,0)} kg/HH`}}},
-        scales:{y:{min:0,suggestedMax:CFG.META*1.3,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg / HH',color:css('--muted')}},
-                x:{grid:{display:false},ticks:{color:css('--muted'),maxRotation:0,autoSkip:true}}}},plugins:[lineaMeta('y')]});
+        scales:{y:{min:0,suggestedMax:Math.max(MP,...rt.map(x=>x.meta))*1.2,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg / HH',color:css('--muted')}},
+                x:{grid:{display:false},ticks:{color:css('--muted'),maxRotation:0,autoSkip:true}}}}});
   });
 }
 function fichas(modo,p){
@@ -20777,9 +20800,9 @@ function fichas(modo,p){
   keys.map(k=>{const [c,tipo]=k.split('|'); const pts=ps.map(q=>({q,o:puntoDe(rows,c,tipo,q,modo)})).filter(z=>z.o);
     const dd=rows.filter(x=>x.cuad===c&&x.tipo===tipo); const kg=dd.reduce((a,x)=>a+x.kg,0),hh=dd.reduce((a,x)=>a+x.hh,0),fr=dd.reduce((a,x)=>a+x.fr,0);
     const act=pts.find(z=>z.q===p);
-    return {c,tipo,pts,dias:dd.length,v:kg/hh,frh:fr/hh,ok:dd.filter(x=>estado(x)==='ok').length,act:act?act.o:null};})
+    return {c,tipo,pts,dias:dd.length,v:kg/hh,meta:dd.reduce((a,x)=>a+x.hh*x.meta,0)/hh,frh:fr/hh,ok:dd.filter(x=>estado(x)==='ok').length,act:act?act.o:null};})
   .sort((a,b)=>(a.tipo===b.tipo?0:a.tipo==='Mecánica'?-1:1)||b.v-a.v).forEach(o=>{
-    const el=document.createElement('div'); el.className='crew'; const e=o.v>=CFG.META?'ok':o.v>=CFG.AMARILLO?'warn':'bad';
+    const el=document.createElement('div'); el.className='crew'; const e=o.v>=o.meta?'ok':o.v>=o.meta*CFG.AMARILLO_PCT?'warn':'bad';
     el.innerHTML=`<h3>${title(o.c)}</h3><div class="meta">${modTxt(o.tipo)} · ${o.dias} días en el rango · ${o.ok} en meta (${nf(o.ok/o.dias*100,0)}%)</div>
       <canvas width="500" height="112"></canvas>
       <div class="k"><span><b style="color:${color(e)}">${nf(o.v,0)}</b>kg/HH rango</span><span><b>${o.act?nf(o.act.kgh,0):'—'}</b>kg/HH ${modo==='dia'?'del día':delPer(modo).replace(/^de la |^del /,'')}</span><span><b>${nf(o.frh,0)}</b>frutas/HH</span></div>
@@ -20788,10 +20811,11 @@ function fichas(modo,p){
     el.querySelector('button').onclick=()=>imgCuadrilla(o,modo,p);
   });
 }
-function estP(o){ return o.kgh>=o.meta?'ok':o.kgh>=CFG.AMARILLO*(o.meta/CFG.META)?'warn':'bad'; }
-function spark(cv,pts){ const c=cv.getContext('2d'),W=cv.width,H=cv.height,mx=Math.max(CFG.META*1.3,...pts.map(x=>x.kgh));
-  c.clearRect(0,0,W,H); const y=v=>H-6-(v/mx)*(H-12); c.strokeStyle=css('--ok');c.setLineDash([6,5]);c.lineWidth=2;c.beginPath();c.moveTo(0,y(CFG.META));c.lineTo(W,y(CFG.META));c.stroke();c.setLineDash([]);
-  const step=pts.length>1?(W-12)/(pts.length-1):0, X=i=>pts.length>1?6+i*step:W/2; c.strokeStyle=css('--ink');c.lineWidth=3;c.beginPath();
+function estP(o){ return o.kgh>=o.meta-1e-9?'ok':o.kgh>=o.meta*CFG.AMARILLO_PCT?'warn':'bad'; }
+function spark(cv,pts){ const c=cv.getContext('2d'),W=cv.width,H=cv.height,mx=Math.max(MP*1.3,...pts.map(x=>Math.max(x.kgh,x.meta*1.15)));
+  c.clearRect(0,0,W,H); const y=v=>H-6-(v/mx)*(H-12);
+  const step=pts.length>1?(W-12)/(pts.length-1):0, X=i=>pts.length>1?6+i*step:W/2;
+  c.strokeStyle=css('--ok');c.setLineDash([6,5]);c.lineWidth=2;c.beginPath(); if(pts.length===1){c.moveTo(0,y(pts[0].meta));c.lineTo(W,y(pts[0].meta));} else pts.forEach((x,i)=>{ i?c.lineTo(X(i),y(x.meta)):c.moveTo(0,y(x.meta)); }); if(pts.length>1) c.lineTo(W,y(pts.at(-1).meta)); c.stroke();c.setLineDash([]); c.strokeStyle=css('--ink');c.lineWidth=3;c.beginPath();
   pts.forEach((x,i)=>{ i?c.lineTo(X(i),y(x.kgh)):c.moveTo(X(i),y(x.kgh));}); c.stroke();
   pts.forEach((x,i)=>{c.fillStyle=color(estP(x));c.beginPath();c.arc(X(i),y(x.kgh),5,0,7);c.fill();}); }
 
@@ -20805,26 +20829,26 @@ function imgPeriodo(){
   const W=1080,rowH=96,H=330+cm.length*rowH+120; const [cv,c]=lienzo(W,H);
   txt(c,'AGRÍCOLA GUAPA · COSECHA INDUCCIÓN',60,56,'600 26px Barlow, Arial','#CC9100');
   txt(c,perLargo(p,modo),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
-  txt(c,'Meta '+CFG.META+' kg por hora-hombre',60,112,'700 50px "Barlow Condensed", Arial','#FFFFFF');
+  txt(c,'Meta '+nf(MP,0)+' kg por hora-hombre',60,112,'700 50px "Barlow Condensed", Arial','#FFFFFF');
   const kg=cm.reduce((a,x)=>a+x.kg,0),hh=cm.reduce((a,x)=>a+x.hh,0),v=hh?kg/hh:0;
-  txt(c,(modo==='dia'?'Promedio del día: ':'Ponderado '+delPer(modo)+': ')+nf(v,0)+' kg/HH · '+nf(v/CFG.META*100,0)+'% de la meta',60,225,'600 34px Barlow, Arial','#1B2430');
+  txt(c,(modo==='dia'?'Promedio del día: ':'Ponderado '+delPer(modo)+': ')+nf(v,0)+' kg/HH · '+nf(v/MP*100,0)+'% de la meta',60,225,'600 34px Barlow, Arial','#1B2430');
   let l2=cm.filter(x=>estado(x)==='ok').length+' en meta · '+cm.filter(x=>estado(x)==='warn').length+' cerca · '+cm.filter(x=>estado(x)==='bad').length+' lejos';
   if(modo!=='dia'){ const cd=cm.reduce((a,x)=>a+x.dias,0),vd=cm.reduce((a,x)=>a+x.verdes,0); l2+=' · '+vd+' de '+cd+' cuadrilla-días en verde'; }
   txt(c,l2,60,270,'500 28px Barlow, Arial','#5F6B7A');
-  const x0=420,x1=W-170,mx=Math.max(CFG.META*1.25,...cm.map(x=>x.kgh)); const px=v=>x0+(v/mx)*(x1-x0);
+  const x0=420,x1=W-170,mx=Math.max(MP*1.25,...cm.map(x=>x.kgh)); const px=v=>x0+(v/mx)*(x1-x0);
   cm.forEach((x,i)=>{ const y=320+i*rowH, e=estado(x);
     txt(c,corto(x.cuad),60,y+40,'600 32px Barlow, Arial','#1B2430');
     txt(c,modTxt(x.tipo)+' · '+(modo==='dia'?nf(x.pers)+' pers × '+nf(x.horas,1)+' h':x.dias+' días · '+x.verdes+' en meta'),60,y+74,'400 22px Barlow, Arial','#5F6B7A');
     c.fillStyle='#ECE8E1'; c.fillRect(x0,y+16,x1-x0,46); c.fillStyle=color(e); c.fillRect(x0,y+16,px(x.kgh)-x0,46);
     txt(c,nf(x.kgh,0),W-60,y+50,'700 40px "Barlow Condensed", Arial',color(e),'right'); });
-  c.strokeStyle='#2E7D32'; c.setLineDash([10,8]); c.lineWidth=4; c.beginPath(); c.moveTo(px(CFG.META),300); c.lineTo(px(CFG.META),320+cm.length*rowH); c.stroke(); c.setLineDash([]);
-  txt(c,'Meta '+CFG.META,px(CFG.META),298,'700 22px Barlow, Arial','#2E7D32','center');
-  txt(c,'Verde ≥ '+CFG.META+' · Amarillo '+CFG.AMARILLO+'–'+(CFG.META-1)+' · Rojo < '+CFG.AMARILLO+(modo==='dia'?' · kg/HH = kg ÷ (personas × horas)':' · ponderado = kg ÷ horas-hombre del periodo'),60,H-50,'400 22px Barlow, Arial','#5F6B7A');
+  c.strokeStyle='#2E7D32'; c.setLineDash([10,8]); c.lineWidth=4; c.beginPath(); c.moveTo(px(MP),300); c.lineTo(px(MP),320+cm.length*rowH); c.stroke(); c.setLineDash([]);
+  txt(c,'Meta '+nf(MP,0),px(MP),298,'700 22px Barlow, Arial','#2E7D32','center');
+  txt(c,'Verde ≥ meta ('+nf(MP,0)+') · Amarillo 80–99% · Rojo < 80%'+(modo==='dia'?' · kg/HH = kg ÷ (personas × horas)':' · ponderado = kg ÷ horas-hombre del periodo'),60,H-50,'400 22px Barlow, Arial','#5F6B7A');
   descargar(cv,'Meta220_'+modo+'_'+p+'.png');
 }
 function imgCuadrilla(o,modo,p){
   const W=1080,H=900; const [cv,c]=lienzo(W,H);
-  txt(c,'AGRÍCOLA GUAPA · META '+CFG.META+' KG/HH',60,56,'600 26px Barlow, Arial','#CC9100');
+  txt(c,'AGRÍCOLA GUAPA · META '+nf(o.act?o.act.meta:MP,0)+' KG/HH',60,56,'600 26px Barlow, Arial','#CC9100');
   txt(c,title(o.c),60,112,'700 50px "Barlow Condensed", Arial','#FFFFFF');
   const d=o.act; const e=d?estP(d):'off';
   txt(c,d?perLargo(p,modo):'Sin cosecha con meta en '+estePer(modo),60,225,'500 30px Barlow, Arial','#5F6B7A');
@@ -20833,10 +20857,10 @@ function imgCuadrilla(o,modo,p){
   if(d){ txt(c,nf(d.kgh/d.meta*100,0)+'% de la meta',W-60,300,'700 52px "Barlow Condensed", Arial',color(e),'right');
     txt(c,nf(d.kg)+' kg · '+nf(d.fr)+' frutas',W-60,350,'500 28px Barlow, Arial','#5F6B7A','right');
     txt(c,modo==='dia'?nf(d.hh,1)+' horas-hombre':d.dias+' días · '+d.verdes+' en meta',W-60,390,'500 28px Barlow, Arial','#5F6B7A','right'); }
-  const pts=o.pts.map(z=>z.o), gx0=60,gx1=W-60,gy0=470,gy1=780,mx=Math.max(CFG.META*1.3,...pts.map(x=>x.kgh));
+  const pts=o.pts.map(z=>z.o), gx0=60,gx1=W-60,gy0=470,gy1=780,mx=Math.max(MP*1.3,...pts.map(x=>Math.max(x.kgh,x.meta*1.15)));
   const gy=v=>gy1-(v/mx)*(gy1-gy0), stp=pts.length>1?(gx1-gx0)/(pts.length-1):0, X=i=>pts.length>1?gx0+i*stp:(gx0+gx1)/2;
-  c.strokeStyle='#2E7D32';c.setLineDash([10,8]);c.lineWidth=3;c.beginPath();c.moveTo(gx0,gy(CFG.META));c.lineTo(gx1,gy(CFG.META));c.stroke();c.setLineDash([]);
-  txt(c,'Meta '+CFG.META,gx1,gy(CFG.META)-10,'700 22px Barlow, Arial','#2E7D32','right');
+  c.strokeStyle='#2E7D32';c.setLineDash([10,8]);c.lineWidth=3;c.beginPath(); if(pts.length<2){c.moveTo(gx0,gy(MP));c.lineTo(gx1,gy(MP));} else pts.forEach((x,i)=>{ i?c.lineTo(X(i),gy(x.meta)):c.moveTo(gx0,gy(x.meta)); }); c.stroke();c.setLineDash([]);
+  txt(c,'Meta '+nf(pts.length?pts.at(-1).meta:MP,0),gx1,gy(pts.length?pts.at(-1).meta:MP)-10,'700 22px Barlow, Arial','#2E7D32','right');
   c.strokeStyle='#0E2841';c.lineWidth=5;c.beginPath();pts.forEach((x,i)=>{i?c.lineTo(X(i),gy(x.kgh)):c.moveTo(X(i),gy(x.kgh));});c.stroke();
   pts.forEach((x,i)=>{c.fillStyle=color(estP(x));c.beginPath();c.arc(X(i),gy(x.kgh),10,0,7);c.fill();});
   if(o.pts.length){ txt(c,perCorto(o.pts[0].q,modo),gx0,gy1+40,'400 22px Barlow, Arial','#5F6B7A'); txt(c,perCorto(o.pts.at(-1).q,modo),gx1,gy1+40,'400 22px Barlow, Arial','#5F6B7A','right'); }
@@ -20846,9 +20870,9 @@ function imgCuadrilla(o,modo,p){
 function mensaje(){
   const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value; const cm=ordenar(unidades(modo,p)).filter(x=>x.meta!=null);
   const kg=cm.reduce((a,x)=>a+x.kg,0),hh=cm.reduce((a,x)=>a+x.hh,0),v=hh?kg/hh:0; const ic={ok:'🟢',warn:'🟡',bad:'🔴'};
-  let s=`*Cosecha Inducción · ${perLargo(p,modo)}*\nMeta: ${CFG.META} kg por hora-hombre\n${modo==='dia'?'Promedio del día':'Ponderado '+delPer(modo)}: *${nf(v,0)} kg/HH* (${nf(v/CFG.META*100,0)}% de la meta)\n\n`;
+  let s=`*Cosecha Inducción · ${perLargo(p,modo)}*\nMeta vigente: ${nf(MP,0)} kg por hora-hombre (escalón ${escalonEn(perFin(p,modo))+1} de ${CFG.ESCALONES.length})\n${modo==='dia'?'Promedio del día':'Ponderado '+delPer(modo)}: *${nf(v,0)} kg/HH* (${nf(v/MP*100,0)}% de la meta)\n\n`;
   cm.forEach(x=>{ s+=`${ic[estado(x)]} ${title(x.cuad)} (${modTxt(x.tipo).toLowerCase()}): *${nf(x.kgh,0)} kg/HH* · ${nf(x.cumpl*100,0)}%`+(modo==='dia'?` · ${nf(x.frh,0)} frutas/HH`:` · ${x.verdes} de ${x.dias} días en meta`)+`\n`; });
-  s+=`\n🟢 ≥ ${CFG.META} · 🟡 ${CFG.AMARILLO}–${CFG.META-1} · 🔴 < ${CFG.AMARILLO}`;
+  s+=`\n🟢 ≥ meta · 🟡 80–99% de la meta · 🔴 < 80%`;
   return s;
 }
 document.getElementById('m220-btnImg').onclick=imgPeriodo;
@@ -20861,6 +20885,5 @@ window.cerrarMeta220=function(){ document.getElementById('m220').style.display='
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('m220').style.display==='block') window.cerrarMeta220(); });
 })();
 </script>
-
 </body>
 </html>
