@@ -522,7 +522,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
         <button class="toggle-btn" id="fpp-sort-personas" onclick="sortFPP('personas')">N° Personas</button>
         <button class="toggle-btn" id="fpp-sort-costo" onclick="sortFPP('costo')">Costo Cuadrilla</button>
         <button class="toggle-btn" id="fpp-sort-costoPorKg" onclick="sortFPP('costoPorKg')">COP/kg</button>
-        <span style="font-size:.72rem;color:var(--text-secondary);align-self:center;margin-left:auto">⚙️ Horas únicas por cuadrilla·día &nbsp;·&nbsp; 💰 $7,959 ord / $15,122 dom+festivo × personas</span>
+        <span style="font-size:.72rem;color:var(--text-secondary);align-self:center;margin-left:auto">⚙️ Horas únicas por cuadrilla·día &nbsp;·&nbsp; 💰 Costo con carga prestacional · norma 2026 (hora ordinaria $14.323 hasta 14/07, $15.005 desde 15/07)</span>
       </div>
       <div id="fpp-table-wrap">
         <table class="fpp-table" id="fpp-table">
@@ -18147,10 +18147,15 @@ const FESTIVOS_2026 = new Set([
   '20/07/2026','07/08/2026','17/08/2026','12/10/2026','02/11/2026',
   '16/11/2026','08/12/2026','25/12/2026'
 ]);
-const COSTO_ORDINARIO = 7959;
-const COSTO_ESPECIAL = 15122;
-const COSTO_HORA_EXTRA = 9948;   // hora extra lunes-sábado (>7.33h/día)
-const HORAS_ORDINARIAS_DIA = 7.33; // jornada ordinaria diaria
+// ── Costo de cuadrilla · norma 2026 con carga prestacional (CC-001.5) ──
+const SMLMV_2026 = 1750905;
+const CARGA_PRESTACIONAL = 15005/8337.6;      // ≈ 1,80 (tabla de horas 2026)
+const F_JORNADA_42H = new Date(2026,6,15);     // desde 15/07/2026: 42 h/semana (÷210, 7 h/día)
+const F_RECARGO_90  = new Date(2026,6,1);      // desde 01/07/2026: recargo dominical/festivo 90% (antes 80%)
+function tarifaHora(d) {
+  const nueva = d >= F_JORNADA_42H;
+  return { hora: SMLMV_2026 / (nueva ? 210 : 220), lim: nueva ? 7 : 44/6, rec: d >= F_RECARGO_90 ? 0.90 : 0.80 };
+}
 
 function getTipoFecha(fechaStr) {
   // fechaStr formato d/mm/yyyy
@@ -18175,17 +18180,14 @@ function fmtCOP(n) {
 }
 
 function calcCostoDelDia(horas, personas, fecha) {
-  // Calcula costo de un día incluyendo horas extra en días ordinarios (L-S)
-  const tipo = getTipoFecha(fecha);
-  if (tipo !== 'ordinario') {
-    // Domingo o festivo: todo se paga a tasa especial, sin recargo adicional
-    return horas * personas * COSTO_ESPECIAL;
-  }
-  // Día ordinario (L-S): primeras 7.33h ordinarias, resto es hora extra
-  const horasOrdinarias = Math.min(horas, HORAS_ORDINARIAS_DIA);
-  const horasExtra      = Math.max(0, horas - HORAS_ORDINARIAS_DIA);
-  return (horasOrdinarias * personas * COSTO_ORDINARIO) +
-         (horasExtra      * personas * COSTO_HORA_EXTRA);
+  // Costo empresa de una cuadrilla-día: horas de jornada a tarifa ordinaria (o festiva), horas sobre la jornada como hora extra
+  const fp = String(fecha).split('/'); if (fp.length !== 3) return 0;
+  const d = new Date(parseInt(fp[2]), parseInt(fp[1]) - 1, parseInt(fp[0]));
+  const t = tarifaHora(d), esp = getTipoFecha(fecha) !== 'ordinario';
+  const ord = Math.min(horas, t.lim), ext = Math.max(0, horas - t.lim);
+  const pago = esp ? personas * t.hora * ((1 + t.rec) * ord + (1.25 + t.rec) * ext)
+                   : personas * t.hora * (ord + 1.25 * ext);
+  return pago * CARGA_PRESTACIONAL;
 }
 
 function calcTotalCosto() {
@@ -18530,7 +18532,7 @@ function calcFPP() {
     const personasDia = Object.values(personasDict).reduce((s,v)=>s+v, 0);
     // Horas totales sumadas por boleta
     const horasTotales = Object.values(horasDict).reduce((s,v)=>s+v, 0);
-    // Costo: horas ordinarias + horas extra (>7.33h en días L-S) + dominical/festivo
+    // Costo: horas de jornada + horas extra + dominical/festivo (norma 2026 con carga, ver calcCostoDelDia)
     let costo = 0;
     Object.keys(horasDict).forEach(fecha => {
       const h = horasDict[fecha];
@@ -20665,6 +20667,24 @@ function updateSemFruChart() {
 #m220{position:fixed;inset:0;z-index:9998;overflow-y:auto;display:none;background:var(--bg);color:var(--ink);font-family:var(--fn);font-size:15px;line-height:1.45;-webkit-overflow-scrolling:touch}
 #m220 .m220-head{position:sticky;top:0;z-index:2;padding-top:calc(18px + env(safe-area-inset-top,0px))}
 #m220 .m220-close{background:transparent;color:#fff;border:1px solid #3B5675}
+#m220 .metabox{background:var(--card);border:2px solid var(--navy);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+#m220 .metabox .mt{flex:1 1 220px}
+#m220 .metabox .mt h2{font-family:var(--fc);font-weight:700;font-size:20px;margin:0;color:var(--ink)}
+#m220 .metabox .mt p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+#m220 .metabox .steps{display:flex;gap:8px;flex-wrap:wrap;flex:3 1 520px}
+#m220 .metabox .st{flex:1 1 110px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center}
+#m220 .metabox .st .k{font-family:var(--fc);font-weight:700;font-size:22px;color:var(--ink);line-height:1}
+#m220 .metabox .st .k small{font-size:13px;font-weight:600;color:var(--muted)}
+#m220 .metabox .st .c{font-family:var(--fc);font-weight:700;font-size:26px;color:var(--gold);line-height:1.1;margin-top:4px}
+#m220 .metabox .st .c small{font-size:13px;color:var(--muted);font-weight:600}
+#m220 .metabox .st .f{font-size:11.5px;color:var(--muted);margin-top:2px}
+#m220 .metabox .st.act{background:var(--navy);border-color:var(--navy)}
+#m220 .metabox .st.act .k,#m220 .metabox .st.act .c{color:#fff}
+#m220 .metabox .st.act .k small,#m220 .metabox .st.act .c small,#m220 .metabox .st.act .f{color:var(--beige)}
+#m220 .mesh3{font-family:var(--fc);font-size:17px;font-weight:600;margin:6px 0 4px}
+#m220 .mesres{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0 4px}
+#m220 .mesres div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;color:var(--muted)}
+#m220 .mesres b{display:block;font-family:var(--fc);font-size:24px;color:var(--ink);line-height:1.1}
 #m220 .esc{display:flex;gap:6px;align-items:flex-end;margin:12px 0 2px;flex-wrap:wrap}
 #m220 .esc span{flex:1;min-width:58px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-family:var(--fc);font-weight:600;font-size:18px;color:var(--muted);text-align:center;line-height:1.1}
 #m220 .esc span em{display:block;font-family:var(--fn);font-style:normal;font-weight:400;font-size:11px}
@@ -20703,6 +20723,7 @@ function updateSemFruChart() {
   <div id="m220-msg" class="msg"></div>
   <div id="m220-loader" class="loader">Preparando el tablero…</div>
   <div id="m220-app" style="display:none">
+    <section class="metabox" id="m220-metabox"></section>
     <section class="hero">
       <div class="panel">
         <h2 id="m220-heroDia">—</h2>
@@ -20724,19 +20745,31 @@ function updateSemFruChart() {
       </div>
     </section>
 
+    <section class="panel" style="margin-bottom:16px" id="m220-mesSec">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+        <div><h2 id="m220-mesTit">Día a día del mes · kg/HH y costo/kg</h2>
+        <p class="sub" id="m220-mesSub">Barras = kg/HH del día (color según la meta) · línea = COP/kg del día · punteada = COP/kg si se cumpliera la meta</p></div>
+        <div id="m220-mesTag" style="font-family:var(--fc);font-weight:600;font-size:18px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 12px"></div>
+      </div>
+      <div class="mesres" id="m220-mesRes"></div>
+      <div class="grid2" style="margin:8px 0 0">
+        <div><h3 class="mesh3">Inducción mecanizada</h3><div class="chartbox m2tall"><canvas id="m220-chMesMec"></canvas></div></div>
+        <div><h3 class="mesh3">Inducción manual</h3><div class="chartbox m2tall"><canvas id="m220-chMesMan"></canvas></div></div>
+      </div>
+      <p class="note">COP/kg = costo de cuadrilla con carga prestacional (norma 2026, CC-001.5) ÷ kg del día. COP/kg con la meta = costo del día ÷ (horas-hombre × meta vigente): lo que habría costado el kilo si el día cumplía la meta.</p>
+    </section>
+
     <section class="panel" style="margin-bottom:16px">
       <h2 id="m220-tblTit">Detalle del día</h2>
       <p class="sub" id="m220-tblSub">Personas y horas son las registradas en la boleta. Los días mixtos (la cuadrilla hizo Natural e Inducción) se marcan aparte.</p>
       <div class="tablewrap"><table id="m220-tblDia"></table></div>
     </section>
 
-    <section class="grid2">
-      <div class="panel"><h2>Evolución · Inducción mecanizada</h2>
-        <p class="sub" id="m220-subEvoMec">kg por hora-hombre por cuadrilla y día</p>
-        <div class="chartbox m2tall"><canvas id="m220-chEvoMec"></canvas></div></div>
-      <div class="panel"><h2>Evolución · Inducción manual</h2>
-        <p class="sub" id="m220-subEvoMan">kg por hora-hombre por cuadrilla y día</p>
-        <div class="chartbox m2tall"><canvas id="m220-chEvoMan"></canvas></div></div>
+    <section class="panel" style="margin-bottom:16px">
+      <h2>Participación semanal · Inducción mecanizada vs manual</h2>
+      <p class="sub" id="m220-partSub">% de los kg de floración Inducción cosechados con cada modalidad, semana a semana</p>
+      <div class="chartbox m2tall"><canvas id="m220-chPart"></canvas></div>
+      <p class="note">Base: kg de boleta de floración Inducción. Natural no entra. La semana en curso queda parcial hasta el domingo.</p>
     </section>
 
     <div class="section-title">Ficha por cuadrilla</div>
@@ -20850,7 +20883,7 @@ function arrancar(){
   document.getElementById('m220-loader').style.display='none'; document.getElementById('m220-app').style.display='block';
   document.getElementById('m220-selPer').onchange=()=>{ llenarSelector(); render(); };
   document.getElementById('m220-selDia').onchange=render; document.getElementById('m220-selRango').onchange=render;
-  llenarSelector();
+  llenarSelector(); llenarMes(); pintarMetaBox();
   if(!CD.some(x=>x.meta!=null&&x.fecha>=CFG.INICIO)){
     document.getElementById('m220-selRango').value='base';
     const m=document.getElementById('m220-msg'); m.style.display='block';
@@ -20879,11 +20912,93 @@ function render(){
   const suf = modo==='dia'?'':' (ponderado)';
   document.getElementById('m220-lOk').textContent='en meta (≥ 100%)'+suf; document.getElementById('m220-lWarn').textContent='cerca (80–99%)'+suf; document.getElementById('m220-lBad').textContent='lejos (< 80%)'+suf;
   document.getElementById('m220-subBar').textContent=modo==='dia'?'kg por hora-hombre del día frente a la meta':'kg por hora-hombre ponderado '+delPer(modo)+' frente a la meta';
-  tabla(us,modo,p); fichas(modo,p);
-  if(typeof Chart!=='undefined'){ barras(cm); evolucion(modo,p); }
-  else { ['m220-chDia','m220-chEvoMec','m220-chEvoMan'].forEach(id=>{const c=document.getElementById(id); if(c) c.parentNode.innerHTML='<p class="note">No se pudo cargar la librería de gráficos. Revisa la conexión a internet y recarga la página.</p>';}); }
+  tabla(us,modo,p); fichas(modo,p); mesDiario();
+  if(typeof Chart!=='undefined'){ barras(cm); participacion(modo,p); }
+  else { ['m220-chDia','m220-chPart'].forEach(id=>{const c=document.getElementById(id); if(c) c.parentNode.innerHTML='<p class="note">No se pudo cargar la librería de gráficos. Revisa la conexión a internet y recarga la página.</p>';}); }
   const ult=FECHAS[FECHAS.length-1];
   document.getElementById('m220-foot').textContent=`Fuente: datos de este dashboard · último día cargado ${fLarga(ult)} · meta vigente ${nf(MP,0)} kg/HH (escalera ${CFG.ESCALONES.map(s=>s.meta).join(' → ')}) · cuadrilla-día = personas máx. × horas máx. registradas · semana = lunes a domingo (ISO) · ponderado = kg ÷ horas-hombre del periodo · Natural se muestra sin meta.`;
+}
+/* ===== Día a día del mes: kg/HH y COP/kg (CC-001.6) ===== */
+function costoCD(x){ // costo con carga de la cuadrilla-día, misma función del dashboard
+  if(typeof calcCostoDelDia!=='function') return null;
+  const [y,m,d]=x.fecha.split('-'); return calcCostoDelDia(x.horas, x.pers, (+d)+'/'+m+'/'+y);
+}
+function mesDelPeriodo(){ // CC-001.7: la sección sigue al filtro principal del tablero
+  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value;
+  if(!p) return null; return modo==='mes'?p:(modo==='sem'?perFin(p,'sem'):p).slice(0,7);
+}
+function llenarMes(){}
+function aggTipo(z){ // agrega cuadrilla-días con meta: kg, horas-hombre, kg esperados y costo con carga
+  if(!z.length) return null;
+  const kg=z.reduce((a,x)=>a+x.kg,0), hh=z.reduce((a,x)=>a+x.hh,0), esp=z.reduce((a,x)=>a+x.hh*x.meta,0), cs=z.map(costoCD);
+  const costo=cs.some(c=>c==null)?null:cs.reduce((a,c)=>a+c,0);
+  return {kg,hh,esp,costo,kgh:kg/hh,meta:esp/hh,cop:costo!=null?costo/kg:null,copMeta:costo!=null?costo/esp:null};
+}
+function diaTipo(fecha,tipo){ return aggTipo(CD.filter(x=>x.meta!=null&&x.tipo===tipo&&x.fecha===fecha)); }
+function mesDiario(){ // CC-001.6 / CC-001.7 / CC-001.9
+  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value;
+  const semanal = modo==='sem';
+  let keys, inKey, labelOf, resumenKeys;
+  if(semanal){
+    const todas=[...new Set(CD.filter(x=>x.meta!=null).map(x=>perDe(x.fecha,'sem')))].sort().filter(q=>q<=p);
+    keys=todas.slice(-12); inKey=(x,q)=>perDe(x.fecha,'sem')===q; labelOf=q=>perCorto(q,'sem'); resumenKeys=[p];
+  } else {
+    const mes=mesDelPeriodo(); if(!mes) return;
+    keys=[...new Set(CD.filter(x=>x.meta!=null&&x.fecha.slice(0,7)===mes).map(x=>x.fecha))].sort();
+    inKey=(x,q)=>x.fecha===q; labelOf=fCorta; resumenKeys=keys;
+  }
+  const res=[];
+  [['Mecánica','m220-chMesMec','mesMec'],['Manual','m220-chMesMan','mesMan']].forEach(([tipo,id,key])=>{
+    const pts=keys.map(q=>({q,o:aggTipo(CD.filter(x=>x.meta!=null&&x.tipo===tipo&&inKey(x,q)))}));
+    // resumen: semana elegida (semanal) o todo el mes (diario); días en meta = días del periodo con kg/HH ≥ meta
+    const zr=CD.filter(x=>x.meta!=null&&x.tipo===tipo&&resumenKeys.some(q=>inKey(x,q)));
+    const tot=aggTipo(zr), diasR=[...new Set(zr.map(x=>x.fecha))].sort().map(f=>diaTipo(f,tipo)).filter(Boolean);
+    res.push(tot?{tipo,dias:diasR.length,verdes:diasR.filter(o=>o.kgh>=o.meta-1e-9).length,kgh:tot.kgh,cumpl:tot.kg/tot.esp,cop:tot.cop,copMeta:tot.copMeta,ahorro:tot.costo!=null?tot.costo*(1-tot.kg/tot.esp):0}:{tipo,dias:0});
+    charts[key]&&charts[key].destroy();
+    if(typeof Chart==='undefined') return;
+    const sel=q=>semanal&&q===p;
+    charts[key]=new Chart(document.getElementById(id),{data:{labels:pts.map(x=>labelOf(x.q)),datasets:[
+      {type:'bar',label:semanal?'kg/HH semana':'kg/HH',yAxisID:'y',data:pts.map(x=>x.o?+x.o.kgh.toFixed(1):null),
+       backgroundColor:pts.map(x=>x.o?color(x.o.kgh>=x.o.meta-1e-9?'ok':x.o.kgh>=x.o.meta*CFG.AMARILLO_PCT?'warn':'bad'):'transparent'),
+       borderColor:pts.map(x=>sel(x.q)?'#0E2841':'transparent'),borderWidth:pts.map(x=>sel(x.q)?3:0),borderRadius:3,order:3},
+      {type:'line',label:'Meta kg/HH',yAxisID:'y',data:pts.map(x=>x.o?+x.o.meta.toFixed(0):null),borderColor:css('--ok'),borderDash:[6,4],stepped:'middle',pointRadius:0,borderWidth:2,spanGaps:true,order:2},
+      {type:'line',label:semanal?'COP/kg de la semana':'COP/kg del día',yAxisID:'y2',data:pts.map(x=>x.o&&x.o.cop!=null?Math.round(x.o.cop):null),borderColor:'#0E2841',backgroundColor:'#0E2841',pointRadius:3.5,borderWidth:2.5,tension:.2,spanGaps:true,order:1},
+      {type:'line',label:'COP/kg con la meta',yAxisID:'y2',data:pts.map(x=>x.o&&x.o.copMeta!=null?Math.round(x.o.copMeta):null),borderColor:'#8E44AD',borderDash:[3,3],pointRadius:0,borderWidth:1.6,tension:.2,spanGaps:true,order:1}]},
+      options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{datalabels:{display:false},legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}},
+          tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y2'?`${c.dataset.label}: $${nf(c.parsed.y,0)}`:`${c.dataset.label}: ${nf(c.parsed.y,0)}`}}},
+        scales:{y:{position:'left',min:0,suggestedMax:Math.max(CFG.ESCALONES[0].meta,...pts.map(x=>x.o?x.o.kgh:0))*1.15,title:{display:true,text:'kg / HH',color:css('--muted')},grid:{color:css('--line')},ticks:{color:css('--muted')}},
+                y2:{position:'right',min:0,title:{display:true,text:'COP / kg',color:css('--muted')},grid:{display:false},ticks:{color:css('--muted'),callback:v=>'$'+nf(v,0)}},
+                x:{grid:{display:false},ticks:{color:css('--muted'),maxRotation:0,autoSkip:true}}}}});
+  });
+  const quien = semanal ? 'de la semana' : 'del mes';
+  if(semanal){
+    document.getElementById('m220-mesTit').textContent='Semana a semana · kg/HH y costo/kg';
+    document.getElementById('m220-mesTag').textContent='Semana '+Number(p.split('-W')[1])+(keys.length>1?' · últimas '+keys.length+' semanas':'');
+    document.getElementById('m220-mesSub').textContent='Barras = kg/HH ponderado de cada semana (la elegida con borde) · línea azul = COP/kg de la semana · punteada = COP/kg si se cumpliera la meta · tarjetas = semana elegida';
+  } else {
+    const [y,m]=mesDelPeriodo().split('-');
+    document.getElementById('m220-mesTit').textContent='Día a día del mes · kg/HH y costo/kg';
+    document.getElementById('m220-mesTag').textContent=MESESL[+m-1].replace(/^./,c=>c.toUpperCase())+' '+y;
+    document.getElementById('m220-mesSub').textContent='Sigue el periodo elegido arriba · barras = kg/HH del día (color según la meta) · línea azul = COP/kg del día · punteada = COP/kg si se cumpliera la meta';
+  }
+  document.getElementById('m220-mesRes').innerHTML=res.map(r=>r.dias?`
+    <div><b style="color:${color(r.cumpl>=1?'ok':r.cumpl>=CFG.AMARILLO_PCT?'warn':'bad')}">${nf(r.kgh,0)}</b>kg/HH ${modTxt(r.tipo).toLowerCase()} ${quien} · ${nf(r.cumpl*100,0)}% de la meta</div>
+    <div><b>$${nf(r.cop,0)}</b>COP/kg ${modTxt(r.tipo).toLowerCase()} · con la meta $${nf(r.copMeta,0)}</div>
+    <div><b>${r.verdes} de ${r.dias}</b>días en meta · ${modTxt(r.tipo).toLowerCase()}</div>
+    <div><b>$${nf(Math.max(0,r.ahorro)/1e6,1)} M</b>costo que se habría ahorrado cumpliendo la meta · ${modTxt(r.tipo).toLowerCase()}</div>`:`<div><b>—</b>Sin cosecha ${modTxt(r.tipo).toLowerCase()} ${quien}</div>`).join('');
+}
+function pintarMetaBox(){ // CC-001.8: escalera de kg/HH y costo/kg objetivo en día ordinario
+  const el=document.getElementById('m220-metabox'); if(!el) return;
+  const hoy=FECHAS.length?FECHAS[FECHAS.length-1]:CFG.ESCALONES[0].desde, iAct=escalonEn(hoy);
+  let hora=null;
+  if(typeof tarifaHora==='function'&&typeof CARGA_PRESTACIONAL!=='undefined'){ const [y,m,d]=hoy.split('-').map(Number); hora=tarifaHora(new Date(y,m-1,d)).hora*CARGA_PRESTACIONAL; }
+  const cop=v=>{ if(!hora) return '—'; const x=hora/v; return '$'+nf(x,Math.abs(x-Math.round(x))<0.2?0:1); };
+  el.innerHTML=`<div class="mt"><h2>🎯 Meta: kg por hora-hombre y costo por kilo</h2>
+      <p>Costo/kg objetivo en día ordinario (hasta 7 h): hora-hombre con carga ${hora?'$'+nf(hora,0):'—'} ÷ meta. Domingos, festivos y horas extra cuestan más.</p></div>
+    <div class="steps">${CFG.ESCALONES.map((s,k)=>`<div class="st${k===iAct&&hoy>=CFG.ESCALONES[0].desde?' act':''}">
+      <div class="k">${s.meta} <small>kg/HH</small></div><div class="c">${cop(s.meta)} <small>/kg</small></div>
+      <div class="f">${k===0?'desde':'desde'} ${fCorta(s.desde)}${k===CFG.ESCALONES.length-1?' · meta final':''}</div></div>`).join('')}</div>`;
 }
 function pintarEscalera(modo,p){
   const f=perFin(p,modo), i=escalonEn(f), pre=f<CFG.ESCALONES[0].desde;
@@ -20947,23 +21062,31 @@ const PAL=['#0E2841','#CC9100','#C0392B','#2F6DB5','#6B8E23','#8E44AD','#16A085'
 const colCuad = c => { const todos=[...new Set(CD.filter(x=>x.meta!=null).map(x=>x.cuad))].sort(); return PAL[todos.indexOf(c)%PAL.length]; };
 function puntoDe(rows,cuad,tipo,q,modo){ const z=rows.filter(y=>y.cuad===cuad&&y.tipo===tipo&&perDe(y.fecha,modo)===q); if(!z.length) return null;
   const kg=z.reduce((a,y)=>a+y.kg,0),hh=z.reduce((a,y)=>a+y.hh,0),fr=z.reduce((a,y)=>a+y.fr,0); const esp=z.reduce((a,y)=>a+y.hh*y.meta,0); return {kgh:kg/hh,frh:fr/hh,kg,hh,fr,meta:esp/hh,dias:z.length,verdes:z.filter(y=>estado(y)==='ok').length}; }
-function evolucion(modo,p){
-  const {ps,rows}=serie(modo,p);
-  [['Mecánica','m220-chEvoMec','m220-subEvoMec','evoMec'],['Manual','m220-chEvoMan','m220-subEvoMan','evoMan']].forEach(([tipo,id,sid,key])=>{
-    const rt=rows.filter(x=>x.tipo===tipo); const px=ps.filter(q=>rt.some(x=>perDe(x.fecha,modo)===q)); const crews=[...new Set(rt.map(x=>x.cuad))];
-    const und = modo==='dia'?'por día':modo==='sem'?'ponderado por semana':'ponderado por mes';
-    document.getElementById(sid).textContent=px.length?`kg por hora-hombre ${und}, ${perCorto(px[0],modo)} a ${perCorto(px.at(-1),modo)} · línea verde = meta escalonada`:'Sin datos de esta modalidad en el rango';
-    charts[key]&&charts[key].destroy();
-    charts[key]=new Chart(document.getElementById(id),{type:'line',data:{labels:px.map(q=>perCorto(q,modo)),datasets:crews.map((c,i)=>({label:corto(c),
-      data:px.map(q=>{const o=puntoDe(rt,c,tipo,q,modo);return o?+o.kgh.toFixed(1):null;}),
-      borderColor:colCuad(c),backgroundColor:colCuad(c),spanGaps:modo!=='dia',tension:.2,pointRadius:modo==='dia'?3.5:5,borderWidth:2})).concat([
-        {label:'Meta',data:px.map(q=>{const z=rt.filter(y=>perDe(y.fecha,modo)===q),h=z.reduce((a,y)=>a+y.hh,0);return +(z.reduce((a,y)=>a+y.hh*y.meta,0)/h).toFixed(1);}),borderColor:css('--ok'),backgroundColor:css('--ok'),borderDash:[6,4],stepped:'middle',pointRadius:0,borderWidth:2},
-        {label:'80% de la meta',data:px.map(q=>{const z=rt.filter(y=>perDe(y.fecha,modo)===q),h=z.reduce((a,y)=>a+y.hh,0);return +(z.reduce((a,y)=>a+y.hh*y.meta,0)/h*CFG.AMARILLO_PCT).toFixed(1);}),borderColor:css('--warn'),backgroundColor:css('--warn'),borderDash:[3,4],stepped:'middle',pointRadius:0,borderWidth:1.5}])},
-      options:{maintainAspectRatio:false,interaction:{mode:'nearest',intersect:false},
-        plugins:{datalabels:{display:false},legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${nf(c.parsed.y,0)} kg/HH`}}},
-        scales:{y:{min:0,suggestedMax:Math.max(MP,...rt.map(x=>x.meta))*1.2,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg / HH',color:css('--muted')}},
-                x:{grid:{display:false},ticks:{color:css('--muted'),maxRotation:0,autoSkip:true}}}}});
+/* ===== Participación semanal mecanizada vs manual · solo Inducción (CC-001.10) ===== */
+function participacion(modo,p){
+  if(typeof allData==='undefined') return;
+  const fin=perFin(p,modo), wFin=perDe(fin,'sem'), sem={};
+  allData.forEach(r=>{
+    if(r['Floracion']!=='Inducción'||!r._date) return;
+    const k=r._date.getFullYear()+'-'+String(r._date.getMonth()+1).padStart(2,'0')+'-'+String(r._date.getDate()).padStart(2,'0');
+    if(k<'2026-01-01') return; const w=perDe(k,'sem'); if(w>wFin) return;
+    const t=r['TipoCosecha']; const o=sem[w]||(sem[w]={mec:0,man:0});
+    if(t==='Mecánica') o.mec+=r._peso; else if(t==='Manual') o.man+=r._peso;
   });
+  const ws=Object.keys(sem).sort().slice(-12);
+  const pct=(a,b)=>a+b>0?+(a/(a+b)*100).toFixed(1):null;
+  document.getElementById('m220-partSub').textContent=ws.length?`% de los kg de floración Inducción cosechados con cada modalidad · ${perCorto(ws[0],'sem')} a ${perCorto(ws.at(-1),'sem')}`:'Sin cosecha de Inducción en el rango';
+  charts.part&&charts.part.destroy();
+  charts.part=new Chart(document.getElementById('m220-chPart'),{type:'bar',data:{labels:ws.map(w=>perCorto(w,'sem')),datasets:[
+      {label:'Mecanizada',data:ws.map(w=>pct(sem[w].mec,sem[w].man)),backgroundColor:'#0E2841',stack:'s'},
+      {label:'Manual',data:ws.map(w=>pct(sem[w].man,sem[w].mec)),backgroundColor:'#CC9100',stack:'s'}]},
+    options:{maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}},
+        datalabels:{display:c=>(c.dataset.data[c.dataIndex]||0)>=7,color:'#fff',font:{weight:'bold',size:11},formatter:v=>v==null?'':nf(v,0)+'%'},
+        tooltip:{callbacks:{label:c=>{const w=ws[c.dataIndex],kg=c.datasetIndex===0?sem[w].mec:sem[w].man;return `${c.dataset.label}: ${nf(c.parsed.y,1)}% · ${nf(kg)} kg`;},
+                            footer:it=>{const w=ws[it[0].dataIndex];return 'Inducción total: '+nf(sem[w].mec+sem[w].man)+' kg';}}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:css('--muted')}},
+              y:{stacked:true,min:0,max:100,ticks:{color:css('--muted'),callback:v=>v+'%'},grid:{color:css('--line')},title:{display:true,text:'% de kg Inducción',color:css('--muted')}}}}});
 }
 function fichas(modo,p){
   const {ps,rows}=serie(modo,p); const box=document.getElementById('m220-crews'); box.innerHTML='';
@@ -21052,7 +21175,13 @@ document.getElementById('m220-btnTxt').onclick=async()=>{ const s=mensaje(); try
 
 let m220Listo=false;
 window.abrirMeta220=function(){ const m=document.getElementById('m220'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
-  if(!m220Listo){ m220Listo=true; iniciar(); } else { render(); } };
+  if(!m220Listo){ m220Listo=true; iniciar(); }
+  const fm=document.getElementById('filter-mes'), mesDash=fm?fm.value:'';
+  if(mesDash){ // CC-001.7: abre en el mes elegido en el dashboard
+    document.getElementById('m220-selPer').value='mes'; llenarSelector();
+    const sd=document.getElementById('m220-selDia'); if([...sd.options].some(o=>o.value===mesDash)) sd.value=mesDash;
+  }
+  render(); };
 window.cerrarMeta220=function(){ document.getElementById('m220').style.display='none'; document.body.style.overflow=''; };
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('m220').style.display==='block') window.cerrarMeta220(); });
 })();
