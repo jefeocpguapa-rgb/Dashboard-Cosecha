@@ -236,6 +236,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
   <div class="filters-grid">
     <div class="filter-group"><label>Desde</label><input type="date" id="filter-date-from"></div>
     <div class="filter-group"><label>Hasta</label><input type="date" id="filter-date-to"></div>
+    <div class="filter-group"><label>Mes</label><select id="filter-mes"><option value="">Todos los meses</option></select></div>
     <div class="filter-group">
       <label>Desarrollo</label>
       <div class="toggle-group" id="fg-desarrollo">
@@ -302,9 +303,9 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
     <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">⚙️</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-mec-ind">—</div><div class="kpi-sub">Mecánica · Inducción</div></div>
     <div class="kpi-card" data-accent="blue"><span class="kpi-icon">✋</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-man-ind">—</div><div class="kpi-sub">Manual · Inducción</div></div>
     <div class="kpi-card" data-accent="green"><span class="kpi-icon">🌿</span><div class="kpi-label">Frutas/Hombre·Día</div><div class="kpi-value" id="kpi-fhd-nat">—</div><div class="kpi-sub">Natural (todas)</div></div>
-    <div class="kpi-card" data-accent="red"><span class="kpi-icon">⚙️</span><div class="kpi-label">Costo/kg Natural</div><div class="kpi-value" id="kpi-costo-nat">—</div><div class="kpi-sub">COP cosecha proporcional</div></div>
-    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">💵</span><div class="kpi-label">Precio/kg Vendido Natural</div><div class="kpi-value" id="kpi-precio-nat">—</div><div class="kpi-sub">COP promedio despachos</div></div>
-    <div class="kpi-card" data-accent="green"><span class="kpi-icon">📈</span><div class="kpi-label">Margen Bruto Natural</div><div class="kpi-value" id="kpi-margen-nat">—</div><div class="kpi-sub">COP/kg (precio − costo)</div></div>
+    <div class="kpi-card" data-accent="yellow"><span class="kpi-icon">🎯</span><div class="kpi-label">Kg/HH Mecanizada</div><div class="kpi-value" id="kpi-kghh-mec">—</div><div class="kpi-sub" id="kpi-kghh-mec-sub">ponderado · Inducción</div></div>
+    <div class="kpi-card" data-accent="teal"><span class="kpi-icon">🍍</span><div class="kpi-label">Frutas/HH Mecanizada</div><div class="kpi-value" id="kpi-frhh-mec">—</div><div class="kpi-sub">frutas por hora-hombre · Inducción</div></div>
+    <div class="kpi-card" data-accent="blue"><span class="kpi-icon">✋</span><div class="kpi-label">Kg/HH Manual</div><div class="kpi-value" id="kpi-kghh-man">—</div><div class="kpi-sub" id="kpi-kghh-man-sub">ponderado · Inducción</div></div>
   </section>
   <!-- ══ GRÁFICAS SEMANA A SEMANA ══ -->
   <div class="section-header" style="margin-top:20px">
@@ -18236,6 +18237,7 @@ function updateKPIs() {
   document.getElementById('kpi-fhd-mec-ind').textContent = fhdMecInd > 0 ? fmtNum(Math.round(fhdMecInd)) : '—';
   document.getElementById('kpi-fhd-man-ind').textContent = fhdManInd > 0 ? fmtNum(Math.round(fhdManInd)) : '—';
   document.getElementById('kpi-fhd-nat').textContent     = fhdNat    > 0 ? fmtNum(Math.round(fhdNat))    : '—';
+  updateKgHHKPIs();
 
   // KPIs de campo
   countUp(document.getElementById('kpi-avg-peso'), bins>0?tp/bins:0);
@@ -18267,6 +18269,39 @@ function updateKPIs() {
   });
   const totalArea = Object.values(areaBloques).reduce((s,v)=>s+v, 0);
   document.getElementById('kpi-area').textContent = totalArea > 0 ? totalArea.toLocaleString('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+}
+
+// ── Meta kg/HH (CC-001.4): ponderado = kg ÷ horas-hombre; cuadrilla-día con personas y horas máximas;
+//    el día cuenta para la modalidad en que la cuadrilla cosechó más kg (misma regla del tablero Meta kg/HH)
+function calcKgHH(rows, tipo) {
+  const g = {};
+  rows.forEach(r => {
+    const k = (r['Cuadrillero']||'') + '||' + r['Fecha'];
+    const x = g[k] || (g[k] = {kg:0, fr:0, p:0, h:0, flor:{}, tipo:{}, d:r._date});
+    x.kg += r._peso; x.fr += r._frutas; x.p = Math.max(x.p, r._cantPersonas||0); x.h = Math.max(x.h, r._horas||0);
+    x.flor[r['Floracion']] = (x.flor[r['Floracion']]||0) + r._peso; x.tipo[r['TipoCosecha']] = (x.tipo[r['TipoCosecha']]||0) + r._peso;
+  });
+  const top = o => Object.entries(o).sort((a,b)=>b[1]-a[1])[0][0];
+  let kg=0, fr=0, hh=0, esp=0;
+  Object.values(g).forEach(x => {
+    if (!(x.p>0 && x.h>0) || top(x.flor)!=='Inducción' || top(x.tipo)!==tipo) return;
+    const hhd = x.p*x.h, meta = (window.metaKgHHEn && x.d) ? window.metaKgHHEn(isoDate(x.d), tipo) : 200;
+    kg += x.kg; fr += x.fr; hh += hhd; esp += hhd*meta;
+  });
+  return hh>0 ? {kgh:kg/hh, frh:fr/hh, meta:esp/hh, cumpl:kg/esp} : null;
+}
+function updateKgHHKPIs() {
+  const paint = (idV, idS, o) => {
+    const v = document.getElementById(idV), s = idS && document.getElementById(idS);
+    if (!v) return;
+    if (!o) { v.textContent='—'; v.style.color=''; if (s) s.textContent='sin cosecha en el periodo'; return; }
+    v.textContent = fmtNum(Math.round(o.kgh));
+    v.style.color = o.cumpl>=1 ? 'var(--accent-green)' : o.cumpl>=0.8 ? '#f39c12' : 'var(--accent-red)';
+    if (s) s.textContent = 'ponderado · ' + Math.round(o.cumpl*100) + '% de la meta ' + Math.round(o.meta);
+  };
+  const mec = calcKgHH(filteredData, 'Mecánica'), man = calcKgHH(filteredData, 'Manual');
+  paint('kpi-kghh-mec','kpi-kghh-mec-sub',mec); paint('kpi-kghh-man','kpi-kghh-man-sub',man);
+  const f = document.getElementById('kpi-frhh-mec'); if (f) f.textContent = mec ? fmtNum(Math.round(mec.frh)) : '—';
 }
 
 function updateNatMarginKPIs() {
@@ -18317,11 +18352,10 @@ function updateNatMarginKPIs() {
   const globalHppdReal = totPersonasFpp > 0 ? totAreaFpp / totPersonasFpp : 0;
   if (elHppd7h)   elHppd7h.textContent   = globalHppd7h   > 0 ? globalHppd7h.toFixed(3).replace('.',',')   : '—';
   if (elHppdReal) elHppdReal.textContent = globalHppdReal > 0 ? globalHppdReal.toFixed(3).replace('.',',') : '—';
-  elMargenNat.textContent = margenNat !== 0
-    ? (margenNat > 0 ? '+' : '') + '$'+fmtNum(Math.round(margenNat))
-    : '—';
-  // Color margen: verde si positivo, rojo si negativo
-  elMargenNat.style.color = margenNat > 0 ? 'var(--accent-green)' : margenNat < 0 ? 'var(--accent-red)' : 'var(--text-primary)';
+  if (elMargenNat) {
+    elMargenNat.textContent = margenNat !== 0 ? (margenNat > 0 ? '+' : '') + '$'+fmtNum(Math.round(margenNat)) : '—';
+    elMargenNat.style.color = margenNat > 0 ? 'var(--accent-green)' : margenNat < 0 ? 'var(--accent-red)' : 'var(--text-primary)';
+  }
 }
 
 // ── G10/11/12: COMBO TIPO × FLORACION ──
@@ -20007,8 +20041,20 @@ function updateAllCharts() {
 
 // === SETUP ===
 function setupFilterListeners() {
-  document.getElementById('filter-date-from').addEventListener('change',e=>{filterState.dateFrom=e.target.value?new Date(e.target.value+'T00:00:00'):null;applyFilters();});
-  document.getElementById('filter-date-to').addEventListener('change',e=>{filterState.dateTo=e.target.value?new Date(e.target.value+'T23:59:59'):null;applyFilters();});
+  document.getElementById('filter-date-from').addEventListener('change',e=>{filterState.dateFrom=e.target.value?new Date(e.target.value+'T00:00:00'):null;document.getElementById('filter-mes').value='';applyFilters();});
+  document.getElementById('filter-mes').addEventListener('change',e=>{
+    const v=e.target.value;
+    if(!v){ setDateRange(); applyFilters(); return; }
+    const [y,m]=v.split('-').map(Number);
+    const ini=new Date(y,m-1,1), fin=new Date(y,m,0);
+    const mx=allData.map(r=>r._date).filter(Boolean).reduce((a,b)=>a>b?a:b);
+    const hasta = fin>mx ? mx : fin;
+    document.getElementById('filter-date-from').value=isoDate(ini); document.getElementById('filter-date-to').value=isoDate(hasta);
+    filterState.dateFrom=new Date(isoDate(ini)+'T00:00:00'); filterState.dateTo=new Date(isoDate(hasta)+'T23:59:59');
+    filterState.semana=''; document.getElementById('filter-semana').value='';
+    e.target.value=v; applyFilters();
+  });
+  document.getElementById('filter-date-to').addEventListener('change',e=>{filterState.dateTo=e.target.value?new Date(e.target.value+'T23:59:59'):null;document.getElementById('filter-mes').value='';applyFilters();});
   [['fg-desarrollo','desarrollo'],['fg-tipo','tipo'],['fg-flor','flor'],['fg-trans','trans']].forEach(([id,key])=>{
     document.getElementById(id).addEventListener('click',e=>{const btn=e.target.closest('.toggle-btn');if(!btn)return;document.querySelectorAll(`#${id} .toggle-btn`).forEach(b=>b.classList.remove('active'));btn.classList.add('active');filterState[key]=btn.dataset.val;applyFilters();});
   });
@@ -20063,12 +20109,18 @@ function populateDropdowns() {
   lotes.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent='Lote '+l;ls.appendChild(o);});
   const sl=document.getElementById('filter-semana');
   sems.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent='Semana '+s;sl.appendChild(o);});
+  const MESN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const meses=[...new Set(allData.map(r=>r._date).filter(Boolean).map(d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')))].sort().reverse();
+  const ms=document.getElementById('filter-mes');
+  meses.forEach(k=>{const [y,m]=k.split('-');const o=document.createElement('option');o.value=k;o.textContent=MESN[+m-1]+' '+y;ms.appendChild(o);});
 }
 
 function setDateRange() {
+  // CC-001.4: por defecto Desde y Hasta = último día cargado
   const dates=allData.map(r=>r._date).filter(Boolean).sort((a,b)=>a-b);
   if(!dates.length)return;
-  const mn=dates[0],mx=dates[dates.length-1];
+  const mx=dates[dates.length-1], mn=mx;
+  const sm=document.getElementById('filter-mes'); if(sm) sm.value='';
   document.getElementById('filter-date-from').value=isoDate(mn);
   document.getElementById('filter-date-to').value=isoDate(mx);
   document.getElementById('max-date').textContent=mx.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
@@ -20119,10 +20171,12 @@ window.addEventListener('DOMContentLoaded', () => {
   try { initChartFlor(); } catch(e) { console.error('initChartFlor:', e); }
   try { setupFilterListeners(); } catch(e) { console.error('setupFilterListeners:', e); }
 
-  filteredData = [...allData];
-  try { document.getElementById('count-filtered').textContent = fmtNum(filteredData.length); } catch(e){}
-  try { document.getElementById('footer-count-val').textContent = fmtNum(filteredData.length); } catch(e){}
-  try { updateAllCharts(); } catch(e) { console.error('updateAllCharts:', e); }
+  // CC-001.4: arranca filtrado al último día cargado
+  try { applyFilters(); } catch(e) {
+    console.error('applyFilters inicial:', e);
+    filteredData = [...allData];
+    try { updateAllCharts(); } catch(e2) { console.error('updateAllCharts:', e2); }
+  }
 
   // Always hide loading overlay regardless of errors
   setTimeout(() => {
@@ -20710,6 +20764,7 @@ function metaEn(fecha,tipo){ const es=escalera(tipo); let m=es[0].meta; es.forEa
 function escalonEn(fecha){ let i=0; CFG.ESCALONES.forEach((s,k)=>{ if(fecha>=s.desde) i=k; }); return i; }
 let MP=CFG.ESCALONES[0].meta; // meta (ponderada) del periodo en pantalla
 const amar = () => Math.round(MP*CFG.AMARILLO_PCT);
+window.metaKgHHEn = metaEn; // usada por las tarjetas Kg/HH del dashboard (CC-001.4)
 const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
