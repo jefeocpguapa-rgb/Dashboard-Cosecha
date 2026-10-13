@@ -226,7 +226,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
     <div><h1>Dashboard de Cosecha 2026</h1><p>Análisis de producción · Piña/Fruta</p></div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-meta220" onclick="abrirMeta220()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">🎯 Meta kg/HH</button> <button id="btn-incentivo" onclick="abrirIncentivo()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:#2ecc71;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap;margin-left:6px" onmouseover="this.style.background='#2ecc71';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='#2ecc71'">🏆 Incentivo</button>
+    <button id="btn-meta220" onclick="abrirMeta220()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">👷 Cuadrillas</button> <button id="btn-incentivo" onclick="abrirIncentivo()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:#2ecc71;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap;margin-left:6px" onmouseover="this.style.background='#2ecc71';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='#2ecc71'">🏆 Incentivo</button>
     <button id="btn-presentacion" onclick="togglePresentacion()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:var(--accent-green);padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--accent-green)';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='var(--accent-green)'">⛶ Modo Presentación</button>
     <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
   </div>
@@ -21011,590 +21011,232 @@ function updateSemFruChart() {
 </script>
 
 
-<!-- ══ TABLERO META KG/HH ESCALONADA (CC-001.2 · CC-001.3) ══ -->
-<style id="m220-styles">
-/* Tablero Meta 220 · estilos aislados en #m220 */
-#m220{
-  --navy:#0E2841; --navy2:#16365A; --gold:#CC9100; --beige:#E1D5C6; --brown:#7C411E;
-  --ok:#2E7D32; --warn:#D9A100; --bad:#C0392B; --off:#8A94A3;
-  --bg:#F3F0EA; --card:#FFFFFF; --ink:#1B2430; --muted:#5F6B7A; --line:#E3DED5;
-  --fn:'Barlow',Arial,Helvetica,sans-serif; --fc:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
-}
-#m220 *{box-sizing:border-box}
-#m220 .m220-wrap{margin:0;background:var(--bg);min-height:100%;color:var(--ink);font-family:var(--fn);font-size:15px;line-height:1.45}
-#m220 .m220-head{background:var(--navy);color:#fff;padding:18px 22px 16px;border-bottom:4px solid var(--gold)}
-#m220 .m220-head .row{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;max-width:1280px;margin:0 auto}
-#m220 h1{font-family:var(--fc);font-weight:700;font-size:30px;line-height:1.05;margin:0;letter-spacing:.2px}
-#m220 h1 small{display:block;font-family:var(--fn);font-weight:500;font-size:13px;color:var(--beige);letter-spacing:0;margin-top:4px}
-#m220 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-#m220 .controls label{font-size:12px;color:var(--beige)}
-#m220 select,#m220 button,#m220 input[type=file]{font-family:var(--fn);font-size:14px}
-#m220 select{padding:7px 10px;border-radius:6px;border:1px solid #3B5675;background:var(--navy2);color:#fff}
-#m220 button{padding:8px 14px;border-radius:6px;border:0;background:var(--gold);color:#1b1300;font-weight:600;cursor:pointer}
-#m220 button.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
-#m220 .m220-head button.sec{color:#fff;border-color:#3B5675}
-#m220 .m220-main{max-width:1280px;margin:0 auto;padding:18px 16px 40px}
-#m220 .hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr);gap:16px;margin-bottom:16px}
-@media(max-width:860px){#m220 .hero{grid-template-columns:1fr}}
-#m220 .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
-#m220 .panel h2{font-family:var(--fc);font-weight:600;font-size:21px;margin:0 0 4px;color:var(--ink)}
-#m220 .panel .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
-#m220 .big{font-family:var(--fc);font-weight:700;font-size:64px;line-height:.95;color:var(--ink)}
-#m220 .big span{font-size:22px;font-weight:600;color:var(--muted);margin-left:6px}
-#m220 .meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden;margin:12px 0 6px;position:relative}
-#m220 .meter i{display:block;height:100%}
-#m220 .meter b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
-#m220 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
-#m220 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-#m220 .counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-#m220 .counts div{border-radius:8px;padding:8px 10px;border:1px solid var(--line)}
-#m220 .counts strong{font-family:var(--fc);font-size:28px;display:block;line-height:1}
-#m220 .chartbox{position:relative;height:300px}
-#m220 .chartbox.m2tall{height:360px}
-#m220 table{width:100%;border-collapse:collapse;font-size:14px}
-#m220 .tablewrap{overflow-x:auto}
-#m220 th{font-weight:600;text-align:right;color:var(--muted);font-size:12.5px;border-bottom:2px solid var(--line);padding:8px 6px;white-space:normal;vertical-align:bottom;max-width:110px}
-#m220 th:first-child,#m220 td:first-child{text-align:left}
-#m220 td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-#m220 td.name{font-weight:600;white-space:normal;min-width:180px}
-#m220 td.name em{display:block;font-style:normal;font-weight:400;font-size:12px;color:var(--muted)}
-#m220 .pill{display:inline-block;min-width:64px;text-align:center;padding:3px 8px;border-radius:12px;font-weight:600;font-size:13px;color:#fff}
-#m220 .bar{display:inline-block;width:90px;height:8px;border-radius:4px;background:var(--line);vertical-align:middle;margin-right:6px;overflow:hidden}
-#m220 .bar i{display:block;height:100%}
-#m220 .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
-@media(max-width:860px){#m220 .grid2{grid-template-columns:1fr}}
-#m220 .crews{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-#m220 .crew{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-#m220 .crew h3{font-family:var(--fc);font-size:18px;font-weight:600;margin:0}
-#m220 .crew .meta{font-size:12px;color:var(--muted);margin:2px 0 6px}
-#m220 .crew .k{display:flex;gap:14px;font-size:13px;margin-top:6px;color:var(--muted)}
-#m220 .crew .k b{color:var(--ink);font-family:var(--fc);font-size:18px;display:block}
-#m220 .crew canvas{width:100%;height:56px}
-#m220 .crew button{margin-top:8px;font-size:12.5px;padding:6px 10px}
-#m220 .note{font-size:12.5px;color:var(--muted);margin-top:10px}
-#m220 .loader{padding:40px;text-align:center;color:var(--muted)}
-#m220 .msg{background:#FFF6DB;color:#5A4500;border:1px solid #F0D27A;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:14px;display:none}
-#m220 .section-title{font-family:var(--fc);font-weight:600;font-size:22px;margin:24px 0 10px}
-#m220{position:fixed;inset:0;z-index:9998;overflow-y:auto;display:none;background:var(--bg);color:var(--ink);font-family:var(--fn);font-size:15px;line-height:1.45;-webkit-overflow-scrolling:touch}
-#m220 .m220-head{position:sticky;top:0;z-index:2;padding-top:calc(18px + env(safe-area-inset-top,0px))}
-#m220 .m220-close{background:transparent;color:#fff;border:1px solid #3B5675}
-#m220 .metabox{background:var(--card);border:2px solid var(--navy);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
-#m220 .metabox .mt{flex:1 1 220px}
-#m220 .metabox .mt h2{font-family:var(--fc);font-weight:700;font-size:20px;margin:0;color:var(--ink)}
-#m220 .metabox .mt p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
-#m220 .metabox .steps{display:flex;gap:8px;flex-wrap:wrap;flex:3 1 520px}
-#m220 .metabox .st{flex:1 1 110px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center}
-#m220 .metabox .st .k{font-family:var(--fc);font-weight:700;font-size:22px;color:var(--ink);line-height:1}
-#m220 .metabox .st .k small{font-size:13px;font-weight:600;color:var(--muted)}
-#m220 .metabox .st .c{font-family:var(--fc);font-weight:700;font-size:26px;color:var(--gold);line-height:1.1;margin-top:4px}
-#m220 .metabox .st .c small{font-size:13px;color:var(--muted);font-weight:600}
-#m220 .metabox .st .f{font-size:11.5px;color:var(--muted);margin-top:2px}
-#m220 .metabox .st.act{background:var(--navy);border-color:var(--navy)}
-#m220 .metabox .st.act .k,#m220 .metabox .st.act .c{color:#fff}
-#m220 .metabox .st.act .k small,#m220 .metabox .st.act .c small,#m220 .metabox .st.act .f{color:var(--beige)}
-#m220 .mesh3{font-family:var(--fc);font-size:17px;font-weight:600;margin:6px 0 4px}
-#m220 .mesres{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0 4px}
-#m220 .mesres div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;color:var(--muted)}
-#m220 .mesres b{display:block;font-family:var(--fc);font-size:24px;color:var(--ink);line-height:1.1}
-#m220 .esc{display:flex;gap:6px;align-items:flex-end;margin:12px 0 2px;flex-wrap:wrap}
-#m220 .esc span{flex:1;min-width:58px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-family:var(--fc);font-weight:600;font-size:18px;color:var(--muted);text-align:center;line-height:1.1}
-#m220 .esc span em{display:block;font-family:var(--fn);font-style:normal;font-weight:400;font-size:11px}
-#m220 .esc span.act{border-color:var(--navy);background:var(--navy);color:#fff}
-#m220 .esc span.done{color:var(--ok);border-color:var(--ok)}
-#m220 .esc p{flex-basis:100%;margin:4px 0 0;font-size:12.5px;color:var(--muted)}
-#m220 .m220-main{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
-#m220 table{background:transparent}
-#m220 td{color:var(--ink);background:transparent}
-#m220 th{background:transparent}
-
+<!-- ══ TABLERO CUADRILLAS · CUMPLIMIENTO E INCENTIVO (CC-001.17) ══ -->
+<style id="cq-styles">
+#cq{position:fixed;inset:0;z-index:9998;overflow-y:auto;display:none;background:#F3F0EA;color:#1B2430;font-family:'Barlow',Arial,Helvetica,sans-serif;font-size:15px;line-height:1.45;
+  --navy:#0E2841;--gold:#CC9100;--beige:#E1D5C6;--ok:#2E7D32;--warn:#D9A100;--bad:#C0392B;--off:#8A94A3;--card:#FFFFFF;--ink:#1B2430;--muted:#5F6B7A;--line:#E3DED5;--fc:'Barlow Condensed','Arial Narrow',Arial,sans-serif}
+#cq *{box-sizing:border-box}
+#cq .ch{position:sticky;top:0;z-index:2;background:var(--navy);color:#fff;padding:calc(16px + env(safe-area-inset-top,0px)) 22px 14px;border-bottom:4px solid var(--gold)}
+#cq .ch .row{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end;justify-content:space-between;max-width:1280px;margin:0 auto}
+#cq h1{font-family:var(--fc);font-weight:700;font-size:28px;line-height:1.05;margin:0}
+#cq h1 small{display:block;font-family:'Barlow',Arial,sans-serif;font-weight:500;font-size:13px;color:var(--beige);margin-top:4px}
+#cq .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#cq .ctl label{font-size:12px;color:var(--beige)}
+#cq select{padding:7px 10px;border-radius:6px;border:1px solid #3B5675;background:#16365A;color:#fff;font-size:14px;font-family:inherit;max-width:260px}
+#cq button{padding:8px 14px;border-radius:6px;border:1px solid #3B5675;background:transparent;color:#fff;font-weight:600;cursor:pointer;font-family:inherit;font-size:14px}
+#cq button.pri{background:var(--gold);border-color:var(--gold);color:#1b1300}
+#cq .cm{max-width:1280px;margin:0 auto;padding:18px 16px calc(40px + env(safe-area-inset-bottom,0px))}
+#cq .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+#cq .panel h2{font-family:var(--fc);font-weight:600;font-size:21px;margin:0 0 4px}
+#cq .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+#cq .sim{background:#FFF6DB;border:1px solid #F0D27A;color:#5A4500;border-radius:8px;padding:8px 12px;font-size:13.5px;margin-bottom:14px}
+#cq .gana{border:2px solid var(--navy)}
+#cq .rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+#cq .rg>div{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+#cq .rg h3{font-family:var(--fc);font-size:17px;margin:0 0 6px;color:var(--navy)}
+#cq .chips{display:flex;flex-wrap:wrap;gap:6px}
+#cq .chip{border-radius:6px;padding:4px 8px;font-size:13px;font-weight:600;border:1px solid var(--line);background:#FAF8F5}
+#cq .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+#cq .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+#cq .kpi .n{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+#cq .kpi .v{font-family:var(--fc);font-weight:700;font-size:30px;line-height:1.05;margin-top:2px}
+#cq .kpi .s{font-size:12px;color:var(--muted)}
+#cq .crews{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+#cq .crew{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer}
+#cq .crew:hover{border-color:var(--navy)}
+#cq .crew h3{font-family:var(--fc);font-size:19px;margin:0 0 4px}
+#cq .crew .g{font-family:var(--fc);font-weight:700;font-size:30px;color:var(--ok);line-height:1}
+#cq .crew .d{font-size:12.5px;color:var(--muted);margin-top:4px}
+#cq .crew .bt{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+#cq .crew .bt button{color:var(--ink);border-color:var(--line);font-size:12.5px;padding:5px 9px}
+#cq .cb{position:relative;height:320px}
+#cq .tw{overflow-x:auto}
+#cq table{width:100%;border-collapse:collapse;font-size:14px;background:transparent}
+#cq th{font-weight:600;text-align:right;color:var(--muted);font-size:12.5px;border-bottom:2px solid var(--line);padding:8px 6px;vertical-align:bottom;background:transparent}
+#cq td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);background:transparent;white-space:nowrap}
+#cq th:first-child,#cq td:first-child{text-align:left}
+#cq .pill{display:inline-block;min-width:64px;text-align:center;padding:2px 8px;border-radius:12px;font-weight:600;font-size:12.5px;color:#fff}
+#cq .tot td{font-weight:700;border-top:2px solid var(--ink)}
+#cq .note{font-size:12.5px;color:var(--muted);margin-top:8px}
 </style>
-<div id="m220" role="dialog" aria-modal="true" aria-label="Seguimiento meta 220 kg por hora-hombre"><div class="m220-wrap">
-<header class="m220-head">
-  <div class="row">
-    <h1>Meta de kg por hora-hombre · 200 → 340
-      <small>Seguimiento diario de cuadrillas · Inducción mecanizada y manual · Agrícola Guapa S.A.S</small></h1>
-    <div class="controls">
-      <label for="m220-selPer">Periodo</label>
-      <select id="m220-selPer"><option value="dia">Día</option><option value="sem">Semana</option><option value="mes">Mes</option></select>
-      <select id="m220-selDia" aria-label="Periodo a mostrar"></select>
-      <label for="m220-selRango">Evolución</label>
-      <select id="m220-selRango">
-        <option value="inicio">Desde inicio de la meta</option>
-        <option value="30">Últimos 30 días</option>
-        <option value="base">Desde 1 de septiembre</option>
-        <option value="mar">Desde 1 de marzo (datos completos)</option>
-      </select>
-      <button id="m220-btnImg">Imagen para los grupos</button>
-      <button id="m220-btnTxt" class="sec">Copiar mensaje</button>
-      <button id="m220-close" class="m220-close" onclick="cerrarMeta220()" aria-label="Cerrar">✕ Volver al dashboard</button>
+<div id="cq" role="dialog" aria-modal="true" aria-label="Cumplimiento e incentivo por cuadrilla">
+  <div class="ch"><div class="row">
+    <h1>Cuadrillas · cumplimiento e incentivo<small>Cosecha mecánica inducida · rendimiento (kg por cuadrilla-día) y color (% pintón) · lo ganado día a día</small></h1>
+    <div class="ctl">
+      <label for="cq-mes">Mes</label><select id="cq-mes"></select>
+      <label for="cq-cua">Cuadrilla</label><select id="cq-cua"></select>
+      <button class="pri" id="cq-img">Imagen para enviar</button>
+      <button id="cq-txt">Copiar mensaje</button>
+      <button onclick="cerrarMeta220()">✕ Volver al dashboard</button>
     </div>
+  </div></div>
+  <div class="cm">
+    <div class="sim" id="cq-sim"></div>
+    <section class="panel gana" id="cq-gana"></section>
+    <div id="cq-vista"></div>
   </div>
-</header>
-<main class="m220-main">
-  <div id="m220-msg" class="msg"></div>
-  <div id="m220-loader" class="loader">Preparando el tablero…</div>
-  <div id="m220-app" style="display:none">
-    <section class="metabox" id="m220-metabox"></section>
-    <section class="hero">
-      <div class="panel">
-        <h2 id="m220-heroDia">—</h2>
-        <p class="sub" id="m220-heroSub">Inducción con meta · kg ÷ (personas × horas)</p>
-        <div class="big" id="m220-heroVal">—<span>kg/HH</span></div>
-        <div id="m220-escalera" class="esc"></div>
-        <div class="meter"><i id="m220-heroBar"></i><b id="m220-heroMark"></b></div>
-        <div id="m220-heroTxt" class="note"></div>
-        <div class="counts">
-          <div style="border-color:var(--ok)"><strong id="m220-nOk" style="color:var(--ok)">0</strong><span id="m220-lOk">en meta (≥ 220)</span></div>
-          <div style="border-color:var(--warn)"><strong id="m220-nWarn" style="color:var(--warn)">0</strong><span id="m220-lWarn">cerca (180–219)</span></div>
-          <div style="border-color:var(--bad)"><strong id="m220-nBad" style="color:var(--bad)">0</strong><span id="m220-lBad">lejos (&lt; 180)</span></div>
-        </div>
-      </div>
-      <div class="panel">
-        <h2>Cumplimiento por cuadrilla</h2>
-        <p class="sub" id="m220-subBar">kg por hora-hombre frente a la meta</p>
-        <div class="chartbox"><canvas id="m220-chDia"></canvas></div>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-bottom:16px" id="m220-mesSec">
-      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
-        <div><h2 id="m220-mesTit">Día a día del mes · kg/HH y costo/kg</h2>
-        <p class="sub" id="m220-mesSub">Barras = kg/HH del día (color según la meta) · línea = COP/kg del día · punteada = COP/kg si se cumpliera la meta</p></div>
-        <div id="m220-mesTag" style="font-family:var(--fc);font-weight:600;font-size:18px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 12px"></div>
-      </div>
-      <div class="mesres" id="m220-mesRes"></div>
-      <div class="grid2" style="margin:8px 0 0">
-        <div><h3 class="mesh3">Inducción mecanizada</h3><div class="chartbox m2tall"><canvas id="m220-chMesMec"></canvas></div></div>
-        <div><h3 class="mesh3">Inducción manual</h3><div class="chartbox m2tall"><canvas id="m220-chMesMan"></canvas></div></div>
-      </div>
-      <p class="note">COP/kg = costo de cuadrilla con carga (horas reales con la norma 2026 y jornal de Gestión Humana de $122.000/día, CC-001.5 y CC-001.11) ÷ kg del día. COP/kg con la meta = costo del día ÷ (horas-hombre × meta vigente): lo que habría costado el kilo si el día cumplía la meta.</p>
-    </section>
-
-    <section class="panel" style="margin-bottom:16px">
-      <h2 id="m220-tblTit">Detalle del día</h2>
-      <p class="sub" id="m220-tblSub">Personas y horas son las registradas en la boleta. Los días mixtos (la cuadrilla hizo Natural e Inducción) se marcan aparte.</p>
-      <div class="tablewrap"><table id="m220-tblDia"></table></div>
-    </section>
-
-    <section class="panel" style="margin-bottom:16px">
-      <h2>Participación semanal · Inducción mecanizada vs manual</h2>
-      <p class="sub" id="m220-partSub">% de los kg de floración Inducción cosechados con cada modalidad, semana a semana</p>
-      <div class="chartbox m2tall"><canvas id="m220-chPart"></canvas></div>
-      <p class="note">Base: kg de boleta de floración Inducción. Natural no entra. La semana en curso queda parcial hasta el domingo.</p>
-    </section>
-
-    <div class="section-title">Ficha por cuadrilla</div>
-    <div class="crews" id="m220-crews"></div>
-    <p class="note" id="m220-foot"></p>
-  </div>
-</main>
-
-</div></div>
+</div>
 <script>
 (function(){
-/* ================== CONFIGURACIÓN ================== */
-const CFG = {
-  DASH_FILE: 'Dashboard_Cosecha_2026_v10.html', // mismo repositorio de GitHub Pages
-  // Escalera de metas (kg por hora-hombre). Cada día se compara con la meta vigente en su fecha. (CC-001.3)
-  ESCALONES: [ {desde:'2026-10-05', meta:200}, {desde:'2026-11-02', meta:240}, {desde:'2026-11-30', meta:300}, {desde:'2027-01-04', meta:340} ],
-  ESCALONES_MANUAL: null, // si se aprueba una escalera propia para manual, ponerla aquí con el mismo formato
-  AMARILLO_PCT: 0.80,     // amarillo = 80% a 99% de la meta vigente
-  INICIO: '2026-10-05', // inicio de la medición de la meta
-  BASE: '2026-09-01',   // línea base para comparar
-  MODALIDADES_CON_META: ['Mecánica', 'Manual'], // dentro de Inducción
-};
-function escalera(tipo){ return (tipo==='Manual'&&CFG.ESCALONES_MANUAL)||CFG.ESCALONES; }
-function metaEn(fecha,tipo){ const es=escalera(tipo); let m=es[0].meta; es.forEach(s=>{ if(fecha>=s.desde) m=s.meta; }); return m; }
-function escalonEn(fecha){ let i=0; CFG.ESCALONES.forEach((s,k)=>{ if(fecha>=s.desde) i=k; }); return i; }
-let MP=CFG.ESCALONES[0].meta; // meta (ponderada) del periodo en pantalla
-const amar = () => Math.round(MP*CFG.AMARILLO_PCT);
-window.metaKgHHEn = metaEn; // usada por las tarjetas Kg/HH del dashboard (CC-001.4)
-const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-const css = v => getComputedStyle(document.getElementById('m220')).getPropertyValue(v).trim();
-const nf = (v,d=0) => v==null||isNaN(v)?'—':v.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
-const title = s => s.toLowerCase().replace(/(^|\s)\p{L}/gu,c=>c.toUpperCase());
-const corto = s => { const p=title(s).split(' '); return p.length>=3 ? p[0]+' '+p[p.length>=4?2:1] : title(s); };
-const modTxt = t => t==='Mecánica'?'Mecanizada':'Manual';
-let CD=[], FECHAS=[], charts={};
-
-/* ================== PERIODOS (semana ISO lunes–domingo, como el Seguimiento SXX) ================== */
-function isoSem(k){ const d=new Date(k+'T12:00:00Z'); const dia=(d.getUTCDay()+6)%7; d.setUTCDate(d.getUTCDate()-dia+3);
-  const y=d.getUTCFullYear(), f=new Date(Date.UTC(y,0,4)); const w=1+Math.round(((d-f)/864e5-3+((f.getUTCDay()+6)%7))/7); return y+'-W'+String(w).padStart(2,'0'); }
-function lunesDe(sk){ const [y,w]=sk.split('-W').map(Number); const f=new Date(Date.UTC(y,0,4)); const l=new Date(f); l.setUTCDate(f.getUTCDate()-((f.getUTCDay()+6)%7)+(w-1)*7); return l.toISOString().slice(0,10); }
-function sumaDias(k,n){ const d=new Date(k+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
-const perDe = (k,modo) => modo==='dia'?k:modo==='sem'?isoSem(k):k.slice(0,7);
-function perIni(p,modo){ return modo==='dia'?p:modo==='sem'?lunesDe(p):p+'-01'; }
-function perFin(p,modo){ if(modo==='dia') return p; if(modo==='sem') return sumaDias(lunesDe(p),6); const [y,m]=p.split('-').map(Number); return new Date(Date.UTC(y,m,0)).toISOString().slice(0,10); }
-function perLargo(p,modo){
-  if(modo==='dia') return fLarga(p).replace(/^./,c=>c.toUpperCase());
-  if(modo==='sem'){ const a=lunesDe(p),b=sumaDias(a,6); return 'Semana '+Number(p.split('-W')[1])+' · '+fCorta(a)+' al '+fCorta(b)+' '+b.slice(0,4); }
-  const [y,m]=p.split('-').map(Number); return MESESL[m-1].replace(/^./,c=>c.toUpperCase())+' '+y; }
-function perCorto(p,modo){ if(modo==='dia') return fCorta(p); if(modo==='sem') return 'S'+Number(p.split('-W')[1]); const m=Number(p.split('-')[1]); return MESES[m-1]; }
-const nomPer = modo => modo==='dia'?'día':modo==='sem'?'semana':'mes';
-const delPer = modo => modo==='sem'?'de la semana':'del '+nomPer(modo);
-const estePer = modo => modo==='sem'?'esta semana':'este '+nomPer(modo);
-
-/* ================== CARGA ================== */
-function parse(csvTxt){
-  const lines = csvTxt.trim().split(/\r?\n/); const cab = lines.shift().split(';');
-  const rows = lines.map(l=>{const v=l.split(';'),o={};cab.forEach((c,i)=>o[c]=(v[i]||'').trim());return o;});
-  const g = {};
-  rows.forEach(r=>{
-    const f=r.Fecha.split('/'); if(f.length!==3) return;
-    const key=f[2]+'-'+f[1].padStart(2,'0')+'-'+f[0].padStart(2,'0');
-    const k=r.Cuadrillero+'|'+key;
-    const x = g[k] || (g[k]={cuad:r.Cuadrillero,fecha:key,kg:0,fr:0,pers:0,horas:0,flor:{},tipo:{},bloques:new Set(),gf:new Set()});
-    const kg=+r.Peso||0, fr=+r.Frutas||0;
-    x.kg+=kg; x.fr+=fr; x.pers=Math.max(x.pers,+r.CantPersonas||0); x.horas=Math.max(x.horas,+(r.HorasTrabajadas||'0').replace(',','.')||0);
-    x.flor[r.Floracion]=(x.flor[r.Floracion]||0)+kg; x.tipo[r.TipoCosecha]=(x.tipo[r.TipoCosecha]||0)+kg;
-    x.bloques.add(r.Bloque); x.gf.add(r.GrupoForza);
-  });
-  CD = Object.values(g).filter(x=>x.pers>0&&x.horas>0).map(x=>{
-    const top = o => Object.entries(o).sort((a,b)=>b[1]-a[1])[0][0];
-    const flor = top(x.flor), tipo = top(x.tipo);
-    const mixto = Object.keys(x.flor).length>1 || Object.keys(x.tipo).length>1;
-    const hh = x.pers*x.horas;
-    const meta = flor==='Inducción' && CFG.MODALIDADES_CON_META.includes(tipo) ? metaEn(x.fecha,tipo) : null;
-    return {...x, flor, tipo, mixto, hh, kgh:x.kg/hh, frh:x.fr/hh, meta, cumpl: meta? x.kg/hh/meta : null,
-            bloquesN:x.bloques.size, gfL:[...x.gf].sort().join(', ')};
-  });
-  FECHAS = [...new Set(CD.map(x=>x.fecha))].sort();
+window.metaKgHHEn = () => 309; // CC-001.16: meta 309 kg/HH (26.000 kg por cuadrilla de 12 × 7 h) para las tarjetas del dashboard
+const MESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MESC=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const DIAS=['dom','lun','mar','mié','jue','vie','sáb'];
+const nf=(v,d=0)=>v==null||isNaN(v)?'—':v.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const $=v=>v==null||isNaN(v)?'—':'$'+nf(Math.round(v));
+const tit=s=>s.toLowerCase().replace(/(^|\s)\p{L}/gu,c=>c.toUpperCase());
+const C={ok:'#2E7D32',med:'#6BA539',warn:'#D9A100',bad:'#C0392B',off:'#8A94A3',navy:'#0E2841',gold:'#CC9100'};
+let D=null, charts={}, listo=false;
+const fC=k=>{const [y,m,d]=k.split('-');return (+d)+' '+MESC[+m-1];};
+const fL=k=>{const dt=new Date(k+'T12:00:00');return DIAS[dt.getDay()]+' '+dt.getDate()+' '+MESC[dt.getMonth()];};
+function nivel(kg){ return kg>=26000?{n:'Meta',c:C.ok}:kg>=24000?{n:'Medio',c:C.med}:kg>=22000?{n:'Piso',c:C.warn}:{n:'Bajo piso',c:C.bad}; }
+function colorNivel(pp){ return pp==null?{n:'Sin dato',c:C.off}:pp>=70?{n:'Meta',c:C.ok}:pp>=55?{n:'Bonifica',c:C.warn}:{n:'No bonifica',c:C.bad}; }
+function cargar(){
+  if(typeof window.incDatos!=='function') throw new Error('módulo Incentivo no disponible');
+  D=window.incDatos();
+  const ms=[...new Set(D.CDm.map(x=>x.f.slice(0,7)))].sort().reverse();
+  const sm=document.getElementById('cq-mes');
+  sm.innerHTML=ms.map(k=>{const [y,m]=k.split('-');return `<option value="${k}">${tit(MESL[+m-1])} ${y}</option>`;}).join('');
+  sm.onchange=()=>{ llenarCuadrillas(); pintar(); };
+  document.getElementById('cq-cua').onchange=pintar;
+  document.getElementById('cq-img').onclick=imagen;
+  document.getElementById('cq-txt').onclick=async()=>{const s=mensaje();try{await navigator.clipboard.writeText(s);alert('Mensaje copiado. Pégalo en el grupo de WhatsApp.');}catch(e){prompt('Copia el mensaje:',s);}};
+  llenarCuadrillas();
 }
-function estado(x){ if(x.meta==null) return 'off'; const v=x.kgh; return v>=x.meta-1e-9?'ok':(v>=x.meta*CFG.AMARILLO_PCT?'warn':'bad'); }
-function color(e){ return css({ok:'--ok',warn:'--warn',bad:'--bad',off:'--off'}[e]); }
-function fLarga(k){ const d=new Date(k+'T12:00:00'); return DIAS[d.getDay()]+' '+d.getDate()+' '+MESES[d.getMonth()]+' '+d.getFullYear(); }
-function fCorta(k){ const d=new Date(k+'T12:00:00'); return d.getDate()+' '+MESES[d.getMonth()]; }
-function iniciar(){
-  try{ if(typeof RAW_CSV==='undefined') throw new Error('sin datos'); parse(RAW_CSV); }
-  catch(e){ document.getElementById('m220-loader').textContent='No se encontraron los datos de cosecha en este archivo.'; return; }
-  arrancar();
+function llenarCuadrillas(){
+  const mes=document.getElementById('cq-mes').value, sc=document.getElementById('cq-cua'), prev=sc.value;
+  const cs=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.c))].sort();
+  sc.innerHTML='<option value="">Todas las cuadrillas</option>'+cs.map(c=>`<option value="${c}">${tit(c)}</option>`).join('');
+  if(cs.includes(prev)) sc.value=prev;
 }
-
-/* ================== UNIDADES: cuadrilla-día o ponderado del periodo ================== */
-// Ponderado = suma de kg ÷ suma de horas-hombre del periodo (no es el promedio de los kg/HH diarios)
-function agrupar(rows){
-  const g={};
-  rows.forEach(x=>{ const k=x.cuad+'|'+x.tipo+'|'+(x.meta!=null?'M':'N'); const u=g[k]||(g[k]={cuad:x.cuad,tipo:x.tipo,flor:x.flor,meta:x.meta,kg:0,fr:0,hh:0,kgEsp:0,jorn:0,dias:0,verdes:0,mixtos:0,fechas:[]});
-    u.kg+=x.kg; u.fr+=x.fr; u.hh+=x.hh; if(x.meta!=null) u.kgEsp+=x.hh*x.meta; u.jorn+=x.pers; u.dias++; u.mixtos+=x.mixto?1:0; u.fechas.push(x.fecha); if(estado(x)==='ok') u.verdes++; });
-  return Object.values(g).map(u=>{ const meta=u.meta!=null?u.kgEsp/u.hh:null; return {...u,meta,kgh:u.kg/u.hh,frh:u.fr/u.hh,cumpl:meta?u.kg/u.kgEsp:null}; });
+function diasDe(c,mes){ return D.CDm.filter(x=>x.c===c&&x.f.slice(0,7)===mes).sort((a,b)=>a.f<b.f?-1:1).map(x=>{
+  const col=D.COL[x.f]||null; return {...x,pp:col?col.pp:null,kghh:(x.p>0&&x.h>0)?x.kgMI/(x.p*x.h):null,porPersona:x.p>0?x.inc/x.p:0}; }); }
+function resumen(c,mes){ const ds=diasDe(c,mes); let acum=0; ds.forEach(d=>{acum+=d.porPersona; d.acum=acum;});
+  const kg=ds.reduce((a,d)=>a+d.kgMI,0), inc=ds.reduce((a,d)=>a+d.inc,0);
+  return {c,ds,dias:ds.length,kg,kgdia:ds.length?kg/ds.length:0,d22:ds.filter(d=>d.kgMI>=22000).length,d26:ds.filter(d=>d.kgMI>=26000).length,
+    dCol:ds.filter(d=>d.pp!=null&&d.pp>=55).length,dColDato:ds.filter(d=>d.pp!=null).length,inc,incR:ds.reduce((a,d)=>a+d.incR,0),incC:ds.reduce((a,d)=>a+d.incC,0),porPersona:acum,
+    pers:ds.length?ds.reduce((a,d)=>a+d.p,0)/ds.length:0}; }
+function nombreMes(mes){const [y,m]=mes.split('-');return tit(MESL[+m-1])+' '+y;}
+function pintarGana(){
+  const I=D.INC;
+  document.getElementById('cq-gana').innerHTML=`<h2>¿Cómo se gana?</h2><p class="sub">Cada día, cada cuadrilla gana por <b>rendimiento</b> (kg de la cuadrilla) y por <b>color</b> (% de fruta pintona). Cada ítem se paga por separado: basta cumplir uno.</p>
+  <div class="rg">
+    <div><h3>💰 Valor</h3><div class="chips"><span class="chip">$${I.VALOR_KG} por kg cosechado</span><span class="chip">40% rendimiento</span><span class="chip">60% color</span></div><div class="note">Ganado del día = kg × $${I.VALOR_KG} × (40% × puntos de rendimiento + 60% × puntos de color) ÷ 100. Por persona = ganado ÷ personas de la cuadrilla.</div></div>
+    <div><h3>🚜 Rendimiento · kg por cuadrilla-día</h3><div class="chips"><span class="chip" style="border-color:${C.ok}">26.000 o más → meta (más kg, más puntos) · costo $59,2/kg</span><span class="chip" style="border-color:${C.med}">24.000 → 75 · costo $63,5/kg</span><span class="chip" style="border-color:${C.warn}">22.000 → 50 · costo $68,6/kg</span><span class="chip" style="border-color:${C.bad}">menos de 22.000 → 0</span></div><div class="note">Ejemplo: 27.450 kg = 105,6 puntos. El costo es el objetivo por kg de cada nivel (Gerencia). Equivale a 262 / 286 / 309 kg por hora-hombre con 12 personas × 7 h.</div></div>
+    <div><h3>🍍 Color · % pintón del día</h3><div class="chips"><span class="chip" style="border-color:${C.ok}">70% o más → meta (más pintón, más puntos)</span><span class="chip">65% → 75</span><span class="chip">60% → 50</span><span class="chip">55% → 25</span><span class="chip" style="border-color:${C.bad}">menos de 55% → 0</span></div><div class="note">Ejemplo: 77% pintón = 110 puntos. Color de la Inducción en planta ese día.</div></div>
+  </div>`;
 }
-function unidades(modo,p){ const rows=CD.filter(x=>perDe(x.fecha,modo)===p); return modo==='dia'?rows:agrupar(rows); }
-const ordenar = a => a.sort((x,y)=>(y.meta!=null)-(x.meta!=null)||y.kgh-x.kgh);
-
-/* ================== RENDER ================== */
-function llenarSelector(){
-  const modo=document.getElementById('m220-selPer').value;
-  const ps=[...new Set(CD.filter(x=>x.meta!=null).map(x=>perDe(x.fecha,modo)))].sort().reverse();
-  const sel=document.getElementById('m220-selDia'); sel.innerHTML=ps.map(p=>`<option value="${p}">${perLargo(p,modo)}</option>`).join('');
-  document.getElementById('m220-btnImg').textContent='Imagen '+(modo==='dia'?'del día':modo==='sem'?'de la semana':'del mes')+' para los grupos';
+function pintar(){
+  const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value; if(!mes) return;
+  document.getElementById('cq-sim').style.display='none';
+  document.getElementById('cq-img').textContent=c?'Imagen para la cuadrilla (mes)':'Imagen del día (todas)';
+  document.getElementById('cq-txt').textContent=c?'Copiar mensaje (mes de la cuadrilla)':'Copiar mensaje del día (todas)';
+  Object.values(charts).forEach(ch=>ch&&ch.destroy()); charts={};
+  if(!c) vistaTodas(mes); else vistaCuadrilla(c,mes);
 }
-function arrancar(){
-  document.getElementById('m220-loader').style.display='none'; document.getElementById('m220-app').style.display='block';
-  document.getElementById('m220-selPer').onchange=()=>{ llenarSelector(); render(); };
-  document.getElementById('m220-selDia').onchange=render; document.getElementById('m220-selRango').onchange=render;
-  llenarSelector(); llenarMes(); pintarMetaBox();
-  if(!CD.some(x=>x.meta!=null&&x.fecha>=CFG.INICIO)){
-    document.getElementById('m220-selRango').value='base';
-    const m=document.getElementById('m220-msg'); m.style.display='block';
-    m.textContent='Aún no hay días cargados desde el inicio de la meta ('+fCorta(CFG.INICIO)+'). Se muestra la línea base desde el 1 de septiembre; el seguimiento arranca solo con el primer día cargado.';
-  }
-  render();
+function vistaTodas(mes){
+  const cs=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.c))]; const R=cs.map(c=>resumen(c,mes)).sort((a,b)=>b.porPersona-a.porPersona);
+  const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1);
+  let h=`<section class="panel"><h2>Todas las cuadrillas · ${nombreMes(mes)}</h2><p class="sub">Toca una cuadrilla para ver su detalle día a día.</p><div class="crews">`;
+  R.forEach(r=>{h+=`<div class="crew" data-c="${r.c}"><h3>${tit(r.c)}</h3><div class="g">${$(r.porPersona)}</div><div class="d">ganado por persona en el mes · total cuadrilla ${$(r.inc)}</div>
+    <div class="d">${r.dias} días · ${nf(r.kgdia)} kg por día · ${r.d22} días ≥ 22.000 kg · ${r.dColDato?r.dCol+' de '+r.dColDato+' días con color que bonifica':'color sin dato'}</div>
+    <div class="bt"><button data-v="${r.c}">Ver día a día</button></div></div>`;});
+  h+='</div></section>';
+  // último día
+  const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.inc-a.inc); const col=D.COL[ult];
+  h+=`<section class="panel"><h2>Último día cargado · ${fL(ult)}</h2><p class="sub">Color del día: ${col?nf(col.pp,1)+'% pintón':'sin dato'} · «Copiar mensaje» e «Imagen» con todas las cuadrillas envían esta tabla</p><div class="tw"><table><thead><tr><th>Cuadrilla</th><th>Personas</th><th>Kg</th><th>Rendimiento</th><th>Puntos rend.</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado</th><th>Por persona</th><th>Acumulado mes por persona</th></tr></thead><tbody>`;
+  z.forEach(x=>{const nv=nivel(x.kgMI), cn=colorNivel(col?col.pp:null);
+    const ac=resumen(x.c,mes).porPersona;
+    h+=`<tr><td>${tit(x.c)}</td><td>${x.p}</td><td>${nf(x.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(x.pr,1)}</td><td><span class="pill" style="background:${cn.c}">${col?nf(col.pp,0)+'%':'—'}</span></td><td>${x.pc==null?'NA':nf(x.pc,1)}</td><td><b>${$(x.inc)}</b></td><td><b>${$(x.p?x.inc/x.p:0)}</b></td><td>${$(ac)}</td></tr>`;});
+  h+='</tbody></table></div></section>';
+  document.getElementById('cq-vista').innerHTML=h;
+  document.querySelectorAll('#cq .crew').forEach(el=>el.onclick=()=>{document.getElementById('cq-cua').value=el.dataset.c;pintar();document.getElementById('cq').scrollTop=0;});
 }
-function render(){
-  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value;
-  const us=ordenar(unidades(modo,p)); const cm=us.filter(x=>x.meta!=null);
-  const kg=cm.reduce((a,x)=>a+x.kg,0), hh=cm.reduce((a,x)=>a+x.hh,0), v=hh?kg/hh:0;
-  const esp=cm.reduce((a,x)=>a+x.hh*x.meta,0); MP = hh? esp/hh : metaEn(perFin(p,modo),'Mecánica');
-  pintarEscalera(modo,p);
-  document.getElementById('m220-heroDia').textContent=perLargo(p,modo);
-  document.getElementById('m220-heroSub').textContent=modo==='dia'?'Inducción con meta · kg ÷ (personas × horas)':'Ponderado del periodo · kg ÷ horas-hombre '+delPer(modo);
-  document.getElementById('m220-heroVal').innerHTML=nf(v,0)+'<span>kg/HH · '+nf(v/MP*100,0)+'% de '+nf(MP,0)+'</span>';
-  const e = v>=MP?'ok':v>=MP*CFG.AMARILLO_PCT?'warn':'bad';
-  const hb=document.getElementById('m220-heroBar'); hb.style.width=Math.min(100,v/(MP*1.3)*100)+'%'; hb.style.background=color(e);
-  document.getElementById('m220-heroMark').style.left=(100/1.3)+'%';
-  const sub=t=>{const z=cm.filter(x=>x.tipo===t),k=z.reduce((a,x)=>a+x.kg,0),h=z.reduce((a,x)=>a+x.hh,0);return h?nf(k/h,0)+' kg/HH':'sin cosecha';};
-  let extra='';
-  if(modo!=='dia'){ const cd=cm.reduce((a,x)=>a+x.dias,0), vd=cm.reduce((a,x)=>a+x.verdes,0), nd=new Set(cm.flatMap(x=>x.fechas)).size;
-    extra=` ${nd} día${nd===1?'':'s'} con cosecha · ${vd} de ${cd} cuadrilla-días en verde (${nf(cd?vd/cd*100:0,0)}%).`; }
-  document.getElementById('m220-heroTxt').textContent=`${nf(kg)} kg con ${nf(hh,0)} horas-hombre en ${cm.length} cuadrilla${cm.length===1?'':'s'}. Mecanizada ${sub('Mecánica')} · manual ${sub('Manual')}.${extra} Faltan ${nf(Math.max(0,MP-v),0)} kg/HH para la meta.`;
-  ['ok','warn','bad'].forEach(s=>document.getElementById({ok:'m220-nOk',warn:'m220-nWarn',bad:'m220-nBad'}[s]).textContent=cm.filter(x=>estado(x)===s).length);
-  const suf = modo==='dia'?'':' (ponderado)';
-  document.getElementById('m220-lOk').textContent='en meta (≥ 100%)'+suf; document.getElementById('m220-lWarn').textContent='cerca (80–99%)'+suf; document.getElementById('m220-lBad').textContent='lejos (< 80%)'+suf;
-  document.getElementById('m220-subBar').textContent=modo==='dia'?'kg por hora-hombre del día frente a la meta':'kg por hora-hombre ponderado '+delPer(modo)+' frente a la meta';
-  tabla(us,modo,p); fichas(modo,p); mesDiario();
-  if(typeof Chart!=='undefined'){ barras(cm); participacion(modo,p); }
-  else { ['m220-chDia','m220-chPart'].forEach(id=>{const c=document.getElementById(id); if(c) c.parentNode.innerHTML='<p class="note">No se pudo cargar la librería de gráficos. Revisa la conexión a internet y recarga la página.</p>';}); }
-  const ult=FECHAS[FECHAS.length-1];
-  document.getElementById('m220-foot').textContent=`Fuente: datos de este dashboard · último día cargado ${fLarga(ult)} · meta vigente ${nf(MP,0)} kg/HH (escalera ${CFG.ESCALONES.map(s=>s.meta).join(' → ')}) · cuadrilla-día = personas máx. × horas máx. registradas · semana = lunes a domingo (ISO) · ponderado = kg ÷ horas-hombre del periodo · Natural se muestra sin meta.`;
+function vistaCuadrilla(c,mes){
+  const r=resumen(c,mes);
+  const k=(n,v,s,col)=>`<div class="kpi"><div class="n">${n}</div><div class="v" style="color:${col||C.navy}">${v}</div><div class="s">${s}</div></div>`;
+  let h=`<div class="kpis">${k('Ganado por persona',$(r.porPersona),'acumulado del mes',C.ok)}${k('Ganado cuadrilla',$(r.inc),`rendimiento ${$(r.incR)} · color ${$(r.incC)}`)}${k('Días trabajados',r.dias,`${nf(r.pers,1)} personas en promedio`)}${k('Kg por día',nf(r.kgdia),'promedio del mes',nivel(r.kgdia).c)}${k('Días ≥ 22.000 kg',r.d22+' de '+r.dias,`${r.d26} días en meta (≥ 26.000)`,r.d22?C.warn:C.bad)}${k('Días con color que bonifica',r.dColDato?r.dCol+' de '+r.dColDato:'—','pintón de 55% o más',r.dCol?C.warn:C.bad)}</div>`;
+  h+=`<section class="panel"><h2>${tit(c)} · día a día · ${nombreMes(mes)}</h2><p class="sub">Barras = kg de la cuadrilla (color según el nivel) · líneas punteadas = 22.000 / 24.000 / 26.000 kg · línea azul = % pintón del día (eje derecho)</p><div class="cb"><canvas id="cq-ch"></canvas></div></section>`;
+  h+=`<section class="panel"><h2>Detalle día a día</h2><div class="tw"><table><thead><tr><th>Día</th><th>Kg cuadrilla</th><th>Rendimiento</th><th>Puntos rend.</th><th>Kg/HH (referencia)</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado rend.</th><th>Ganado color</th><th>Ganado del día</th><th>Personas</th><th>Por persona</th><th>Acumulado por persona</th></tr></thead><tbody>`;
+  r.ds.forEach(d=>{const nv=nivel(d.kgMI), cn=colorNivel(d.pp);
+    h+=`<tr${d.vig?'':' style="opacity:.5" title="Antes de la vigencia del incentivo: solo referencia"'}><td>${fL(d.f)}${d.vig?'':' · ref.'}</td><td>${nf(d.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(d.pr,1)}</td><td>${d.kghh?nf(d.kghh,0):'—'}</td><td><span class="pill" style="background:${cn.c}">${d.pp==null?'sin dato':nf(d.pp,0)+'%'}</span></td><td>${d.pc==null?'NA':nf(d.pc,1)}</td><td>${$(d.incR)}</td><td>${$(d.incC)}</td><td>${d.vig?'<b>'+$(d.inc)+'</b>':'('+$(d.incRef)+' ref.)'}</td><td>${d.p}</td><td>${d.vig?'<b>'+$(d.porPersona)+'</b>':'('+$(d.p?d.incRef/d.p:0)+' ref.)'}</td><td>${$(d.acum)}</td></tr>`;});
+  h+=`<tr class="tot"><td>Total ${nombreMes(mes)}</td><td>${nf(r.kg)}</td><td></td><td></td><td></td><td></td><td></td><td>${$(r.incR)}</td><td>${$(r.incC)}</td><td>${$(r.inc)}</td><td></td><td></td><td>${$(r.porPersona)}</td></tr></tbody></table></div>
+    <p class="note">Kg/HH = kg ÷ (personas × horas): referencia de productividad, no cambia el pago. "NA" = día sin dato de color.</p></section>`;
+  document.getElementById('cq-vista').innerHTML=h;
+  if(typeof Chart==='undefined') return;
+  const L=r.ds.map(d=>fC(d.f)), line=(v,col,l)=>({type:'line',label:l,yAxisID:'y',data:r.ds.map(()=>v),borderColor:col,borderDash:[6,4],pointRadius:0,borderWidth:1.6});
+  charts.c=new Chart(document.getElementById('cq-ch'),{data:{labels:L,datasets:[
+    {type:'bar',label:'Kg de la cuadrilla',yAxisID:'y',data:r.ds.map(d=>d.kgMI),backgroundColor:r.ds.map(d=>nivel(d.kgMI).c),borderRadius:3,order:3},
+    line(22000,C.warn,'22.000'),line(24000,C.med,'24.000'),line(26000,C.ok,'26.000'),
+    {type:'line',label:'% pintón',yAxisID:'y2',data:r.ds.map(d=>d.pp==null?null:+d.pp.toFixed(1)),borderColor:C.navy,backgroundColor:C.navy,pointRadius:4,borderWidth:2.2,spanGaps:false,order:1},
+    {type:'line',label:'Meta pintón 70%',yAxisID:'y2',data:r.ds.map(()=>70),borderColor:'#8E44AD',borderDash:[3,3],pointRadius:0,borderWidth:1.4,order:1}]},
+    options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{datalabels:{display:false},legend:{position:'bottom',labels:{boxWidth:12,color:'#1B2430'}},tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y2'?`${c.dataset.label}: ${nf(c.parsed.y,1)}%`:`${c.dataset.label}: ${nf(c.parsed.y)} kg`}}},
+      scales:{y:{min:0,suggestedMax:30000,ticks:{color:'#5F6B7A',callback:v=>nf(v/1000)+' t'},grid:{color:'#E3DED5'},title:{display:true,text:'kg de la cuadrilla',color:'#5F6B7A'}},
+              y2:{position:'right',min:0,max:100,ticks:{color:'#5F6B7A',callback:v=>v+'%'},grid:{display:false},title:{display:true,text:'% pintón',color:'#5F6B7A'}},
+              x:{grid:{display:false},ticks:{color:'#5F6B7A',maxRotation:0,autoSkip:true}}}}});
 }
-/* ===== Día a día del mes: kg/HH y COP/kg (CC-001.6) ===== */
-function costoCD(x){ // costo con carga de la cuadrilla-día, misma función del dashboard
-  if(typeof calcCostoDelDia!=='function') return null;
-  const [y,m,d]=x.fecha.split('-'); return calcCostoDelDia(x.horas, x.pers, (+d)+'/'+m+'/'+y);
-}
-function mesDelPeriodo(){ // CC-001.7: la sección sigue al filtro principal del tablero
-  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value;
-  if(!p) return null; return modo==='mes'?p:(modo==='sem'?perFin(p,'sem'):p).slice(0,7);
-}
-function llenarMes(){}
-function aggTipo(z){ // agrega cuadrilla-días con meta: kg, horas-hombre, kg esperados y costo con carga
-  if(!z.length) return null;
-  const kg=z.reduce((a,x)=>a+x.kg,0), hh=z.reduce((a,x)=>a+x.hh,0), esp=z.reduce((a,x)=>a+x.hh*x.meta,0), cs=z.map(costoCD);
-  const costo=cs.some(c=>c==null)?null:cs.reduce((a,c)=>a+c,0);
-  return {kg,hh,esp,costo,kgh:kg/hh,meta:esp/hh,cop:costo!=null?costo/kg:null,copMeta:costo!=null?costo/esp:null};
-}
-function diaTipo(fecha,tipo){ return aggTipo(CD.filter(x=>x.meta!=null&&x.tipo===tipo&&x.fecha===fecha)); }
-function mesDiario(){ // CC-001.6 / CC-001.7 / CC-001.9
-  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value;
-  const semanal = modo==='sem';
-  let keys, inKey, labelOf, resumenKeys;
-  if(semanal){
-    const todas=[...new Set(CD.filter(x=>x.meta!=null).map(x=>perDe(x.fecha,'sem')))].sort().filter(q=>q<=p);
-    keys=todas.slice(-12); inKey=(x,q)=>perDe(x.fecha,'sem')===q; labelOf=q=>perCorto(q,'sem'); resumenKeys=[p];
-  } else {
-    const mes=mesDelPeriodo(); if(!mes) return;
-    keys=[...new Set(CD.filter(x=>x.meta!=null&&x.fecha.slice(0,7)===mes).map(x=>x.fecha))].sort();
-    inKey=(x,q)=>x.fecha===q; labelOf=fCorta; resumenKeys=keys;
-  }
-  const res=[];
-  [['Mecánica','m220-chMesMec','mesMec'],['Manual','m220-chMesMan','mesMan']].forEach(([tipo,id,key])=>{
-    const pts=keys.map(q=>({q,o:aggTipo(CD.filter(x=>x.meta!=null&&x.tipo===tipo&&inKey(x,q)))}));
-    // resumen: semana elegida (semanal) o todo el mes (diario); días en meta = días del periodo con kg/HH ≥ meta
-    const zr=CD.filter(x=>x.meta!=null&&x.tipo===tipo&&resumenKeys.some(q=>inKey(x,q)));
-    const tot=aggTipo(zr), diasR=[...new Set(zr.map(x=>x.fecha))].sort().map(f=>diaTipo(f,tipo)).filter(Boolean);
-    res.push(tot?{tipo,dias:diasR.length,verdes:diasR.filter(o=>o.kgh>=o.meta-1e-9).length,kgh:tot.kgh,cumpl:tot.kg/tot.esp,cop:tot.cop,copMeta:tot.copMeta,ahorro:tot.costo!=null?tot.costo*(1-tot.kg/tot.esp):0}:{tipo,dias:0});
-    charts[key]&&charts[key].destroy();
-    if(typeof Chart==='undefined') return;
-    const sel=q=>semanal&&q===p;
-    charts[key]=new Chart(document.getElementById(id),{data:{labels:pts.map(x=>labelOf(x.q)),datasets:[
-      {type:'bar',label:semanal?'kg/HH semana':'kg/HH',yAxisID:'y',data:pts.map(x=>x.o?+x.o.kgh.toFixed(1):null),
-       backgroundColor:pts.map(x=>x.o?color(x.o.kgh>=x.o.meta-1e-9?'ok':x.o.kgh>=x.o.meta*CFG.AMARILLO_PCT?'warn':'bad'):'transparent'),
-       borderColor:pts.map(x=>sel(x.q)?'#0E2841':'transparent'),borderWidth:pts.map(x=>sel(x.q)?3:0),borderRadius:3,order:3},
-      {type:'line',label:'Meta kg/HH',yAxisID:'y',data:pts.map(x=>x.o?+x.o.meta.toFixed(0):null),borderColor:css('--ok'),borderDash:[6,4],stepped:'middle',pointRadius:0,borderWidth:2,spanGaps:true,order:2},
-      {type:'line',label:semanal?'COP/kg de la semana':'COP/kg del día',yAxisID:'y2',data:pts.map(x=>x.o&&x.o.cop!=null?Math.round(x.o.cop):null),borderColor:'#0E2841',backgroundColor:'#0E2841',pointRadius:3.5,borderWidth:2.5,tension:.2,spanGaps:true,order:1},
-      {type:'line',label:'COP/kg con la meta',yAxisID:'y2',data:pts.map(x=>x.o&&x.o.copMeta!=null?Math.round(x.o.copMeta):null),borderColor:'#8E44AD',borderDash:[3,3],pointRadius:0,borderWidth:1.6,tension:.2,spanGaps:true,order:1}]},
-      options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-        plugins:{datalabels:{display:false},legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}},
-          tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y2'?`${c.dataset.label}: $${nf(c.parsed.y,0)}`:`${c.dataset.label}: ${nf(c.parsed.y,0)}`}}},
-        scales:{y:{position:'left',min:0,suggestedMax:Math.max(CFG.ESCALONES[0].meta,...pts.map(x=>x.o?x.o.kgh:0))*1.15,title:{display:true,text:'kg / HH',color:css('--muted')},grid:{color:css('--line')},ticks:{color:css('--muted')}},
-                y2:{position:'right',min:0,title:{display:true,text:'COP / kg',color:css('--muted')},grid:{display:false},ticks:{color:css('--muted'),callback:v=>'$'+nf(v,0)}},
-                x:{grid:{display:false},ticks:{color:css('--muted'),maxRotation:0,autoSkip:true}}}}});
-  });
-  const quien = semanal ? 'de la semana' : 'del mes';
-  if(semanal){
-    document.getElementById('m220-mesTit').textContent='Semana a semana · kg/HH y costo/kg';
-    document.getElementById('m220-mesTag').textContent='Semana '+Number(p.split('-W')[1])+(keys.length>1?' · últimas '+keys.length+' semanas':'');
-    document.getElementById('m220-mesSub').textContent='Barras = kg/HH ponderado de cada semana (la elegida con borde) · línea azul = COP/kg de la semana · punteada = COP/kg si se cumpliera la meta · tarjetas = semana elegida';
-  } else {
-    const [y,m]=mesDelPeriodo().split('-');
-    document.getElementById('m220-mesTit').textContent='Día a día del mes · kg/HH y costo/kg';
-    document.getElementById('m220-mesTag').textContent=MESESL[+m-1].replace(/^./,c=>c.toUpperCase())+' '+y;
-    document.getElementById('m220-mesSub').textContent='Sigue el periodo elegido arriba · barras = kg/HH del día (color según la meta) · línea azul = COP/kg del día · punteada = COP/kg si se cumpliera la meta';
-  }
-  document.getElementById('m220-mesRes').innerHTML=res.map(r=>r.dias?`
-    <div><b style="color:${color(r.cumpl>=1?'ok':r.cumpl>=CFG.AMARILLO_PCT?'warn':'bad')}">${nf(r.kgh,0)}</b>kg/HH ${modTxt(r.tipo).toLowerCase()} ${quien} · ${nf(r.cumpl*100,0)}% de la meta</div>
-    <div><b>$${nf(r.cop,0)}</b>COP/kg ${modTxt(r.tipo).toLowerCase()} · con la meta $${nf(r.copMeta,0)}</div>
-    <div><b>${r.verdes} de ${r.dias}</b>días en meta · ${modTxt(r.tipo).toLowerCase()}</div>
-    <div><b>$${nf(Math.max(0,r.ahorro)/1e6,1)} M</b>costo que se habría ahorrado cumpliendo la meta · ${modTxt(r.tipo).toLowerCase()}</div>`:`<div><b>—</b>Sin cosecha ${modTxt(r.tipo).toLowerCase()} ${quien}</div>`).join('');
-}
-function pintarMetaBox(){ // CC-001.8: escalera de kg/HH y costo/kg objetivo en día ordinario
-  const el=document.getElementById('m220-metabox'); if(!el) return;
-  const hoy=FECHAS.length?FECHAS[FECHAS.length-1]:CFG.ESCALONES[0].desde, iAct=escalonEn(hoy);
-  let hora=null;
-  if(typeof tarifaHora==='function'&&typeof CARGA_PRESTACIONAL!=='undefined'){ const [y,m,d]=hoy.split('-').map(Number); hora=tarifaHora(new Date(y,m-1,d)).hora*CARGA_PRESTACIONAL; }
-  const cop=v=>hora?'$'+nf(hora/v,0):'—';
-  el.innerHTML=`<div class="mt"><h2>🎯 Meta: kg por hora-hombre y costo por kilo</h2>
-      <p>Costo/kg objetivo en día ordinario (hasta 7 h): hora-hombre con carga ${hora?'$'+nf(hora,0):'—'} ÷ meta. Domingos, festivos y horas extra cuestan más.</p></div>
-    <div class="steps">${CFG.ESCALONES.map((s,k)=>`<div class="st${k===iAct&&hoy>=CFG.ESCALONES[0].desde?' act':''}">
-      <div class="k">${s.meta} <small>kg/HH</small></div><div class="c">${cop(s.meta)} <small>/kg</small></div>
-      <div class="f">${k===0?'desde':'desde'} ${fCorta(s.desde)}${k===CFG.ESCALONES.length-1?' · meta final':''}</div></div>`).join('')}</div>`;
-}
-function pintarEscalera(modo,p){
-  const f=perFin(p,modo), i=escalonEn(f), pre=f<CFG.ESCALONES[0].desde;
-  const el=document.getElementById('m220-escalera');
-  el.innerHTML=CFG.ESCALONES.map((s,k)=>`<span class="${!pre&&k===i?'act':(!pre&&k<i?'done':'')}" title="Desde ${fCorta(s.desde)}">${s.meta}<em>${fCorta(s.desde)}</em></span>`).join('')+
-    `<p>${pre?'Periodo anterior al inicio de la meta: se compara con el primer escalón como referencia.':'Escalón '+(i+1)+' de '+CFG.ESCALONES.length+(i<CFG.ESCALONES.length-1?' · el siguiente ('+CFG.ESCALONES[i+1].meta+' kg/HH) arranca el '+fCorta(CFG.ESCALONES[i+1].desde):' · meta final')}</p>`;
-}
-function barras(cm){
-  const ctx=document.getElementById('m220-chDia'); charts.dia&&charts.dia.destroy();
-  charts.dia=new Chart(ctx,{type:'bar',data:{labels:cm.map(x=>corto(x.cuad)+(x.tipo==='Manual'?' (man.)':'')),
-    datasets:[{data:cm.map(x=>+x.kgh.toFixed(1)),backgroundColor:cm.map(x=>color(estado(x))),borderRadius:4,barPercentage:.7}]},
-    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{datalabels:{display:false},legend:{display:false},tooltip:{callbacks:{label:c=>{const x=cm[c.dataIndex];return `${nf(x.kgh,0)} kg/HH · ${nf(x.cumpl*100,0)}% · ${nf(x.kg)} kg`+(x.dias?` · ${x.dias} días`:'');}}}},
-      scales:{x:{min:0,suggestedMax:MP*1.25,grid:{color:css('--line')},ticks:{color:css('--muted')},title:{display:true,text:'kg por hora-hombre',color:css('--muted')}},
-              y:{grid:{display:false},ticks:{color:css('--ink'),font:{family:'Barlow, Arial, sans-serif',size:13}}}}},
-    plugins:[lineaMeta('x')]});
-  const box=ctx.parentNode; box.style.height=Math.max(220,70+cm.length*46)+'px';
-}
-function lineaMeta(eje){ return {id:'meta',afterDatasetsDraw(ch){ const s=ch.scales[eje],a=ch.chartArea,c=ch.ctx; c.save();
-  [[MP,css('--ok'),'Meta '+nf(MP,0)],[amar(),css('--warn'),'80%']].forEach(([v,col,t])=>{
-    c.strokeStyle=col;c.setLineDash([5,4]);c.lineWidth=1.5;c.beginPath();
-    if(eje==='x'){const p=s.getPixelForValue(v);c.moveTo(p,a.top);c.lineTo(p,a.bottom);c.stroke();c.fillStyle=col;c.font='600 12px Barlow, Arial';c.fillText(t,p+4,a.top+12);}
-    else{const p=s.getPixelForValue(v);c.moveTo(a.left,p);c.lineTo(a.right,p);c.stroke();c.fillStyle=col;c.font='600 12px Barlow, Arial';c.fillText(t,a.right-60,p-4);}
-  }); c.restore(); }}; }
-// comparación: mismo cuadrillero y modalidad, últimos 5 días (modo día) o periodo anterior (semana / mes)
-function comparar(x,modo,p){
-  if(x.meta==null) return null;
-  let prev;
-  if(modo==='dia') prev=CD.filter(y=>y.cuad===x.cuad&&y.tipo===x.tipo&&y.meta!=null&&y.fecha<p).sort((a,b)=>a.fecha<b.fecha?1:-1).slice(0,5);
-  else { const ps=[...new Set(CD.filter(y=>y.cuad===x.cuad&&y.tipo===x.tipo&&y.meta!=null).map(y=>perDe(y.fecha,modo)))].filter(q=>q<p).sort(); const q=ps.at(-1);
-    prev=q?CD.filter(y=>y.cuad===x.cuad&&y.tipo===x.tipo&&y.meta!=null&&perDe(y.fecha,modo)===q):[]; }
-  const kg=prev.reduce((a,y)=>a+y.kg,0),hh=prev.reduce((a,y)=>a+y.hh,0); return hh?(x.kgh/(kg/hh)-1)*100:null;
-}
-function tabla(us,modo,p){
-  const t=document.getElementById('m220-tblDia');
-  document.getElementById('m220-tblTit').textContent=modo==='dia'?'Detalle del día':'Detalle '+delPer(modo)+' por cuadrilla';
-  document.getElementById('m220-tblSub').textContent=modo==='dia'?'Personas y horas son las registradas en la boleta. Los días mixtos (la cuadrilla hizo Natural e Inducción) se marcan aparte.':'Ponderado = kg del periodo ÷ horas-hombre del periodo. Días en meta = cuadrilla-días con 220 kg/HH o más.';
-  const comp = modo==='dia'?'vs sus últimos 5 días':(modo==='sem'?'vs su semana anterior':'vs su mes anterior');
-  let h;
-  if(modo==='dia') h=`<thead><tr><th>Cuadrilla</th><th>Modalidad</th><th>Personas</th><th>Horas</th><th>Horas-hombre</th><th>Kg</th><th>Frutas</th><th>Kg/HH</th><th>Frutas/HH</th><th>Cumplimiento</th><th>${comp}</th></tr></thead><tbody>`;
-  else h=`<thead><tr><th>Cuadrilla</th><th>Modalidad</th><th>Días</th><th>Jornales</th><th>Horas-hombre</th><th>Kg</th><th>Frutas</th><th>Kg/HH ponderado</th><th>Frutas/HH</th><th>Días en meta</th><th>Cumplimiento</th><th>${comp}</th></tr></thead><tbody>`;
-  us.forEach(x=>{ const e=estado(x), d=comparar(x,modo,p);
-    const mod = x.flor==='Inducción' ? modTxt(x.tipo) : 'Natural (sin meta)';
-    const cum = x.meta?`<span class="bar"><i style="width:${Math.min(100,x.cumpl*100)}%;background:${color(e)}"></i></span><span class="pill" style="background:${color(e)}">${nf(x.cumpl*100,0)}%</span>`:'<span class="pill" style="background:var(--off)">—</span>';
-    const dd = `<td style="color:${d==null?'var(--muted)':d>=0?'var(--ok)':'var(--bad)'}">${d==null?'—':(d>=0?'+':'')+nf(d,0)+'%'}</td>`;
-    if(modo==='dia') h+=`<tr><td class="name">${title(x.cuad)}<em>${x.bloquesN} bloque${x.bloquesN===1?'':'s'} · ${x.gfL}${x.mixto?' · día mixto':''}</em></td><td>${mod}</td><td>${nf(x.pers)}</td><td>${nf(x.horas,1)}</td><td>${nf(x.hh,1)}</td><td>${nf(x.kg)}</td><td>${nf(x.fr)}</td><td><b>${nf(x.kgh,1)}</b></td><td>${nf(x.frh,1)}</td><td>${cum}</td>${dd}</tr>`;
-    else h+=`<tr><td class="name">${title(x.cuad)}${x.mixtos?`<em>${x.mixtos} día${x.mixtos===1?'':'s'} mixto${x.mixtos===1?'':'s'}</em>`:''}</td><td>${mod}</td><td>${x.dias}</td><td>${nf(x.jorn)}</td><td>${nf(x.hh,1)}</td><td>${nf(x.kg)}</td><td>${nf(x.fr)}</td><td><b>${nf(x.kgh,1)}</b></td><td>${nf(x.frh,1)}</td><td>${x.meta?x.verdes+' de '+x.dias:'—'}</td><td>${cum}</td>${dd}</tr>`;
-  });
-  t.innerHTML=h+'</tbody>';
-}
-// evolución: puntos diarios, semanales o mensuales según el periodo elegido
-function serie(modo,p){
-  const r=document.getElementById('m220-selRango').value, fin=perFin(p,modo); let desde;
-  if(r==='inicio') desde=CFG.INICIO; else if(r==='base') desde=CFG.BASE; else if(r==='mar') desde='2026-03-01'; else desde=sumaDias(fin,-30);
-  if(modo!=='dia') desde=perIni(perDe(desde,modo),modo);
-  if(desde>perIni(p,modo)) desde=perIni(p,modo); // el rango siempre incluye el periodo elegido
-  const rows=CD.filter(x=>x.meta!=null&&x.fecha>=desde&&x.fecha<=fin);
-  const ps=[...new Set(rows.map(x=>perDe(x.fecha,modo)))].sort();
-  return {ps,rows};
-}
-const PAL=['#0E2841','#CC9100','#C0392B','#2F6DB5','#6B8E23','#8E44AD','#16A085','#7C411E','#E67E22','#5D6D7E','#B03A7A','#00838F','#9E9D24','#4E342E'];
-const colCuad = c => { const todos=[...new Set(CD.filter(x=>x.meta!=null).map(x=>x.cuad))].sort(); return PAL[todos.indexOf(c)%PAL.length]; };
-function puntoDe(rows,cuad,tipo,q,modo){ const z=rows.filter(y=>y.cuad===cuad&&y.tipo===tipo&&perDe(y.fecha,modo)===q); if(!z.length) return null;
-  const kg=z.reduce((a,y)=>a+y.kg,0),hh=z.reduce((a,y)=>a+y.hh,0),fr=z.reduce((a,y)=>a+y.fr,0); const esp=z.reduce((a,y)=>a+y.hh*y.meta,0); return {kgh:kg/hh,frh:fr/hh,kg,hh,fr,meta:esp/hh,dias:z.length,verdes:z.filter(y=>estado(y)==='ok').length}; }
-/* ===== Participación semanal mecanizada vs manual · solo Inducción (CC-001.10) ===== */
-function participacion(modo,p){
-  if(typeof allData==='undefined') return;
-  const fin=perFin(p,modo), wFin=perDe(fin,'sem'), sem={};
-  allData.forEach(r=>{
-    if(r['Floracion']!=='Inducción'||!r._date) return;
-    const k=r._date.getFullYear()+'-'+String(r._date.getMonth()+1).padStart(2,'0')+'-'+String(r._date.getDate()).padStart(2,'0');
-    if(k<'2026-01-01') return; const w=perDe(k,'sem'); if(w>wFin) return;
-    const t=r['TipoCosecha']; const o=sem[w]||(sem[w]={mec:0,man:0});
-    if(t==='Mecánica') o.mec+=r._peso; else if(t==='Manual') o.man+=r._peso;
-  });
-  const ws=Object.keys(sem).sort().slice(-12);
-  const pct=(a,b)=>a+b>0?+(a/(a+b)*100).toFixed(1):null;
-  document.getElementById('m220-partSub').textContent=ws.length?`% de los kg de floración Inducción cosechados con cada modalidad · ${perCorto(ws[0],'sem')} a ${perCorto(ws.at(-1),'sem')}`:'Sin cosecha de Inducción en el rango';
-  charts.part&&charts.part.destroy();
-  charts.part=new Chart(document.getElementById('m220-chPart'),{type:'bar',data:{labels:ws.map(w=>perCorto(w,'sem')),datasets:[
-      {label:'Mecanizada',data:ws.map(w=>pct(sem[w].mec,sem[w].man)),backgroundColor:'#0E2841',stack:'s'},
-      {label:'Manual',data:ws.map(w=>pct(sem[w].man,sem[w].mec)),backgroundColor:'#CC9100',stack:'s'}]},
-    options:{maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}},
-        datalabels:{display:c=>(c.dataset.data[c.dataIndex]||0)>=7,color:'#fff',font:{weight:'bold',size:11},formatter:v=>v==null?'':nf(v,0)+'%'},
-        tooltip:{callbacks:{label:c=>{const w=ws[c.dataIndex],kg=c.datasetIndex===0?sem[w].mec:sem[w].man;return `${c.dataset.label}: ${nf(c.parsed.y,1)}% · ${nf(kg)} kg`;},
-                            footer:it=>{const w=ws[it[0].dataIndex];return 'Inducción total: '+nf(sem[w].mec+sem[w].man)+' kg';}}}},
-      scales:{x:{stacked:true,grid:{display:false},ticks:{color:css('--muted')}},
-              y:{stacked:true,min:0,max:100,ticks:{color:css('--muted'),callback:v=>v+'%'},grid:{color:css('--line')},title:{display:true,text:'% de kg Inducción',color:css('--muted')}}}}});
-}
-function fichas(modo,p){
-  const {ps,rows}=serie(modo,p); const box=document.getElementById('m220-crews'); box.innerHTML='';
-  const und = modo==='dia'?'días':modo==='sem'?'semanas':'meses';
-  const keys=[...new Set(rows.map(x=>x.cuad+'|'+x.tipo))];
-  keys.map(k=>{const [c,tipo]=k.split('|'); const pts=ps.map(q=>({q,o:puntoDe(rows,c,tipo,q,modo)})).filter(z=>z.o);
-    const dd=rows.filter(x=>x.cuad===c&&x.tipo===tipo); const kg=dd.reduce((a,x)=>a+x.kg,0),hh=dd.reduce((a,x)=>a+x.hh,0),fr=dd.reduce((a,x)=>a+x.fr,0);
-    const act=pts.find(z=>z.q===p);
-    return {c,tipo,pts,dias:dd.length,v:kg/hh,meta:dd.reduce((a,x)=>a+x.hh*x.meta,0)/hh,frh:fr/hh,ok:dd.filter(x=>estado(x)==='ok').length,act:act?act.o:null};})
-  .sort((a,b)=>(a.tipo===b.tipo?0:a.tipo==='Mecánica'?-1:1)||b.v-a.v).forEach(o=>{
-    const el=document.createElement('div'); el.className='crew'; const e=o.v>=o.meta?'ok':o.v>=o.meta*CFG.AMARILLO_PCT?'warn':'bad';
-    el.innerHTML=`<h3>${title(o.c)}</h3><div class="meta">${modTxt(o.tipo)} · ${o.dias} días en el rango · ${o.ok} en meta (${nf(o.ok/o.dias*100,0)}%)</div>
-      <canvas width="500" height="112"></canvas>
-      <div class="k"><span><b style="color:${color(e)}">${nf(o.v,0)}</b>kg/HH rango</span><span><b>${o.act?nf(o.act.kgh,0):'—'}</b>kg/HH ${modo==='dia'?'del día':delPer(modo).replace(/^de la |^del /,'')}</span><span><b>${nf(o.frh,0)}</b>frutas/HH</span></div>
-      <button class="sec">Imagen de esta cuadrilla</button>`;
-    box.appendChild(el); spark(el.querySelector('canvas'),o.pts.map(z=>z.o));
-    el.querySelector('button').onclick=()=>imgCuadrilla(o,modo,p);
-  });
-}
-function estP(o){ return o.kgh>=o.meta-1e-9?'ok':o.kgh>=o.meta*CFG.AMARILLO_PCT?'warn':'bad'; }
-function spark(cv,pts){ const c=cv.getContext('2d'),W=cv.width,H=cv.height,mx=Math.max(MP*1.3,...pts.map(x=>Math.max(x.kgh,x.meta*1.15)));
-  c.clearRect(0,0,W,H); const y=v=>H-6-(v/mx)*(H-12);
-  const step=pts.length>1?(W-12)/(pts.length-1):0, X=i=>pts.length>1?6+i*step:W/2;
-  c.strokeStyle=css('--ok');c.setLineDash([6,5]);c.lineWidth=2;c.beginPath(); if(pts.length===1){c.moveTo(0,y(pts[0].meta));c.lineTo(W,y(pts[0].meta));} else pts.forEach((x,i)=>{ i?c.lineTo(X(i),y(x.meta)):c.moveTo(0,y(x.meta)); }); if(pts.length>1) c.lineTo(W,y(pts.at(-1).meta)); c.stroke();c.setLineDash([]); c.strokeStyle=css('--ink');c.lineWidth=3;c.beginPath();
-  pts.forEach((x,i)=>{ i?c.lineTo(X(i),y(x.kgh)):c.moveTo(X(i),y(x.kgh));}); c.stroke();
-  pts.forEach((x,i)=>{c.fillStyle=color(estP(x));c.beginPath();c.arc(X(i),y(x.kgh),5,0,7);c.fill();}); }
-
-/* ================== IMÁGENES Y MENSAJE PARA LOS GRUPOS ================== */
-function lienzo(w,h){ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const c=cv.getContext('2d');
-  c.fillStyle='#FFFFFF'; c.fillRect(0,0,w,h); c.fillStyle='#0E2841'; c.fillRect(0,0,w,150); c.fillStyle='#CC9100'; c.fillRect(0,150,w,8); return [cv,c]; }
-function txt(c,s,x,y,font,col,align='left'){ c.font=font; c.fillStyle=col; c.textAlign=align; c.fillText(s,x,y); }
-function descargar(cv,nombre){ const a=document.createElement('a'); a.download=nombre; a.href=cv.toDataURL('image/png'); a.click(); }
-function imgPeriodo(){
-  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value; const cm=ordenar(unidades(modo,p)).filter(x=>x.meta!=null);
-  const W=1080,rowH=96,H=330+cm.length*rowH+120; const [cv,c]=lienzo(W,H);
-  txt(c,'AGRÍCOLA GUAPA · COSECHA INDUCCIÓN',60,56,'600 26px Barlow, Arial','#CC9100');
-  txt(c,perLargo(p,modo),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
-  txt(c,'Meta '+nf(MP,0)+' kg por hora-hombre',60,112,'700 50px "Barlow Condensed", Arial','#FFFFFF');
-  const kg=cm.reduce((a,x)=>a+x.kg,0),hh=cm.reduce((a,x)=>a+x.hh,0),v=hh?kg/hh:0;
-  txt(c,(modo==='dia'?'Promedio del día: ':'Ponderado '+delPer(modo)+': ')+nf(v,0)+' kg/HH · '+nf(v/MP*100,0)+'% de la meta',60,225,'600 34px Barlow, Arial','#1B2430');
-  let l2=cm.filter(x=>estado(x)==='ok').length+' en meta · '+cm.filter(x=>estado(x)==='warn').length+' cerca · '+cm.filter(x=>estado(x)==='bad').length+' lejos';
-  if(modo!=='dia'){ const cd=cm.reduce((a,x)=>a+x.dias,0),vd=cm.reduce((a,x)=>a+x.verdes,0); l2+=' · '+vd+' de '+cd+' cuadrilla-días en verde'; }
-  txt(c,l2,60,270,'500 28px Barlow, Arial','#5F6B7A');
-  const x0=420,x1=W-170,mx=Math.max(MP*1.25,...cm.map(x=>x.kgh)); const px=v=>x0+(v/mx)*(x1-x0);
-  cm.forEach((x,i)=>{ const y=320+i*rowH, e=estado(x);
-    txt(c,corto(x.cuad),60,y+40,'600 32px Barlow, Arial','#1B2430');
-    txt(c,modTxt(x.tipo)+' · '+(modo==='dia'?nf(x.pers)+' pers × '+nf(x.horas,1)+' h':x.dias+' días · '+x.verdes+' en meta'),60,y+74,'400 22px Barlow, Arial','#5F6B7A');
-    c.fillStyle='#ECE8E1'; c.fillRect(x0,y+16,x1-x0,46); c.fillStyle=color(e); c.fillRect(x0,y+16,px(x.kgh)-x0,46);
-    txt(c,nf(x.kgh,0),W-60,y+50,'700 40px "Barlow Condensed", Arial',color(e),'right'); });
-  c.strokeStyle='#2E7D32'; c.setLineDash([10,8]); c.lineWidth=4; c.beginPath(); c.moveTo(px(MP),300); c.lineTo(px(MP),320+cm.length*rowH); c.stroke(); c.setLineDash([]);
-  txt(c,'Meta '+nf(MP,0),px(MP),298,'700 22px Barlow, Arial','#2E7D32','center');
-  txt(c,'Verde ≥ meta ('+nf(MP,0)+') · Amarillo 80–99% · Rojo < 80%'+(modo==='dia'?' · kg/HH = kg ÷ (personas × horas)':' · ponderado = kg ÷ horas-hombre del periodo'),60,H-50,'400 22px Barlow, Arial','#5F6B7A');
-  descargar(cv,'Meta220_'+modo+'_'+p+'.png');
-}
-function imgCuadrilla(o,modo,p){
-  const W=1080,H=900; const [cv,c]=lienzo(W,H);
-  txt(c,'AGRÍCOLA GUAPA · META '+nf(o.act?o.act.meta:MP,0)+' KG/HH',60,56,'600 26px Barlow, Arial','#CC9100');
-  txt(c,title(o.c),60,112,'700 50px "Barlow Condensed", Arial','#FFFFFF');
-  const d=o.act; const e=d?estP(d):'off';
-  txt(c,d?perLargo(p,modo):'Sin cosecha con meta en '+estePer(modo),60,225,'500 30px Barlow, Arial','#5F6B7A');
-  txt(c,d?nf(d.kgh,0):'—',60,360,'700 150px "Barlow Condensed", Arial',color(e));
-  txt(c,'kg por hora-hombre '+(modo==='dia'?'hoy':'ponderado '+delPer(modo)),60,410,'500 30px Barlow, Arial','#1B2430');
-  if(d){ txt(c,nf(d.kgh/d.meta*100,0)+'% de la meta',W-60,300,'700 52px "Barlow Condensed", Arial',color(e),'right');
-    txt(c,nf(d.kg)+' kg · '+nf(d.fr)+' frutas',W-60,350,'500 28px Barlow, Arial','#5F6B7A','right');
-    txt(c,modo==='dia'?nf(d.hh,1)+' horas-hombre':d.dias+' días · '+d.verdes+' en meta',W-60,390,'500 28px Barlow, Arial','#5F6B7A','right'); }
-  const pts=o.pts.map(z=>z.o), gx0=60,gx1=W-60,gy0=470,gy1=780,mx=Math.max(MP*1.3,...pts.map(x=>Math.max(x.kgh,x.meta*1.15)));
-  const gy=v=>gy1-(v/mx)*(gy1-gy0), stp=pts.length>1?(gx1-gx0)/(pts.length-1):0, X=i=>pts.length>1?gx0+i*stp:(gx0+gx1)/2;
-  c.strokeStyle='#2E7D32';c.setLineDash([10,8]);c.lineWidth=3;c.beginPath(); if(pts.length<2){c.moveTo(gx0,gy(MP));c.lineTo(gx1,gy(MP));} else pts.forEach((x,i)=>{ i?c.lineTo(X(i),gy(x.meta)):c.moveTo(gx0,gy(x.meta)); }); c.stroke();c.setLineDash([]);
-  txt(c,'Meta '+nf(pts.length?pts.at(-1).meta:MP,0),gx1,gy(pts.length?pts.at(-1).meta:MP)-10,'700 22px Barlow, Arial','#2E7D32','right');
-  c.strokeStyle='#0E2841';c.lineWidth=5;c.beginPath();pts.forEach((x,i)=>{i?c.lineTo(X(i),gy(x.kgh)):c.moveTo(X(i),gy(x.kgh));});c.stroke();
-  pts.forEach((x,i)=>{c.fillStyle=color(estP(x));c.beginPath();c.arc(X(i),gy(x.kgh),10,0,7);c.fill();});
-  if(o.pts.length){ txt(c,perCorto(o.pts[0].q,modo),gx0,gy1+40,'400 22px Barlow, Arial','#5F6B7A'); txt(c,perCorto(o.pts.at(-1).q,modo),gx1,gy1+40,'400 22px Barlow, Arial','#5F6B7A','right'); }
-  txt(c,modTxt(o.tipo)+' · '+o.dias+' días en el rango · '+o.ok+' en meta · ponderado '+nf(o.v,0)+' kg/HH',60,H-40,'500 26px Barlow, Arial','#1B2430');
-  descargar(cv,'Meta220_'+o.c.split(' ')[0]+'_'+(o.tipo==='Mecánica'?'mec':'man')+'_'+modo+'_'+p+'.png');
+/* ===== Imagen y mensaje para enviar ===== */
+function lienzo(w,h){const cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,w,h);c.fillStyle=C.navy;c.fillRect(0,0,w,150);c.fillStyle=C.gold;c.fillRect(0,150,w,8);return [cv,c];}
+function tx(c,s,x,y,f,col,al='left'){c.font=f;c.fillStyle=col;c.textAlign=al;c.fillText(s,x,y);}
+function bajar(cv,n){const a=document.createElement('a');a.download=n;a.href=cv.toDataURL('image/png');a.click();}
+function imagen(){
+  const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value;
+  if(!c){ // CC-001.18: imagen del último día para todas las cuadrillas
+    const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
+    const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.kgMI-a.kgMI);
+    const W=1080,rh=120,H=330+z.length*rh+110; const [cv,cx]=lienzo(W,H);
+    tx(cx,'AGRÍCOLA GUAPA · CUADRILLAS COSECHA MECÁNICA',60,56,'600 26px Barlow, Arial',C.gold); tx(cx,fL(ult),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
+    tx(cx,'Resultado del día',60,112,'700 50px "Barlow Condensed", Arial','#fff');
+    const cn=colorNivel(col?col.pp:null); cx.fillStyle=cn.c; cx.fillRect(60,225,360,44); tx(cx,'Color del día: '+(col?nf(col.pp,0)+'% pintón':'sin dato'),240,256,'700 24px Barlow, Arial','#fff','center');
+    z.forEach((x,i)=>{const y=295+i*rh, nv=nivel(x.kgMI); cx.fillStyle=i%2?'#FAF8F5':'#fff'; cx.fillRect(40,y,W-80,rh-10);
+      tx(cx,tit(x.c),60,y+40,'700 30px Barlow, Arial','#1B2430');
+      tx(cx,`${x.p} personas · ${nf(x.kgMI)} kg · acumulado del mes ${$(resumen(x.c,mes).porPersona)} por persona`,60,y+78,'400 22px Barlow, Arial','#5F6B7A');
+      cx.fillStyle=nv.c; cx.fillRect(620,y+18,150,36); tx(cx,nv.n,695,y+44,'700 22px Barlow, Arial','#fff','center');
+      tx(cx,$(x.p?x.inc/x.p:0),W-60,y+50,'700 44px "Barlow Condensed", Arial',x.inc>0?C.ok:'#8A94A3','right'); tx(cx,'por persona hoy',W-60,y+80,'400 20px Barlow, Arial','#5F6B7A','right');});
+    tx(cx,'Rendimiento: 22.000 / 24.000 / 26.000 kg por cuadrilla-día · Color: pintón 55% / 70% · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
+    return bajar(cv,'Cuadrillas_'+ult+'.png'); }
+  const r0=resumen(c,mes), r={...r0,ds:r0.ds.filter(d=>d.vig)}, rh=58, H=420+Math.max(1,r.ds.length)*rh+120, W=1080; const [cv,cx]=lienzo(W,H);
+  if(!r.ds.length) tx(cx,'Sin días con cosecha en el mes',60,440,'500 26px Barlow, Arial','#5F6B7A');
+  tx(cx,'AGRÍCOLA GUAPA · CUMPLIMIENTO E INCENTIVO',60,56,'600 26px Barlow, Arial',C.gold); tx(cx,nombreMes(mes),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
+  tx(cx,tit(c),60,112,'700 50px "Barlow Condensed", Arial','#fff');
+  tx(cx,$(r.porPersona),60,300,'700 96px "Barlow Condensed", Arial',C.ok); tx(cx,'ganado por persona en el mes',60,340,'500 26px Barlow, Arial','#1B2430');
+  tx(cx,`${r.dias} días · ${nf(r.kgdia)} kg por día`,W-60,260,'600 28px Barlow, Arial','#1B2430','right');
+  tx(cx,`${r.d22} días ≥ 22.000 kg · ${r.d26} en meta`,W-60,300,'500 24px Barlow, Arial','#5F6B7A','right');
+  tx(cx,`${r.dCol} de ${r.dColDato} días con color que bonifica`,W-60,336,'500 24px Barlow, Arial','#5F6B7A','right');
+  const y0=380; ['Día','Kg','Rendimiento','Pintón','Por persona'].forEach((t,i)=>tx(cx,t,[60,330,470,700,W-60][i],y0,'600 22px Barlow, Arial','#5F6B7A',i===4?'right':(i===1?'right':'left')));
+  r.ds.forEach((d,i)=>{const y=y0+20+i*rh; cx.fillStyle=i%2?'#FAF8F5':'#fff'; cx.fillRect(40,y,W-80,rh-6); const nv=nivel(d.kgMI), cn=colorNivel(d.pp);
+    tx(cx,fL(d.f),60,y+38,'500 26px Barlow, Arial','#1B2430'); tx(cx,nf(d.kgMI),330,y+38,'600 26px Barlow, Arial','#1B2430','right');
+    cx.fillStyle=nv.c; cx.fillRect(470,y+12,170,32); tx(cx,nv.n,555,y+36,'700 20px Barlow, Arial','#fff','center');
+    cx.fillStyle=cn.c; cx.fillRect(700,y+12,150,32); tx(cx,d.pp==null?'sin dato':nf(d.pp,0)+'%',775,y+36,'700 20px Barlow, Arial','#fff','center');
+    tx(cx,$(d.porPersona),W-60,y+38,'700 28px "Barlow Condensed", Arial',d.porPersona>0?C.ok:'#8A94A3','right');});
+  tx(cx,'Rendimiento: 22.000 = 50 · 24.000 = 75 · 26.000+ = meta · Pintón: 55% a 70%+ · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
+  bajar(cv,'Cuadrilla_'+c.split(' ')[0]+'_'+mes+'.png');
 }
 function mensaje(){
-  const modo=document.getElementById('m220-selPer').value, p=document.getElementById('m220-selDia').value; const cm=ordenar(unidades(modo,p)).filter(x=>x.meta!=null);
-  const kg=cm.reduce((a,x)=>a+x.kg,0),hh=cm.reduce((a,x)=>a+x.hh,0),v=hh?kg/hh:0; const ic={ok:'🟢',warn:'🟡',bad:'🔴'};
-  let s=`*Cosecha Inducción · ${perLargo(p,modo)}*\nMeta vigente: ${nf(MP,0)} kg por hora-hombre (escalón ${escalonEn(perFin(p,modo))+1} de ${CFG.ESCALONES.length})\n${modo==='dia'?'Promedio del día':'Ponderado '+delPer(modo)}: *${nf(v,0)} kg/HH* (${nf(v/MP*100,0)}% de la meta)\n\n`;
-  cm.forEach(x=>{ s+=`${ic[estado(x)]} ${title(x.cuad)} (${modTxt(x.tipo).toLowerCase()}): *${nf(x.kgh,0)} kg/HH* · ${nf(x.cumpl*100,0)}%`+(modo==='dia'?` · ${nf(x.frh,0)} frutas/HH`:` · ${x.verdes} de ${x.dias} días en meta`)+`\n`; });
-  s+=`\n🟢 ≥ meta · 🟡 80–99% de la meta · 🔴 < 80%`;
+  const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value;
+  const ic=kg=>kg>=26000?'🟢':kg>=22000?'🟡':'🔴', icc=p=>p==null?'⚪':p>=70?'🟢':p>=55?'🟡':'🔴';
+  if(!c){ // CC-001.18: todas las cuadrillas = resultado del último día + acumulado del mes
+    const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
+    const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.kgMI-a.kgMI);
+    let s=`*Cosecha mecánica inducida · ${fL(ult)}*\nColor del día: ${icc(col?col.pp:null)} pintón ${col?nf(col.pp,0)+'%':'sin dato'}\n\n`;
+    z.forEach(x=>{ const nv=nivel(x.kgMI); s+=`${ic(x.kgMI)} *${tit(x.c)}* (${x.p} personas): ${nf(x.kgMI)} kg · ${nv.n.toLowerCase()} · *${$(x.p?x.inc/x.p:0)}* por persona hoy · ${$(resumen(x.c,mes).porPersona)} en el mes\n`; });
+    s+=`\n🟢 26.000 kg o más · 🟡 22.000 a 25.999 · 🔴 menos de 22.000\nColor: 🟢 pintón 70%+ · 🟡 55–69% · 🔴 menos de 55%`;
+    return s; }
+  const r=resumen(c,mes);
+  let s=`*${tit(c)} · ${nombreMes(mes)}*\n\n`;
+  r.ds.filter(d=>d.vig).forEach(d=>{s+=`${fL(d.f)}: ${ic(d.kgMI)} ${nf(d.kgMI)} kg · ${icc(d.pp)} pintón ${d.pp==null?'sin dato':nf(d.pp,0)+'%'} · *${$(d.porPersona)}* por persona\n`;});
+  if(!r.ds.some(d=>d.vig)) s+=`Sin días con cosecha en el mes.\n`;
+  s+=`\n*Ganado en el mes por persona: ${$(r.porPersona)}*\n🟢 meta · 🟡 bonifica · 🔴 no bonifica\nRendimiento: 22.000 / 24.000 / 26.000 kg · Color: pintón 55% / 70%`;
   return s;
 }
-document.getElementById('m220-btnImg').onclick=imgPeriodo;
-document.getElementById('m220-btnTxt').onclick=async()=>{ const s=mensaje(); try{ await navigator.clipboard.writeText(s); alert('Mensaje copiado. Pégalo en el grupo de WhatsApp.'); }catch(e){ prompt('Copia el mensaje:',s); } };
-
-let m220Listo=false;
-window.abrirMeta220=function(){ const m=document.getElementById('m220'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
-  if(!m220Listo){ m220Listo=true; iniciar(); }
-  const fm=document.getElementById('filter-mes'), mesDash=fm?fm.value:'';
-  if(mesDash){ // CC-001.7: abre en el mes elegido en el dashboard
-    document.getElementById('m220-selPer').value='mes'; llenarSelector();
-    const sd=document.getElementById('m220-selDia'); if([...sd.options].some(o=>o.value===mesDash)) sd.value=mesDash;
-  }
-  render(); };
-window.cerrarMeta220=function(){ document.getElementById('m220').style.display='none'; document.body.style.overflow=''; };
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('m220').style.display==='block') window.cerrarMeta220(); });
+window.abrirMeta220=function(){ const m=document.getElementById('cq'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
+  try{ if(!listo){ listo=true; cargar(); pintarGana(); } else { D=window.incDatos(); }
+    const fm=document.getElementById('filter-mes'), sm=document.getElementById('cq-mes');
+    if(fm&&fm.value&&[...sm.options].some(o=>o.value===fm.value)){ sm.value=fm.value; llenarCuadrillas(); }
+    pintar(); }catch(e){ document.getElementById('cq-vista').innerHTML='<div class="panel">No se pudo cargar: '+e.message+'</div>'; } };
+window.cerrarMeta220=function(){ document.getElementById('cq').style.display='none'; document.body.style.overflow=''; };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('cq').style.display==='block') window.cerrarMeta220(); });
 })();
 </script>
 
@@ -21642,11 +21284,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 </style>
 <div id="inc" role="dialog" aria-modal="true" aria-label="Incentivo cosecha mecánica inducida">
   <div class="ih"><div class="row">
-    <h1>Incentivo cosecha mecánica inducida<small>Propuesta Gerencia General · mesa Impulsa 08/10/2026 · 60% calidad / 40% rendimiento · simulación con datos reales</small></h1>
+    <h1>Incentivo cosecha mecánica inducida<small>Esquema de Gerencia General · 60% calidad / 40% rendimiento · control de la Jefatura de Operaciones</small></h1>
     <div class="ctl"><label for="inc-mes">Mes</label><select id="inc-mes"></select>
       <button onclick="cerrarIncentivo()">✕ Volver al dashboard</button></div>
   </div></div>
   <div class="im">
+    <section class="panel" id="inc-proposito" style="border-left:5px solid var(--gold)"></section>
     <section class="panel reglas" id="inc-reglas"></section>
     <div class="kpis" id="inc-kpis"></div>
     <section class="grid2">
@@ -21654,10 +21297,9 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
       <div class="panel"><h2>4 · Color de la Inducción de proceso</h2><p class="sub" id="inc-s4">% de kg en verde, pintón y alto por día · línea = objetivo de pintón</p><div class="cb"><canvas id="inc-ch4"></canvas></div></div>
     </section>
     <section class="panel"><h2>3 · Participación de la cosecha mecánica en la Inducción</h2><p class="sub" id="inc-s3">% de los kg de Inducción cosechados con mecánica · últimas 12 semanas hasta el mes elegido</p><div class="cb" style="height:260px"><canvas id="inc-ch3"></canvas></div></section>
-    <section class="panel"><h2>Liquidación simulada por cuadrilla</h2><p class="sub" id="inc-sliq">Cada cuadrilla-día suma: kg × valor por kg × (40% × puntos de rendimiento + 60% × puntos de calidad)</p><div class="tw"><table id="inc-liq"></table></div>
-      <p class="note">Una cuadrilla-día bajo 22.000 kg no recibe incentivo. Puntos de rendimiento por cuadrilla-día según sus kg. Puntos de calidad por día según el % pintón de toda la Inducción de proceso (aún no hay muestreo por cuadrilla). Días sin dato de color: la parte de calidad queda en $0 y se marca.</p></section>
-    <section class="panel"><h2>Validación: ¿baja el costo por kg con el incentivo?</h2><p class="sub">Costo de mano de obra de una cuadrilla-día de jornada ordinaria (personas promedio del mes × jornal de Gestión Humana) ÷ kg del escenario, más el incentivo por kg que paga ese escenario</p><div class="tw"><table id="inc-val"></table></div>
-      <p class="note" id="inc-valnota"></p></section>
+    <section class="panel"><h2>Liquidación por cuadrilla</h2><p class="sub" id="inc-sliq">Cada cuadrilla-día suma: kg × valor por kg × (40% × puntos de rendimiento + 60% × puntos de calidad)</p><div class="tw"><table id="inc-liq"></table></div>
+      <p class="note">Cada ítem se paga por separado: una cuadrilla-día puede bonificar solo por rendimiento (22.000 kg o más) o solo por calidad (pintón del día de 55% o más). Puntos de rendimiento por cuadrilla-día según sus kg. Puntos de calidad por día según el % pintón de toda la Inducción de proceso (aún no hay muestreo por cuadrilla). Días sin dato de color: la parte de calidad queda en $0 y se marca.</p></section>
+    
     <p class="note" id="inc-pie"></p>
   </div>
 </div>
@@ -21665,13 +21307,17 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 (function(){
 /* ================== PARÁMETROS DE LA PROPUESTA (editables) ================== */
 const INC = {
-  VALOR_KG: 9,                 // $ por kg de cosecha mecánica inducida (bolsa máxima = kg × valor)
+  VIGENCIA: '2026-01-01',      // CC-001.21: todos los días cuentan (parámetro por si se necesita cortar)
+  VALOR_KG: 8,                 // CC-001.18: $ por kg de cosecha mecánica inducida (bolsa máxima = kg × valor)
   PESO_CALIDAD: 0.60, PESO_REND: 0.40,
-  FRANJAS_REND: [ {desde:26000, pts:100, n:'Sobresaliente'}, {desde:24000, pts:80, n:'Medio'}, {desde:22000, pts:60, n:'Piso'} ], // bajo 22.000: 0
-  FRANJAS_CAL:  [ {desde:70, pts:100}, {desde:60, pts:60}, {desde:50, pts:30} ],   // % pintón; bajo 50%: 0
+  META_REND: 26000,            // CC-001.15 (Excel V4): ≥ meta → kg ÷ meta × 100
+  FRANJAS_REND: [ {desde:24000, pts:75, n:'Medio'}, {desde:22000, pts:50, n:'Piso'} ], // bajo la meta; < 22.000: 0
+  FRANJAS_CAL:  [ {desde:65, pts:75}, {desde:60, pts:50}, {desde:55, pts:25} ],    // CC-001.14: bajo la meta; ≥ meta = % pintón ÷ meta × 100; < 55%: 0
+  EXIGE_AMBOS: false,               // CC-001.15: cada ítem se paga por separado (como el Excel V4)
   PINTON_OBJ: 70, VERDE_CUPO: 20,   // objetivo pintón y cupo de verde para mecánica inducida
   PART_META: 90,                    // % de la Inducción con cosecha mecánica
-  COSTO_OBJ: 86,                    // $/kg objetivo con incentivo incluido
+  COSTO_OBJ: 68.6,                  // $/kg objetivo en el piso (22.000 kg)
+  COSTO_NIVEL: [ {kg:26000, obj:59.2, n:'Meta'}, {kg:24000, obj:63.5, n:'Medio'}, {kg:22000, obj:68.6, n:'Piso'} ], // CC-001.18: costo objetivo por nivel (Gerencia)
   JORNAL_GH: 122000,                // jornal cargado día ordinario (Gestión Humana)
   BASE_KG: 17000                    // rendimiento de referencia de Gerencia (kg/cuadrilla-día)
 };
@@ -21682,8 +21328,8 @@ const $=v=>v==null||isNaN(v)?'—':'$'+nf(v,0);
 const M=v=>v==null||isNaN(v)?'—':(Math.abs(v)>=1e6?'$'+nf(v/1e6,1)+' M':'$'+nf(v,0));
 const tit=s=>s.toLowerCase().replace(/(^|\s)\p{L}/gu,c=>c.toUpperCase());
 const C={ok:'#2E7D32',warn:'#D9A100',bad:'#C0392B',off:'#8A94A3',navy:'#0E2841',gold:'#CC9100'};
-const ptsRend=kg=>{ for(const f of INC.FRANJAS_REND) if(kg>=f.desde) return f.pts; return 0; };
-const ptsCal=p=>{ if(p==null) return null; for(const f of INC.FRANJAS_CAL) if(p>=f.desde) return f.pts; return 0; };
+const ptsRend=kg=>{ if(kg>=INC.META_REND) return kg/INC.META_REND*100; for(const f of INC.FRANJAS_REND) if(kg>=f.desde) return f.pts; return 0; }; // misma fórmula del Excel V4
+const ptsCal=p=>{ if(p==null) return null; if(p>=INC.PINTON_OBJ) return p/INC.PINTON_OBJ*100; for(const f of INC.FRANJAS_CAL) if(p>=f.desde) return f.pts; return 0; }; // misma fórmula del Excel V4
 let CDm=[], COL={}, charts={}, listo=false;
 function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fC(k){const [y,m,d]=k.split('-');return (+d)+' '+MESC[+m-1];}
@@ -21706,22 +21352,36 @@ function cargar(){
       costo=tot*sh; he=(tot-ord)*sh;
     } else if(x.p>0){ costo=x.p*INC.JORNAL_GH*sh; }
     const col=COL[x.f]||null, pr=ptsRend(x.kgMI), pc=col?ptsCal(col.pp):null;
-    const bolsa=x.kgMI*INC.VALOR_KG, incR=bolsa*INC.PESO_REND*pr/100, incC=(pc==null||pr===0)?0:bolsa*INC.PESO_CALIDAD*pc/100; // bajo el piso de 22.000 kg no hay bono, ni de calidad
-    return {...x,costo,he,pr,pc,bolsa,incR,incC,inc:incR+incC};
+    const ok=INC.EXIGE_AMBOS?(pr>0&&pc!=null&&pc>0):true; // CC-001.15: cada ítem se paga por separado
+    const bolsa0=x.kgMI*INC.VALOR_KG, iR0=ok?bolsa0*INC.PESO_REND*pr/100:0, iC0=(ok&&pc!=null)?bolsa0*INC.PESO_CALIDAD*pc/100:0;
+    const vig=x.f>=INC.VIGENCIA; // CC-001.20: antes de la vigencia solo referencia
+    return {...x,costo,he,pr,pc,vig,incRef:vig?0:iR0+iC0,bolsa:vig?bolsa0:0,incR:vig?iR0:0,incC:vig?iC0:0,inc:vig?iR0+iC0:0};
   });
   const ms=[...new Set(CDm.map(x=>x.f.slice(0,7)))].sort().reverse();
   const sel=document.getElementById('inc-mes');
   sel.innerHTML=ms.map(k=>{const [y,m]=k.split('-');return `<option value="${k}">${tit(MESL[+m-1])} ${y}</option>`;}).join('');
   sel.onchange=pintar;
 }
+function equivalencia(mes){ // CC-001.15: kg por cuadrilla-día ↔ kg/HH con la cuadrilla mecanizada promedio del periodo
+  const z=CDm.filter(x=>x.f.slice(0,7)===mes&&x.p>0&&x.h>0); if(!z.length) return null;
+  const p=z.reduce((s,x)=>s+x.p,0)/z.length, h=z.reduce((s,x)=>s+x.h,0)/z.length; return {p,h,hh:p*h};
+}
+function proposito(mes){
+  const e=equivalencia(mes), el=document.getElementById('inc-proposito');
+  const kh=k=>e?nf(k/e.hh,0):'—';
+  el.innerHTML=`<h2>¿Para qué sirve este botón?</h2><p class="sub" style="margin-bottom:8px"><b>Incentivo = ¿cuánto se paga?</b> Liquida el pago a las cuadrillas de <b>cosecha mecánica inducida</b> por rendimiento (kg por cuadrilla-día) y calidad (% pintón). Es el <b>control de la Jefatura de Operaciones</b>: bolsa, liquidación, horas extra, participación y color. <b>👷 Cuadrillas</b> muestra a cada cuadrilla, con los mismos cálculos, su cumplimiento día a día y lo ganado, para enviárselo.</p>
+    <div class="chips">${e?`<span class="chip">Cuadrilla mecanizada promedio del mes: ${nf(e.p,1)} personas × ${nf(e.h,1)} h = ${nf(e.hh,0)} HH</span>`:''}
+    <span class="chip">22.000 kg/cuadrilla-día ≈ ${kh(22000)} kg/HH</span><span class="chip">24.000 ≈ ${kh(24000)} kg/HH</span><span class="chip">26.000 ≈ ${kh(26000)} kg/HH</span>
+    <span class="chip">Referencia de la meta: 12 personas × 7 h = 84 HH → 262 / 286 / 309 kg/HH</span></div>`;
+}
 function reglas(){
-  document.getElementById('inc-reglas').innerHTML=`<h2>🏆 Reglas de la propuesta</h2><p class="sub">Aplica a las cuadrillas de cosecha mecánica en floración Inducción. El incentivo reemplaza las horas extra: no se suma a ellas. Metas revisables cada 3 meses.</p>
+  document.getElementById('inc-reglas').innerHTML=`<h2>🏆 Reglas del incentivo</h2><p class="sub">Aplica a las cuadrillas de cosecha mecánica en floración Inducción. <b>Cada ítem se paga por separado</b> (como el Excel V4): incentivo del día = kg × $9 × (40% × puntos de rendimiento + 60% × puntos de calidad) ÷ 100; valor por persona = incentivo ÷ personas de la cuadrilla. El incentivo reemplaza las horas extra: no se suma a ellas. Metas revisables cada 3 meses.</p>
   <div class="rg">
     <div><h3>Bolsa</h3><div class="big">$${INC.VALOR_KG} /kg</div><div class="note">Bolsa máxima del mes = kg mecánica inducida × $${INC.VALOR_KG}. Se paga según cumplimiento.</div></div>
     <div><h3>Ponderación</h3><div class="chips"><span class="chip" style="border-color:${C.gold}">${INC.PESO_CALIDAD*100}% calidad</span><span class="chip" style="border-color:${C.navy}">${INC.PESO_REND*100}% rendimiento</span></div><div class="note">La calidad pesa más: un punto de pintón vale más en precio que un punto de rendimiento en costo.</div></div>
-    <div><h3>Rendimiento · kg por cuadrilla-día</h3><div class="chips"><span class="chip">&lt; 22.000 → 0</span>${INC.FRANJAS_REND.slice().reverse().map(f=>`<span class="chip">${nf(f.desde)} → ${f.pts} pts · ${f.n}</span>`).join('')}</div><div class="note">Bajo el piso no hay bono de ningún tipo (ni de calidad). Base actual de referencia: ${nf(INC.BASE_KG)} kg; el piso equivale a +30%.</div></div>
-    <div><h3>Calidad · % pintón Inducción</h3><div class="chips">${INC.FRANJAS_CAL.map(f=>`<span class="chip">≥ ${f.desde}% → ${f.pts}</span>`).join('')}<span class="chip">&lt; ${INC.FRANJAS_CAL.at(-1).desde}% → 0</span></div><div class="note">Objetivo ${INC.PINTON_OBJ}% pintón. Cupo de verde para la mecánica inducida: ${INC.VERDE_CUPO}% (10% ya reservado para AD).</div></div>
-    <div><h3>Costo objetivo</h3><div class="big">≤ $${INC.COSTO_OBJ} /kg</div><div class="note">Costo de mano de obra con el incentivo incluido. Si con incentivo el costo sube, el modelo está mal.</div></div>
+    <div><h3>Rendimiento · kg por cuadrilla-día</h3><div class="chips"><span class="chip">≥ ${nf(INC.META_REND)} → kg ÷ ${nf(INC.META_REND)} × 100</span>${INC.FRANJAS_REND.map(f=>`<span class="chip">≥ ${nf(f.desde)} → ${f.pts} · ${f.n}</span>`).join('')}<span class="chip">&lt; 22.000 → 0</span></div><div class="note">Ejemplo: 27.450 kg = 105,6 puntos. Base actual de referencia: ${nf(INC.BASE_KG)} kg; el piso de 22.000 equivale a +30%.</div></div>
+    <div><h3>Calidad · % pintón Inducción</h3><div class="chips"><span class="chip">≥ ${INC.PINTON_OBJ}% → % ÷ ${INC.PINTON_OBJ} × 100</span>${INC.FRANJAS_CAL.map(f=>`<span class="chip">≥ ${f.desde}% → ${f.pts}</span>`).join('')}<span class="chip">&lt; ${INC.FRANJAS_CAL.at(-1).desde}% → 0</span></div><div class="note">Ejemplo: 77% pintón = 110 puntos. Objetivo ${INC.PINTON_OBJ}% pintón; cupo de verde para la mecánica inducida ${INC.VERDE_CUPO}% (10% ya reservado para AD).</div></div>
+    <div><h3>Costo objetivo por nivel</h3><div class="chips">${INC.COSTO_NIVEL.slice().reverse().map(n=>`<span class="chip">${nf(n.kg)} kg → $${nf(n.obj,1)}/kg</span>`).join('')}</div><div class="note">Costo por kg con el incentivo incluido, definido por Gerencia. A más kg por cuadrilla-día, menor costo.</div></div>
   </div>`;
 }
 const pct=(a,b)=>b>0?a/b*100:null;
@@ -21739,16 +21399,17 @@ function pintar(){
   const cd=dias.map(f=>COL[f]).filter(Boolean); const ct=cd.reduce((a,c)=>a+c.t,0);
   const pp=ct?cd.reduce((a,c)=>a+c.p,0)/ct*100:null, pv=ct?cd.reduce((a,c)=>a+c.v,0)/ct*100:null;
   const copMO=costo/kg, copInc=(costo+inc)/kg;
+  const nObj=INC.COSTO_NIVEL.find(n=>kgcd>=n.kg)||INC.COSTO_NIVEL[INC.COSTO_NIVEL.length-1], obj=nObj.obj;
   document.getElementById('inc-kpis').innerHTML=
     kpi('1 · Kg por cuadrilla-día', nf(kgcd,0), `${ok22} de ${z.length} cuadrilla-días ≥ 22.000 kg · piso 22.000`, semaf(kgcd>=24000,kgcd>=22000))+
-    kpi('2 · Costo por kg', $(copInc), `MO ${$(copMO)} + incentivo ${$(inc/kg)} · objetivo ≤ $${INC.COSTO_OBJ}`, semaf(copInc<=INC.COSTO_OBJ,copInc<=INC.COSTO_OBJ*1.1))+
+    kpi('2 · Costo por kg', '$'+nf(copInc,1), `MO ${$(copMO)} + incentivo $${nf(inc/kg,1)} · objetivo ${kgcd>=22000?nObj.n.toLowerCase():'del piso'} $${nf(obj,1)} (piso $68,6 · medio $63,5 · meta $59,2)`, semaf(copInc<=obj,copInc<=obj*1.1))+
     kpi('3 · Participación mecánica', part==null?'—':nf(part,1)+'%', `de los kg de Inducción del mes · meta ${INC.PART_META}%`, part==null?C.off:semaf(part>=INC.PART_META,part>=INC.PART_META-10))+
     kpi('4 · % pintón Inducción', pp==null?'Sin dato':nf(pp,1)+'%', pp==null?'El color de Inducción se registra desde el 21/09':`verde ${nf(pv,1)}% (cupo ${INC.VERDE_CUPO}%) · ${cd.length} de ${dias.length} días con dato · objetivo ${INC.PINTON_OBJ}%`, pp==null?C.off:semaf(pp>=INC.PINTON_OBJ,pp>=INC.PINTON_OBJ-10))+
     kpi('5 · Horas extra', M(he), `${nf(pct(he,costo),1)}% del costo MO del mes · meta $0 (las reemplaza el incentivo)`, semaf(he<=costo*0.02,he<=costo*0.08));
   const [y,m]=mes.split('-'); const nm=tit(MESL[+m-1])+' '+y;
   document.getElementById('inc-s1').textContent=`${nm} · cosecha mecánica inducida · barras = promedio de kg por cuadrilla-día · líneas = franjas · línea azul = costo/kg MO del día`;
-  graf1(dias,z); graf4(dias); graf3(mes); liquidacion(z,nm,bolsa,inc); validacion(z,pp,copMO,inc/kg,kgcd,nm);
-  document.getElementById('inc-pie').textContent=`Costo MO con horas reales, norma 2026 y jornal de Gestión Humana $${nf(INC.JORNAL_GH)} por día ordinario (CC-001.5 y CC-001.11). Parámetros de la propuesta editables al inicio del módulo (bloque INC). Supuestos a validar con Gerencia: puntos por franja y puntos de calidad.`;
+  proposito(mes); graf1(dias,z); graf4(dias); graf3(mes); liquidacion(z,nm,bolsa,inc);
+  document.getElementById('inc-pie').textContent=`Costo MO con horas reales, norma 2026 y jornal de Gestión Humana $${nf(INC.JORNAL_GH)} por día ordinario (CC-001.5 y CC-001.11). Parámetros del esquema editables al inicio del módulo (bloque INC).`;
 }
 function mk(id,cfg){ charts[id]&&charts[id].destroy(); if(typeof Chart==='undefined') return; cfg.options=cfg.options||{};
   cfg.options.plugins=Object.assign({datalabels:{display:false}},cfg.options.plugins||{});
@@ -21757,11 +21418,11 @@ function mk(id,cfg){ charts[id]&&charts[id].destroy(); if(typeof Chart==='undefi
   charts[id]=new Chart(document.getElementById(id),cfg); }
 function graf1(dias,z){
   const by=f=>z.filter(x=>x.f===f), avg=f=>{const a=by(f);return a.reduce((s,x)=>s+x.kgMI,0)/a.length;}, cop=f=>{const a=by(f),k=a.reduce((s,x)=>s+x.kgMI,0);return Math.round(a.reduce((s,x)=>s+(x.costo||0),0)/k);};
-  const col=v=>v>=26000?C.ok:v>=24000?'#6BA539':v>=22000?C.warn:C.bad;
+  const col=v=>v>=INC.META_REND?C.ok:v>=24000?'#6BA539':v>=22000?C.warn:C.bad;
   const line=(v,c,l)=>({type:'line',label:l,yAxisID:'y',data:dias.map(()=>v),borderColor:c,borderDash:[6,4],pointRadius:0,borderWidth:1.6});
   mk('inc-ch1',{data:{labels:dias.map(fC),datasets:[
     {type:'bar',label:'Kg por cuadrilla-día',yAxisID:'y',data:dias.map(f=>Math.round(avg(f))),backgroundColor:dias.map(f=>col(avg(f))),borderRadius:3,order:3},
-    line(22000,C.warn,'Piso 22.000'),line(24000,'#6BA539','Medio 24.000'),line(26000,C.ok,'Sobresaliente 26.000'),
+    line(22000,C.warn,'Piso 22.000'),line(24000,'#6BA539','Medio 24.000'),line(26000,C.ok,'Meta 26.000'),
     {type:'line',label:'Costo/kg MO',yAxisID:'y2',data:dias.map(cop),borderColor:C.navy,backgroundColor:C.navy,pointRadius:3,borderWidth:2.2,tension:.2,order:1}]},
     options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{boxWidth:12}},tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y2'?`${c.dataset.label}: $${nf(c.parsed.y,0)}`:`${c.dataset.label}: ${nf(c.parsed.y,0)} kg`}}},
       scales:{y:{min:0,suggestedMax:28000,ticks:{callback:v=>nf(v/1000,0)+' t'},title:{display:true,text:'kg por cuadrilla-día'}},y2:{position:'right',min:0,grid:{display:false},ticks:{callback:v=>'$'+nf(v,0)},title:{display:true,text:'COP/kg'}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true}}}}});
@@ -21790,7 +21451,7 @@ function liquidacion(z,nm,bolsa,inc){
   const cs=[...new Set(z.map(x=>x.c))]; const sinCol=z.some(x=>x.pc==null);
   const rows=cs.map(c=>{const a=z.filter(x=>x.c===c),kg=a.reduce((s,x)=>s+x.kgMI,0),b=a.reduce((s,x)=>s+x.bolsa,0),iR=a.reduce((s,x)=>s+x.incR,0),iC=a.reduce((s,x)=>s+x.incC,0),pers=a.reduce((s,x)=>s+x.p,0)/a.length;
     const pR=a.reduce((s,x)=>s+x.pr*x.kgMI,0)/kg, ac=a.filter(x=>x.pc!=null), kc=ac.reduce((s,x)=>s+x.kgMI,0), pC=kc?ac.reduce((s,x)=>s+x.pc*x.kgMI,0)/kc:null;
-    return {c,dias:a.length,kg,kgcd:kg/a.length,d22:a.filter(x=>x.kgMI>=22000).length,pR,pC,b,iR,iC,i:iR+iC,pers,pp:(iR+iC)/pers,he:a.reduce((s,x)=>s+x.he,0)};}).sort((a,b)=>b.i-a.i);
+    return {c,dias:a.length,kg,kgcd:kg/a.length,d22:a.filter(x=>x.kgMI>=22000).length,pR,pC,b,iR,iC,i:iR+iC,pers,pp:a.reduce((s,x)=>s+(x.p>0?x.inc/x.p:0),0),he:a.reduce((s,x)=>s+x.he,0),ref:a.reduce((s,x)=>s+x.incRef,0)};/* CC-001.19: por persona = suma diaria (incentivo del día ÷ personas del día) */}).sort((a,b)=>b.i-a.i);
   const pill=(v,c)=>`<span class="pill" style="background:${c}">${v}</span>`;
   let h=`<thead><tr><th>Cuadrilla</th><th>Días</th><th>Kg mecánica inducida</th><th>Kg por cuadrilla-día</th><th>Días ≥ 22.000</th><th>Puntos rendimiento</th><th>Puntos calidad</th><th>Bolsa máxima</th><th>Incentivo rendimiento (40%)</th><th>Incentivo calidad (60%)</th><th>Incentivo total</th><th>Personas prom.</th><th>Por persona</th><th>Horas extra del mes</th></tr></thead><tbody>`;
   rows.forEach(r=>{h+=`<tr><td class="nm">${tit(r.c)}</td><td>${r.dias}</td><td>${nf(r.kg)}</td><td>${pill(nf(r.kgcd,0),r.kgcd>=24000?C.ok:r.kgcd>=22000?C.warn:C.bad)}</td><td>${r.d22}</td><td>${nf(r.pR,0)}</td><td>${r.pC==null?'sin dato':nf(r.pC,0)}</td><td>${M(r.b)}</td><td>${M(r.iR)}</td><td>${M(r.iC)}</td><td><b>${M(r.i)}</b></td><td>${nf(r.pers,1)}</td><td><b>${$(r.pp)}</b></td><td>${M(r.he)}</td></tr>`;});
@@ -21799,18 +21460,7 @@ function liquidacion(z,nm,bolsa,inc){
   document.getElementById('inc-liq').innerHTML=h;
   document.getElementById('inc-sliq').textContent=`${nm} · se paga ${nf(bolsa?inc/bolsa*100:0,0)}% de la bolsa máxima${sinCol?' · hay días sin dato de color (calidad en $0)':''} · el incentivo reemplaza las horas extra de la última columna`;
 }
-function validacion(z,pp,copMO,incKg,kgcd,nm){
-  const pers=z.reduce((s,x)=>s+x.p,0)/z.length, cDia=pers*INC.JORNAL_GH, pc=ptsCal(pp);
-  const esc=[{n:'Real del mes (con horas extra)',kg:kgcd,real:true},{n:`Base Gerencia ${nf(INC.BASE_KG)} kg`,kg:INC.BASE_KG},{n:'Piso 22.000 kg',kg:22000},{n:'Medio 24.000 kg',kg:24000},{n:'Sobresaliente 26.000 kg',kg:26000}];
-  let h=`<thead><tr><th>Escenario</th><th>Kg por cuadrilla-día</th><th>Costo MO /kg</th><th>Incentivo /kg (calidad del mes)</th><th>Total /kg</th><th>Incentivo /kg (calidad cumplida)</th><th>Total /kg</th><th>Frente al objetivo $${INC.COSTO_OBJ}</th></tr></thead><tbody>`;
-  esc.forEach(e=>{
-    const mo=e.real?copMO:cDia/e.kg, pr=ptsRend(e.kg);
-    const gate=pr>0?1:0, i1=e.real?incKg:gate*INC.VALOR_KG*(INC.PESO_REND*pr/100+INC.PESO_CALIDAD*(pc||0)/100), i2=gate*INC.VALOR_KG*(INC.PESO_REND*pr/100+INC.PESO_CALIDAD);
-    const t2=mo+(e.real?incKg:i2), ok=t2<=INC.COSTO_OBJ;
-    h+=`<tr><td class="nm">${e.n}</td><td>${nf(e.kg,0)}</td><td>${$(mo)}</td><td>${$(i1)}</td><td>${$(mo+i1)}</td><td>${e.real?'—':$(i2)}</td><td><b>${$(t2)}</b></td><td><span class="pill" style="background:${ok?C.ok:C.bad}">${ok?'✓ cumple':'✗ no cumple'}</span></td></tr>`;});
-  document.getElementById('inc-val').innerHTML=h+'</tbody>';
-  document.getElementById('inc-valnota').textContent=`${nm}: ${nf(pers,1)} personas por cuadrilla en promedio × $${nf(INC.JORNAL_GH)} = ${$(cDia)} por cuadrilla-día de jornada ordinaria. Los escenarios suponen cero horas extra, porque el incentivo las reemplaza. Solo mano de obra de cuadrilla: no incluye maquinaria ni transporte.`;
-}
+window.incDatos=function(){ if(!listo){ listo=true; reglas(); cargar(); } return {CDm,COL,INC,ptsRend,ptsCal}; }; // CC-001.17: mismos cálculos para el tablero Cuadrillas
 window.abrirIncentivo=function(){ const m=document.getElementById('inc'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
   if(!listo){ listo=true; reglas(); cargar(); }
   const fm=document.getElementById('filter-mes'), sel=document.getElementById('inc-mes');
