@@ -21838,7 +21838,7 @@ let D=null, charts={}, listo=false;
 const fC=k=>{const [y,m,d]=k.split('-');return (+d)+' '+MESC[+m-1];};
 const fL=k=>{const dt=new Date(k+'T12:00:00');return DIAS[dt.getDay()]+' '+dt.getDate()+' '+MESC[dt.getMonth()];};
 function nivel(kg){ return kg>=26000?{n:'Meta',c:C.ok}:kg>=24000?{n:'Medio',c:C.med}:kg>=20000?{n:'Piso',c:C.warn}:{n:'Bajo piso',c:C.bad}; }
-function colorNivel(pp){ return pp==null?{n:'Sin dato',c:C.off}:pp>=70?{n:'Meta',c:C.ok}:pp>=55?{n:'Bonifica',c:C.warn}:{n:'No bonifica',c:C.bad}; }
+function colorNivel(pp){ return pp==null?{n:'Sin dato',c:C.off}:pp>=70?{n:'Meta',c:C.ok}:pp>=50?{n:'Bonifica',c:C.warn}:{n:'No bonifica',c:C.bad}; }
 function cargar(){
   if(typeof window.incDatos!=='function') throw new Error('módulo Incentivo no disponible');
   D=window.incDatos();
@@ -21862,7 +21862,7 @@ function diasDe(c,mes){ return D.CDm.filter(x=>x.c===c&&x.f.slice(0,7)===mes).so
 function resumen(c,mes){ const ds=diasDe(c,mes); let acum=0; ds.forEach(d=>{acum+=d.porPersona; d.acum=acum;});
   const kg=ds.reduce((a,d)=>a+d.kgMI,0), inc=ds.reduce((a,d)=>a+d.inc,0);
   return {c,ds,dias:ds.length,kg,kgdia:ds.length?kg/ds.length:0,d22:ds.filter(d=>d.kgMI>=20000).length,d26:ds.filter(d=>d.kgMI>=26000).length,
-    dCol:ds.filter(d=>d.pp!=null&&d.pp>=55).length,dColDato:ds.filter(d=>d.pp!=null).length,inc,incR:ds.reduce((a,d)=>a+d.incR,0),incC:ds.reduce((a,d)=>a+d.incC,0),porPersona:acum,
+    dCol:ds.filter(d=>d.pp!=null&&d.pp>=50).length,dColDato:ds.filter(d=>d.pp!=null).length,inc,incR:ds.reduce((a,d)=>a+d.incR,0),incC:ds.reduce((a,d)=>a+d.incC,0),porPersona:acum,
     pers:ds.length?ds.reduce((a,d)=>a+d.p,0)/ds.length:0}; }
 function nombreMes(mes){const [y,m]=mes.split('-');return tit(MESL[+m-1])+' '+y;}
 function pintarGana(){
@@ -21871,7 +21871,7 @@ function pintarGana(){
   <div class="rg">
     <div><h3>💰 Valor</h3><div class="chips"><span class="chip">$${I.VALOR_KG} por kg cosechado</span><span class="chip">40% rendimiento</span><span class="chip">60% color</span></div><div class="note">Ganado del día = kg × $${I.VALOR_KG} × (40% × puntos de rendimiento + 60% × puntos de color) ÷ 100. Por persona = ganado ÷ personas de la cuadrilla.</div></div>
     <div><h3>🚜 Rendimiento · kg por cuadrilla-día</h3><div class="chips"><span class="chip" style="border-color:${C.ok}">26.000 o más → meta (más kg, más puntos)</span><span class="chip" style="border-color:${C.med}">24.000 → 75</span><span class="chip" style="border-color:${C.warn}">20.000 → 50 · piso</span><span class="chip" style="border-color:${C.bad}">menos de 20.000 → no se paga nada</span></div><div class="note">Ejemplo: 27.450 kg = 105,6 puntos. <b>El rendimiento es el pilar:</b> bajo 20.000 kg no se paga nada, ni por color. Costo objetivo: 20.000 kg $75,5 · 22.000 $68,6 · 24.000 $63,5 · 26.000 $59,2 por kg. Equivale a 238 / 286 / 309 kg por hora-hombre con 12 personas × 7 h.</div></div>
-    <div><h3>🍍 Color · % pintón del día</h3><div class="chips"><span class="chip" style="border-color:${C.ok}">70% o más → meta (más pintón, más puntos)</span><span class="chip">65% → 75</span><span class="chip">60% → 50</span><span class="chip">55% → 25</span><span class="chip" style="border-color:${C.bad}">menos de 55% → 0</span></div><div class="note">Ejemplo: 77% pintón = 110 puntos. Color de la Inducción en planta ese día.</div></div>
+    <div><h3>🍍 Color · % pintón del día</h3><div class="chips"><span class="chip" style="border-color:${C.ok}">70% o más → meta (más pintón, más puntos)</span><span class="chip">65% → 75</span><span class="chip">60% → 50</span><span class="chip">50% → 25</span><span class="chip" style="border-color:${C.bad}">menos de 50% → 0</span></div><div class="note">Ejemplo: 77% pintón = 110 puntos. Color de la Inducción en planta ese día.</div></div>
   </div>`;
 }
 function pintar(){
@@ -21903,7 +21903,7 @@ function vistaTodas(mes){
 function vistaCuadrilla(c,mes){
   const r=resumen(c,mes);
   const k=(n,v,s,col)=>`<div class="kpi"><div class="n">${n}</div><div class="v" style="color:${col||C.navy}">${v}</div><div class="s">${s}</div></div>`;
-  let h=`<div class="kpis">${k('Ganado por persona',$(r.porPersona),'acumulado del mes',C.ok)}${k('Ganado cuadrilla',$(r.inc),`rendimiento ${$(r.incR)} · color ${$(r.incC)}`)}${k('Días trabajados',r.dias,`${nf(r.pers,1)} personas en promedio`)}${k('Kg por día',nf(r.kgdia),'promedio del mes',nivel(r.kgdia).c)}${k('Días ≥ 20.000 kg',r.d22+' de '+r.dias,`${r.d26} días en meta (≥ 26.000)`,r.d22?C.warn:C.bad)}${k('Días con color que bonifica',r.dColDato?r.dCol+' de '+r.dColDato:'—','pintón de 55% o más',r.dCol?C.warn:C.bad)}</div>`;
+  let h=`<div class="kpis">${k('Ganado por persona',$(r.porPersona),'acumulado del mes',C.ok)}${k('Ganado cuadrilla',$(r.inc),`rendimiento ${$(r.incR)} · color ${$(r.incC)}`)}${k('Días trabajados',r.dias,`${nf(r.pers,1)} personas en promedio`)}${k('Kg por día',nf(r.kgdia),'promedio del mes',nivel(r.kgdia).c)}${k('Días ≥ 20.000 kg',r.d22+' de '+r.dias,`${r.d26} días en meta (≥ 26.000)`,r.d22?C.warn:C.bad)}${k('Días con color que bonifica',r.dColDato?r.dCol+' de '+r.dColDato:'—','pintón de 50% o más',r.dCol?C.warn:C.bad)}</div>`;
   h+=`<section class="panel"><h2>${tit(c)} · día a día · ${nombreMes(mes)}</h2><p class="sub">Barras = kg de la cuadrilla (color según el nivel) · líneas punteadas = 20.000 / 24.000 / 26.000 kg · línea azul = % pintón del día (eje derecho)</p><div class="cb"><canvas id="cq-ch"></canvas></div></section>`;
   h+=`<section class="panel"><h2>Detalle día a día</h2><div class="tw"><table><thead><tr><th>Día</th><th>Kg cuadrilla</th><th>Rendimiento</th><th>Puntos rend.</th><th>Kg/HH (referencia)</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado rend.</th><th>Ganado color</th><th>Ganado del día</th><th>Personas</th><th>Por persona</th><th>Acumulado por persona</th></tr></thead><tbody>`;
   r.ds.forEach(d=>{const nv=nivel(d.kgMI), cn=colorNivel(d.pp);
@@ -21942,7 +21942,7 @@ function imagen(){
       tx(cx,`${x.p} personas · ${nf(x.kgMI)} kg · acumulado del mes ${$(resumen(x.c,mes).porPersona)} por persona`,60,y+78,'400 22px Barlow, Arial','#5F6B7A');
       cx.fillStyle=nv.c; cx.fillRect(620,y+18,150,36); tx(cx,nv.n,695,y+44,'700 22px Barlow, Arial','#fff','center');
       tx(cx,$(x.p?x.inc/x.p:0),W-60,y+50,'700 44px "Barlow Condensed", Arial',x.inc>0?C.ok:'#8A94A3','right'); tx(cx,'por persona hoy',W-60,y+80,'400 20px Barlow, Arial','#5F6B7A','right');});
-    tx(cx,'Rendimiento: 20.000 / 24.000 / 26.000 kg por cuadrilla-día · Color: pintón 55% / 70% · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
+    tx(cx,'Rendimiento: 20.000 / 24.000 / 26.000 kg por cuadrilla-día · Color: pintón 50% / 70% · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
     return bajar(cv,'Cuadrillas_'+ult+'.png'); }
   const r0=resumen(c,mes), r={...r0,ds:r0.ds.filter(d=>d.vig)}, rh=58, H=420+Math.max(1,r.ds.length)*rh+120, W=1080; const [cv,cx]=lienzo(W,H);
   if(!r.ds.length) tx(cx,'Sin días con cosecha en el mes',60,440,'500 26px Barlow, Arial','#5F6B7A');
@@ -21958,24 +21958,24 @@ function imagen(){
     cx.fillStyle=nv.c; cx.fillRect(470,y+12,170,32); tx(cx,nv.n,555,y+36,'700 20px Barlow, Arial','#fff','center');
     cx.fillStyle=cn.c; cx.fillRect(700,y+12,150,32); tx(cx,d.pp==null?'sin dato':nf(d.pp,0)+'%',775,y+36,'700 20px Barlow, Arial','#fff','center');
     tx(cx,$(d.porPersona),W-60,y+38,'700 28px "Barlow Condensed", Arial',d.porPersona>0?C.ok:'#8A94A3','right');});
-  tx(cx,'Rendimiento: 20.000 = 50 · 24.000 = 75 · 26.000+ = meta · Pintón: 55% a 70%+ · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
+  tx(cx,'Rendimiento: 20.000 = 50 · 24.000 = 75 · 26.000+ = meta · Pintón: 50% a 70%+ · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
   bajar(cv,'Cuadrilla_'+c.split(' ')[0]+'_'+mes+'.png');
 }
 function mensaje(){
   const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value;
-  const ic=kg=>kg>=26000?'🟢':kg>=20000?'🟡':'🔴', icc=p=>p==null?'⚪':p>=70?'🟢':p>=55?'🟡':'🔴';
+  const ic=kg=>kg>=26000?'🟢':kg>=20000?'🟡':'🔴', icc=p=>p==null?'⚪':p>=70?'🟢':p>=50?'🟡':'🔴';
   if(!c){ // CC-001.18: todas las cuadrillas = resultado del último día + acumulado del mes
     const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
     const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.kgMI-a.kgMI);
     let s=`*Cosecha mecánica inducida · ${fL(ult)}*\nColor del día: ${icc(col?col.pp:null)} pintón ${col?nf(col.pp,0)+'%':'sin dato'}\n\n`;
     z.forEach(x=>{ const nv=nivel(x.kgMI); s+=`${ic(x.kgMI)} *${tit(x.c)}* (${x.p} personas): ${nf(x.kgMI)} kg · ${nv.n.toLowerCase()} · *${$(x.p?x.inc/x.p:0)}* por persona hoy · ${$(resumen(x.c,mes).porPersona)} en el mes\n`; });
-    s+=`\n🟢 26.000 kg o más · 🟡 20.000 a 25.999 · 🔴 menos de 20.000\nColor: 🟢 pintón 70%+ · 🟡 55–69% · 🔴 menos de 55%`;
+    s+=`\n🟢 26.000 kg o más · 🟡 20.000 a 25.999 · 🔴 menos de 20.000\nColor: 🟢 pintón 70%+ · 🟡 50–69% · 🔴 menos de 50%`;
     return s; }
   const r=resumen(c,mes);
   let s=`*${tit(c)} · ${nombreMes(mes)}*\n\n`;
   r.ds.filter(d=>d.vig).forEach(d=>{s+=`${fL(d.f)}: ${ic(d.kgMI)} ${nf(d.kgMI)} kg · ${icc(d.pp)} pintón ${d.pp==null?'sin dato':nf(d.pp,0)+'%'} · *${$(d.porPersona)}* por persona\n`;});
   if(!r.ds.some(d=>d.vig)) s+=`Sin días con cosecha en el mes.\n`;
-  s+=`\n*Ganado en el mes por persona: ${$(r.porPersona)}*\n🟢 meta · 🟡 bonifica · 🔴 no bonifica\nRendimiento: 20.000 / 24.000 / 26.000 kg · Color: pintón 55% / 70%`;
+  s+=`\n*Ganado en el mes por persona: ${$(r.porPersona)}*\n🟢 meta · 🟡 bonifica · 🔴 no bonifica\nRendimiento: 20.000 / 24.000 / 26.000 kg · Color: pintón 50% / 70%`;
   return s;
 }
 window.abrirMeta220=function(){ const m=document.getElementById('cq'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
@@ -22046,7 +22046,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
       <div class="panel"><h2>4 · Color de la Inducción de proceso</h2><p class="sub" id="inc-s4">% de kg en verde, pintón y alto por día · línea = objetivo de pintón</p><div class="cb"><canvas id="inc-ch4"></canvas></div></div>
     </section>
     <section class="panel"><h2>Liquidación por cuadrilla</h2><p class="sub" id="inc-sliq">Cada cuadrilla-día suma: kg × valor por kg × (40% × puntos de rendimiento + 60% × puntos de calidad)</p><div class="tw"><table id="inc-liq"></table></div>
-      <p class="note">Sin 20.000 kg no hay incentivo: la calidad (pintón del día de 55% o más) solo se paga si la cuadrilla llegó al piso de rendimiento. Puntos de rendimiento por cuadrilla-día según sus kg. Puntos de calidad por día según el % pintón de toda la Inducción de proceso (aún no hay muestreo por cuadrilla). Días sin dato de color: la parte de calidad queda en $0 y se marca.</p></section>
+      <p class="note">Sin 20.000 kg no hay incentivo: la calidad (pintón del día de 50% o más) solo se paga si la cuadrilla llegó al piso de rendimiento. Puntos de rendimiento por cuadrilla-día según sus kg. Puntos de calidad por día según el % pintón de toda la Inducción de proceso (aún no hay muestreo por cuadrilla). Días sin dato de color: la parte de calidad queda en $0 y se marca.</p></section>
     
     <p class="note" id="inc-pie"></p>
   </div>
@@ -22056,11 +22056,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 /* ================== PARÁMETROS DE LA PROPUESTA (editables) ================== */
 const INC = {
   VIGENCIA: '2026-01-01',      // CC-001.21: todos los días cuentan (parámetro por si se necesita cortar)
-  VALOR_KG: 8,                 // CC-001.18: $ por kg de cosecha mecánica inducida (bolsa máxima = kg × valor)
+  VALOR_KG: 10,                // CC-001.25 (antes $8, CC-001.18): $ por kg de cosecha mecánica inducida (bolsa máxima = kg × valor)
   PESO_CALIDAD: 0.60, PESO_REND: 0.40,
   META_REND: 26000,            // CC-001.15 (Excel V4): ≥ meta → kg ÷ meta × 100
   FRANJAS_REND: [ {desde:24000, pts:75, n:'Medio'}, {desde:20000, pts:50, n:'Piso'} ], // CC-001.23: piso 20.000; < 20.000: 0
-  FRANJAS_CAL:  [ {desde:65, pts:75}, {desde:60, pts:50}, {desde:55, pts:25} ],    // CC-001.14: bajo la meta; ≥ meta = % pintón ÷ meta × 100; < 55%: 0
+  FRANJAS_CAL:  [ {desde:65, pts:75}, {desde:60, pts:50}, {desde:50, pts:25} ],    // CC-001.25: color bonifica desde 50%; ≥ meta = % pintón ÷ meta × 100; < 50%: 0
   EXIGE_AMBOS: false,               // CC-001.15: cada ítem se paga por separado (como el Excel V4)
   PINTON_OBJ: 70, VERDE_CUPO: 20,   // objetivo pintón y cupo de verde para mecánica inducida
   PART_META: 90,                    // % de la Inducción con cosecha mecánica
@@ -22123,7 +22123,7 @@ function proposito(mes){
     <span class="chip">Referencia: 12 personas × 7 h = 84 HH → 238 / 286 / 309 kg/HH</span></div>`;
 }
 function reglas(){
-  document.getElementById('inc-reglas').innerHTML=`<h2>🏆 Reglas del incentivo</h2><p class="sub">Aplica a las cuadrillas de cosecha mecánica en floración Inducción. <b>El rendimiento es el pilar:</b> una cuadrilla-día bajo 20.000 kg no bonifica nada, ni por color; desde 20.000 kg se paga rendimiento y, si el pintón da puntos, también calidad. Incentivo del día = kg × $9 × (40% × puntos de rendimiento + 60% × puntos de calidad) ÷ 100; valor por persona = incentivo ÷ personas de la cuadrilla. El incentivo reemplaza las horas extra: no se suma a ellas. Metas revisables cada 3 meses.</p>
+  document.getElementById('inc-reglas').innerHTML=`<h2>🏆 Reglas del incentivo</h2><p class="sub">Aplica a las cuadrillas de cosecha mecánica en floración Inducción. <b>El rendimiento es el pilar:</b> una cuadrilla-día bajo 20.000 kg no bonifica nada, ni por color; desde 20.000 kg se paga rendimiento y, si el pintón da puntos, también calidad. Incentivo del día = kg × $${INC.VALOR_KG} × (40% × puntos de rendimiento + 60% × puntos de calidad) ÷ 100; valor por persona = incentivo ÷ personas de la cuadrilla. El incentivo reemplaza las horas extra: no se suma a ellas. Metas revisables cada 3 meses.</p>
   <div class="rg">
     <div><h3>Bolsa</h3><div class="big">$${INC.VALOR_KG} /kg</div><div class="note">Bolsa máxima del mes = kg mecánica inducida × $${INC.VALOR_KG}. Se paga según cumplimiento.</div></div>
     <div><h3>Ponderación</h3><div class="chips"><span class="chip" style="border-color:${C.gold}">${INC.PESO_CALIDAD*100}% calidad</span><span class="chip" style="border-color:${C.navy}">${INC.PESO_REND*100}% rendimiento</span></div><div class="note">La calidad pesa más: un punto de pintón vale más en precio que un punto de rendimiento en costo.</div></div>
