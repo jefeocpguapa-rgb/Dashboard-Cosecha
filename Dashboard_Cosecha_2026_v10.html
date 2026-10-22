@@ -22068,7 +22068,7 @@ function pintarGana(){
   const I=D.INC;
   document.getElementById('cq-gana').innerHTML=`<h2>¿Cómo se gana?</h2><p class="sub">Cada día, cada cuadrilla gana por <b>rendimiento</b> (kg de la cuadrilla) y por <b>color</b> (% de fruta pintona). <b>Primero hay que llegar a 20.000 kg:</b> desde ahí se paga rendimiento y, si el color da puntos, también color.</p>
   <div class="rg">
-    <div><h3>💰 Valor</h3><div class="chips"><span class="chip">$${I.VALOR_KG} por kg cosechado</span><span class="chip">40% rendimiento</span><span class="chip">60% color</span></div><div class="note">Ganado del día = kg × $${I.VALOR_KG} × (40% × puntos de rendimiento + 60% × puntos de color) ÷ 100. Por persona = ganado ÷ personas de la cuadrilla.</div></div>
+    <div><h3>💰 Valor</h3><div class="chips"><span class="chip">$${I.VALOR_KG} por kg cosechado</span><span class="chip">${I.PESO_REND*100}% rendimiento</span><span class="chip">${I.PESO_CALIDAD*100}% color</span></div><div class="note">Ganado del día = kg × $${I.VALOR_KG} × (${I.PESO_REND*100}% × puntos de rendimiento + ${I.PESO_CALIDAD*100}% × puntos de color) ÷ 100. Por persona = ganado ÷ personas de la cuadrilla.</div></div>
     <div><h3>🚜 Rendimiento · kg por cuadrilla-día</h3><div class="chips"><span class="chip" style="border-color:${C.ok}">26.000 o más → meta (más kg, más puntos)</span><span class="chip" style="border-color:${C.med}">24.000 → 75</span><span class="chip" style="border-color:${C.warn}">20.000 → 50 · piso</span><span class="chip" style="border-color:${C.bad}">menos de 20.000 → no se paga nada</span></div><div class="note">Ejemplo: 27.450 kg = 105,6 puntos. <b>El rendimiento es el pilar:</b> bajo 20.000 kg no se paga nada, ni por color. Costo objetivo: 20.000 kg $75,5 · 22.000 $68,6 · 24.000 $63,5 · 26.000 $59,2 por kg. Equivale a 238 / 286 / 309 kg por hora-hombre con 12 personas × 7 h.</div></div>
     <div><h3>🍍 Color · % pintón del día</h3><div class="chips"><span class="chip" style="border-color:${C.ok}">70% o más → meta (más pintón, más puntos)</span><span class="chip">65% → 75</span><span class="chip">60% → 50</span><span class="chip">50% → 25</span><span class="chip" style="border-color:${C.bad}">menos de 50% → 0</span></div><div class="note">Ejemplo: 77% pintón = 110 puntos. Color de la Inducción en planta ese día.</div></div>
   </div>`;
@@ -22231,7 +22231,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 </style>
 <div id="inc" role="dialog" aria-modal="true" aria-label="Incentivo cosecha mecánica inducida">
   <div class="ih"><div class="row">
-    <h1>Incentivo cosecha mecánica inducida<small>Esquema de Gerencia General · 60% calidad / 40% rendimiento · control de la Jefatura de Operaciones</small></h1>
+    <h1>Incentivo cosecha mecánica inducida<small>Esquema de Gerencia General · 50% rendimiento / 50% calidad · igual al simulador de Talento Humano · control de la Jefatura de Operaciones</small></h1>
     <div class="ctl"><label for="inc-mes">Mes</label><select id="inc-mes"></select>
       <button onclick="cerrarIncentivo()">✕ Volver al dashboard</button></div>
   </div></div>
@@ -22244,7 +22244,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
       <div class="panel"><h2>1 · Kg por cuadrilla-día</h2><p class="sub" id="inc-s1">Cosecha mecánica inducida · barras = promedio del día · líneas = franjas del incentivo · línea azul = costo/kg MO</p><div class="cb"><canvas id="inc-ch1"></canvas></div></div>
       <div class="panel"><h2>4 · Color de la Inducción de proceso</h2><p class="sub" id="inc-s4">% de kg en verde, pintón y alto por día · línea = objetivo de pintón</p><div class="cb"><canvas id="inc-ch4"></canvas></div></div>
     </section>
-    <section class="panel"><h2>Liquidación por cuadrilla</h2><p class="sub" id="inc-sliq">Cada cuadrilla-día suma: kg × valor por kg × (40% × puntos de rendimiento + 60% × puntos de calidad)</p><div class="tw"><table id="inc-liq"></table></div>
+    <section class="panel"><h2>Liquidación por cuadrilla</h2><p class="sub" id="inc-sliq">Cada cuadrilla-día suma: kg × valor por kg × (50% × puntos de rendimiento + 50% × puntos de calidad)</p><div class="tw"><table id="inc-liq"></table></div>
       <p class="note">Sin 20.000 kg no hay incentivo: la calidad (pintón del día de 50% o más) solo se paga si la cuadrilla llegó al piso de rendimiento. Puntos de rendimiento por cuadrilla-día según sus kg. Puntos de calidad por día según el % pintón de toda la Inducción de proceso (aún no hay muestreo por cuadrilla). Días sin dato de color: la parte de calidad queda en $0 y se marca.</p></section>
     
     <p class="note" id="inc-pie"></p>
@@ -22256,7 +22256,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 const INC = {
   VIGENCIA: '2026-01-01',      // CC-001.21: todos los días cuentan (parámetro por si se necesita cortar)
   VALOR_KG: 10,                // CC-001.25 (antes $8, CC-001.18): $ por kg de cosecha mecánica inducida (bolsa máxima = kg × valor)
-  PESO_CALIDAD: 0.60, PESO_REND: 0.40,
+  PESO_CALIDAD: 0.50, PESO_REND: 0.50,   // CC-001.26: igual al simulador de Talento Humano
   META_REND: 26000,            // CC-001.15 (Excel V4): ≥ meta → kg ÷ meta × 100
   FRANJAS_REND: [ {desde:24000, pts:75, n:'Medio'}, {desde:20000, pts:50, n:'Piso'} ], // CC-001.23: piso 20.000; < 20.000: 0
   FRANJAS_CAL:  [ {desde:65, pts:75}, {desde:60, pts:50}, {desde:50, pts:25} ],    // CC-001.25: color bonifica desde 50%; ≥ meta = % pintón ÷ meta × 100; < 50%: 0
@@ -22276,7 +22276,7 @@ const M=v=>v==null||isNaN(v)?'—':(Math.abs(v)>=1e6?'$'+nf(v/1e6,1)+' M':'$'+nf
 const tit=s=>s.toLowerCase().replace(/(^|\s)\p{L}/gu,c=>c.toUpperCase());
 const C={ok:'#2E7D32',warn:'#D9A100',bad:'#C0392B',off:'#8A94A3',navy:'#0E2841',gold:'#CC9100'};
 const ptsRend=kg=>{ if(kg>=INC.META_REND) return kg/INC.META_REND*100; for(const f of INC.FRANJAS_REND) if(kg>=f.desde) return f.pts; return 0; }; // misma fórmula del Excel V4
-const ptsCal=p=>{ if(p==null) return null; if(p>=INC.PINTON_OBJ) return p/INC.PINTON_OBJ*100; for(const f of INC.FRANJAS_CAL) if(p>=f.desde) return f.pts; return 0; }; // misma fórmula del Excel V4
+const ptsCal=p0=>{ if(p0==null) return null; const p=Math.round(p0); /* CC-001.26: % pintón entero, como en el simulador de TH */ if(p>=INC.PINTON_OBJ) return p/INC.PINTON_OBJ*100; for(const f of INC.FRANJAS_CAL) if(p>=f.desde) return f.pts; return 0; }; // misma fórmula del Excel V4
 let CDm=[], COL={}, charts={}, listo=false;
 function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fC(k){const [y,m,d]=k.split('-');return (+d)+' '+MESC[+m-1];}
@@ -22322,10 +22322,10 @@ function proposito(mes){
     <span class="chip">Referencia: 12 personas × 7 h = 84 HH → 238 / 286 / 309 kg/HH</span></div>`;
 }
 function reglas(){
-  document.getElementById('inc-reglas').innerHTML=`<h2>🏆 Reglas del incentivo</h2><p class="sub">Aplica a las cuadrillas de cosecha mecánica en floración Inducción. <b>El rendimiento es el pilar:</b> una cuadrilla-día bajo 20.000 kg no bonifica nada, ni por color; desde 20.000 kg se paga rendimiento y, si el pintón da puntos, también calidad. Incentivo del día = kg × $${INC.VALOR_KG} × (40% × puntos de rendimiento + 60% × puntos de calidad) ÷ 100; valor por persona = incentivo ÷ personas de la cuadrilla. El incentivo reemplaza las horas extra: no se suma a ellas. Metas revisables cada 3 meses.</p>
+  document.getElementById('inc-reglas').innerHTML=`<h2>🏆 Reglas del incentivo</h2><p class="sub">Aplica a las cuadrillas de cosecha mecánica en floración Inducción. <b>El rendimiento es el pilar:</b> una cuadrilla-día bajo 20.000 kg no bonifica nada, ni por color; desde 20.000 kg se paga rendimiento y, si el pintón da puntos, también calidad. Incentivo del día = kg × $${INC.VALOR_KG} × (${INC.PESO_REND*100}% × puntos de rendimiento + ${INC.PESO_CALIDAD*100}% × puntos de calidad) ÷ 100; valor por persona = incentivo ÷ personas de la cuadrilla. El incentivo reemplaza las horas extra: no se suma a ellas. Metas revisables cada 3 meses.</p>
   <div class="rg">
     <div><h3>Bolsa</h3><div class="big">$${INC.VALOR_KG} /kg</div><div class="note">Bolsa máxima del mes = kg mecánica inducida × $${INC.VALOR_KG}. Se paga según cumplimiento.</div></div>
-    <div><h3>Ponderación</h3><div class="chips"><span class="chip" style="border-color:${C.gold}">${INC.PESO_CALIDAD*100}% calidad</span><span class="chip" style="border-color:${C.navy}">${INC.PESO_REND*100}% rendimiento</span></div><div class="note">La calidad pesa más: un punto de pintón vale más en precio que un punto de rendimiento en costo.</div></div>
+    <div><h3>Ponderación</h3><div class="chips"><span class="chip" style="border-color:${C.gold}">${INC.PESO_CALIDAD*100}% calidad</span><span class="chip" style="border-color:${C.navy}">${INC.PESO_REND*100}% rendimiento</span></div><div class="note">Mismo peso para rendimiento y color, como en el simulador de Talento Humano.</div></div>
     <div><h3>Rendimiento · kg por cuadrilla-día</h3><div class="chips"><span class="chip">≥ ${nf(INC.META_REND)} → kg ÷ ${nf(INC.META_REND)} × 100</span>${INC.FRANJAS_REND.map(f=>`<span class="chip">≥ ${nf(f.desde)} → ${f.pts} · ${f.n}</span>`).join('')}<span class="chip">&lt; 20.000 → 0</span></div><div class="note">Ejemplo: 27.450 kg = 105,6 puntos. Base actual de referencia: ${nf(INC.BASE_KG)} kg; el piso de 20.000 equivale a +18%.</div></div>
     <div><h3>Calidad · % pintón Inducción</h3><div class="chips"><span class="chip">≥ ${INC.PINTON_OBJ}% → % ÷ ${INC.PINTON_OBJ} × 100</span>${INC.FRANJAS_CAL.map(f=>`<span class="chip">≥ ${f.desde}% → ${f.pts}</span>`).join('')}<span class="chip">&lt; ${INC.FRANJAS_CAL.at(-1).desde}% → 0</span></div><div class="note">Ejemplo: 77% pintón = 110 puntos. Objetivo ${INC.PINTON_OBJ}% pintón; cupo de verde para la mecánica inducida ${INC.VERDE_CUPO}% (10% ya reservado para AD).</div></div>
     <div><h3>Costo objetivo por nivel</h3><div class="chips">${INC.COSTO_NIVEL.slice().reverse().map(n=>`<span class="chip">${nf(n.kg)} kg → $${nf(n.obj,1)}/kg</span>`).join('')}</div><div class="note">Costo por kg con el incentivo incluido, definido por Gerencia. A más kg por cuadrilla-día, menor costo.</div></div>
@@ -22400,7 +22400,7 @@ function liquidacion(z,nm,bolsa,inc){
     const pR=a.reduce((s,x)=>s+x.pr*x.kgMI,0)/kg, ac=a.filter(x=>x.pc!=null), kc=ac.reduce((s,x)=>s+x.kgMI,0), pC=kc?ac.reduce((s,x)=>s+x.pc*x.kgMI,0)/kc:null;
     return {c,dias:a.length,kg,kgcd:kg/a.length,d22:a.filter(x=>x.kgMI>=20000).length,pR,pC,b,iR,iC,i:iR+iC,pers,pp:a.reduce((s,x)=>s+(x.p>0?x.inc/x.p:0),0),he:a.reduce((s,x)=>s+x.he,0),ref:a.reduce((s,x)=>s+x.incRef,0)};/* CC-001.19: por persona = suma diaria (incentivo del día ÷ personas del día) */}).sort((a,b)=>b.i-a.i);
   const pill=(v,c)=>`<span class="pill" style="background:${c}">${v}</span>`;
-  let h=`<thead><tr><th>Cuadrilla</th><th>Días</th><th>Kg mecánica inducida</th><th>Kg por cuadrilla-día</th><th>Días ≥ 20.000</th><th>Puntos rendimiento</th><th>Puntos calidad</th><th>Bolsa máxima</th><th>Incentivo rendimiento (40%)</th><th>Incentivo calidad (60%)</th><th>Incentivo total</th><th>Personas prom.</th><th>Por persona</th><th>Horas extra del mes</th></tr></thead><tbody>`;
+  let h=`<thead><tr><th>Cuadrilla</th><th>Días</th><th>Kg mecánica inducida</th><th>Kg por cuadrilla-día</th><th>Días ≥ 20.000</th><th>Puntos rendimiento</th><th>Puntos calidad</th><th>Bolsa máxima</th><th>Incentivo rendimiento (50%)</th><th>Incentivo calidad (50%)</th><th>Incentivo total</th><th>Personas prom.</th><th>Por persona</th><th>Horas extra del mes</th></tr></thead><tbody>`;
   rows.forEach(r=>{h+=`<tr><td class="nm">${tit(r.c)}</td><td>${r.dias}</td><td>${nf(r.kg)}</td><td>${pill(nf(r.kgcd,0),r.kgcd>=24000?C.ok:r.kgcd>=20000?C.warn:C.bad)}</td><td>${r.d22}</td><td>${nf(r.pR,0)}</td><td>${r.pC==null?'sin dato':nf(r.pC,0)}</td><td>${M(r.b)}</td><td>${M(r.iR)}</td><td>${M(r.iC)}</td><td><b>${M(r.i)}</b></td><td>${nf(r.pers,1)}</td><td><b>${$(r.pp)}</b></td><td>${M(r.he)}</td></tr>`;});
   const T=k=>rows.reduce((s,r)=>s+r[k],0);
   h+=`<tr class="tot"><td>Total ${nm}</td><td>${T('dias')}</td><td>${nf(T('kg'))}</td><td>${nf(T('kg')/T('dias'),0)}</td><td>${T('d22')}</td><td></td><td></td><td>${M(bolsa)}</td><td>${M(T('iR'))}</td><td>${M(T('iC'))}</td><td>${M(inc)}</td><td></td><td></td><td>${M(T('he'))}</td></tr></tbody>`;
