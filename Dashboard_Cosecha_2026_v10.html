@@ -22964,6 +22964,7 @@ function resumen(c,mes){ const ds=diasDe(c,mes); let acum=0; ds.forEach(d=>{acum
   return {c,ds,dias:ds.length,kg,kgdia:ds.length?kg/ds.length:0,d22:ds.filter(d=>d.kgMI>=20000).length,d26:ds.filter(d=>d.kgMI>=26000).length,
     dCol:ds.filter(d=>d.pp!=null&&d.pp>=50).length,dColDato:ds.filter(d=>d.pp!=null).length,inc,incR:ds.reduce((a,d)=>a+d.incR,0),incC:ds.reduce((a,d)=>a+d.incC,0),porPersona:acum,
     pers:ds.length?ds.reduce((a,d)=>a+d.p,0)/ds.length:0}; }
+const hrs=v=>v?nf(v,1).replace(/,0$/,'')+' h':'— h'; // CC-001.29
 function nombreMes(mes){const [y,m]=mes.split('-');return tit(MESL[+m-1])+' '+y;}
 function pintarGana(){
   const I=D.INC;
@@ -22992,10 +22993,10 @@ function vistaTodas(mes){
   h+='</div></section>';
   // último día
   const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.inc-a.inc); const col=D.COL[ult];
-  h+=`<section class="panel"><h2>Último día cargado · ${fL(ult)}</h2><p class="sub">Color del día: ${col?nf(col.pp,1)+'% pintón':'sin dato'} · «Copiar mensaje» e «Imagen» con todas las cuadrillas envían esta tabla</p><div class="tw"><table><thead><tr><th>Cuadrilla</th><th>Personas</th><th>Kg</th><th>Rendimiento</th><th>Puntos rend.</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado</th><th>Por persona</th><th>Acumulado mes por persona</th></tr></thead><tbody>`;
+  h+=`<section class="panel"><h2>Último día cargado · ${fL(ult)}</h2><p class="sub">Color del día: ${col?nf(col.pp,1)+'% pintón':'sin dato'} · «Copiar mensaje» e «Imagen» con todas las cuadrillas envían esta tabla</p><div class="tw"><table><thead><tr><th>Cuadrilla</th><th>Personas</th><th>Horas</th><th>Kg</th><th>Rendimiento</th><th>Puntos rend.</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado</th><th>Por persona</th><th>Acumulado mes por persona</th></tr></thead><tbody>`;
   z.forEach(x=>{const nv=nivel(x.kgMI), cn=colorNivel(col?col.pp:null);
     const ac=resumen(x.c,mes).porPersona;
-    h+=`<tr><td>${tit(x.c)}</td><td>${x.p}</td><td>${nf(x.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(x.pr,1)}</td><td><span class="pill" style="background:${cn.c}">${col?nf(col.pp,0)+'%':'—'}</span></td><td>${x.pc==null?'NA':nf(x.pc,1)}</td><td><b>${$(x.inc)}</b></td><td><b>${$(x.p?x.inc/x.p:0)}</b></td><td>${$(ac)}</td></tr>`;});
+    h+=`<tr><td>${tit(x.c)}</td><td>${x.p}</td><td>${hrs(x.h)}</td><td>${nf(x.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(x.pr,1)}</td><td><span class="pill" style="background:${cn.c}">${col?nf(col.pp,0)+'%':'—'}</span></td><td>${x.pc==null?'NA':nf(x.pc,1)}</td><td><b>${$(x.inc)}</b></td><td><b>${$(x.p?x.inc/x.p:0)}</b></td><td>${$(ac)}</td></tr>`;});
   h+='</tbody></table></div></section>';
   document.getElementById('cq-vista').innerHTML=h;
   document.querySelectorAll('#cq .crew').forEach(el=>el.onclick=()=>{document.getElementById('cq-cua').value=el.dataset.c;pintar();document.getElementById('cq').scrollTop=0;});
@@ -23005,10 +23006,10 @@ function vistaCuadrilla(c,mes){
   const k=(n,v,s,col)=>`<div class="kpi"><div class="n">${n}</div><div class="v" style="color:${col||C.navy}">${v}</div><div class="s">${s}</div></div>`;
   let h=`<div class="kpis">${k('Ganado por persona',$(r.porPersona),'acumulado del mes',C.ok)}${k('Ganado cuadrilla',$(r.inc),`rendimiento ${$(r.incR)} · color ${$(r.incC)}`)}${k('Días trabajados',r.dias,`${nf(r.pers,1)} personas en promedio`)}${k('Kg por día',nf(r.kgdia),'promedio del mes',nivel(r.kgdia).c)}${k('Días ≥ 20.000 kg',r.d22+' de '+r.dias,`${r.d26} días en meta (≥ 26.000)`,r.d22?C.warn:C.bad)}${k('Días con color que bonifica',r.dColDato?r.dCol+' de '+r.dColDato:'—','pintón de 50% o más',r.dCol?C.warn:C.bad)}</div>`;
   h+=`<section class="panel"><h2>${tit(c)} · día a día · ${nombreMes(mes)}</h2><p class="sub">Barras = kg de la cuadrilla (color según el nivel) · líneas punteadas = 20.000 / 24.000 / 26.000 kg · línea azul = % pintón del día (eje derecho)</p><div class="cb"><canvas id="cq-ch"></canvas></div></section>`;
-  h+=`<section class="panel"><h2>Detalle día a día</h2><div class="tw"><table><thead><tr><th>Día</th><th>Kg cuadrilla</th><th>Rendimiento</th><th>Puntos rend.</th><th>Kg/HH (referencia)</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado rend.</th><th>Ganado color</th><th>Ganado del día</th><th>Personas</th><th>Por persona</th><th>Acumulado por persona</th></tr></thead><tbody>`;
+  h+=`<section class="panel"><h2>Detalle día a día</h2><div class="tw"><table><thead><tr><th>Día</th><th>Kg cuadrilla</th><th>Rendimiento</th><th>Puntos rend.</th><th>Kg/HH (referencia)</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado rend.</th><th>Ganado color</th><th>Ganado del día</th><th>Personas</th><th>Horas</th><th>Por persona</th><th>Acumulado por persona</th></tr></thead><tbody>`;
   r.ds.forEach(d=>{const nv=nivel(d.kgMI), cn=colorNivel(d.pp);
-    h+=`<tr${d.vig?'':' style="opacity:.5" title="Antes de la vigencia del incentivo: solo referencia"'}><td>${fL(d.f)}${d.vig?'':' · antes del inicio'}</td><td>${nf(d.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(d.pr,1)}</td><td>${d.kghh?nf(d.kghh,0):'—'}</td><td><span class="pill" style="background:${cn.c}">${d.pp==null?'sin dato':nf(d.pp,0)+'%'}</span></td><td>${d.pc==null?'NA':nf(d.pc,1)}</td><td>${$(d.incR)}</td><td>${$(d.incC)}</td><td>${d.vig?'<b>'+$(d.inc)+'</b>':'('+$(d.incRef)+')'}</td><td>${d.p}</td><td>${d.vig?'<b>'+$(d.porPersona)+'</b>':'('+$(d.p?d.incRef/d.p:0)+')'}</td><td>${$(d.acum)}</td></tr>`;});
-  h+=`<tr class="tot"><td>Total ${nombreMes(mes)}</td><td>${nf(r.kg)}</td><td></td><td></td><td></td><td></td><td></td><td>${$(r.incR)}</td><td>${$(r.incC)}</td><td>${$(r.inc)}</td><td></td><td></td><td>${$(r.porPersona)}</td></tr></tbody></table></div>
+    h+=`<tr${d.vig?'':' style="opacity:.5" title="Antes de la vigencia del incentivo: solo referencia"'}><td>${fL(d.f)}${d.vig?'':' · antes del inicio'}</td><td>${nf(d.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(d.pr,1)}</td><td>${d.kghh?nf(d.kghh,0):'—'}</td><td><span class="pill" style="background:${cn.c}">${d.pp==null?'sin dato':nf(d.pp,0)+'%'}</span></td><td>${d.pc==null?'NA':nf(d.pc,1)}</td><td>${$(d.incR)}</td><td>${$(d.incC)}</td><td>${d.vig?'<b>'+$(d.inc)+'</b>':'('+$(d.incRef)+')'}</td><td>${d.p}</td><td>${hrs(d.h)}</td><td>${d.vig?'<b>'+$(d.porPersona)+'</b>':'('+$(d.p?d.incRef/d.p:0)+')'}</td><td>${$(d.acum)}</td></tr>`;});
+  h+=`<tr class="tot"><td>Total ${nombreMes(mes)}</td><td>${nf(r.kg)}</td><td></td><td></td><td></td><td></td><td></td><td>${$(r.incR)}</td><td>${$(r.incC)}</td><td>${$(r.inc)}</td><td></td><td></td><td></td><td>${$(r.porPersona)}</td></tr></tbody></table></div>
     <p class="note">Kg/HH = kg ÷ (personas × horas): referencia de productividad, no cambia el pago. "NA" = día sin dato de color. Filas en gris: antes del inicio del incentivo (${fC(D.INC.VIGENCIA)}), no suman a lo ganado.</p></section>`;
   document.getElementById('cq-vista').innerHTML=h;
   if(typeof Chart==='undefined') return;
@@ -23027,7 +23028,7 @@ function vistaCuadrilla(c,mes){
 /* ===== Imagen y mensaje para enviar ===== */
 function lienzo(w,h){const cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,w,h);c.fillStyle=C.navy;c.fillRect(0,0,w,150);c.fillStyle=C.gold;c.fillRect(0,150,w,8);return [cv,c];}
 function tx(c,s,x,y,f,col,al='left'){c.font=f;c.fillStyle=col;c.textAlign=al;c.fillText(s,x,y);}
-function bajar(cv,n){const a=document.createElement('a');a.download=n;a.href=cv.toDataURL('image/png');a.click();}
+function bajar(cv,n){const a=document.createElement('a');a.download=n;a.href=cv.toDataURL('image/jpeg',0.92);a.click();}
 function imagen(){
   const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value;
   if(!c){ // CC-001.18: imagen del último día para todas las cuadrillas
@@ -23039,12 +23040,12 @@ function imagen(){
     const cn=colorNivel(col?col.pp:null); cx.fillStyle=cn.c; cx.fillRect(60,225,360,44); tx(cx,'Color del día: '+(col?nf(col.pp,0)+'% pintón':'sin dato'),240,256,'700 24px Barlow, Arial','#fff','center');
     z.forEach((x,i)=>{const y=295+i*rh, nv=nivel(x.kgMI); cx.fillStyle=i%2?'#FAF8F5':'#fff'; cx.fillRect(40,y,W-80,rh-10);
       tx(cx,tit(x.c),60,y+40,'700 30px Barlow, Arial','#1B2430');
-      tx(cx,`${x.p} personas · ${nf(x.kgMI)} kg · acumulado del mes ${$(resumen(x.c,mes).porPersona)} por persona`,60,y+78,'400 22px Barlow, Arial','#5F6B7A');
+      tx(cx,`${x.p} personas · ${hrs(x.h)} · ${nf(x.kgMI)} kg · acumulado del mes ${$(resumen(x.c,mes).porPersona)} por persona`,60,y+78,'400 22px Barlow, Arial','#5F6B7A');
       cx.fillStyle=nv.c; cx.fillRect(620,y+18,150,36); tx(cx,nv.n,695,y+44,'700 22px Barlow, Arial','#fff','center');
       tx(cx,$(x.p?x.inc/x.p:0),W-60,y+50,'700 44px "Barlow Condensed", Arial',x.inc>0?C.ok:'#8A94A3','right'); tx(cx,'por persona hoy',W-60,y+80,'400 20px Barlow, Arial','#5F6B7A','right');});
     tx(cx,'Rendimiento: 20.000 / 24.000 / 26.000 kg por cuadrilla-día · Color: pintón 50% / 70% · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
-    return bajar(cv,'Cuadrillas_'+ult+'.png'); }
-  const r0=resumen(c,mes), r={...r0,ds:r0.ds.filter(d=>d.vig)}, rh=58, H=420+Math.max(1,r.ds.length)*rh+120, W=1080; const [cv,cx]=lienzo(W,H);
+    return bajar(cv,'Cuadrillas_'+ult+'.jpg'); }
+  const r0=resumen(c,mes), _v=r0.ds.filter(d=>d.vig), _kg=_v.reduce((s,d)=>s+d.kgMI,0), r={...r0,ds:_v,dias:_v.length,kgdia:_v.length?_kg/_v.length:0,d22:_v.filter(d=>d.kgMI>=20000).length,d26:_v.filter(d=>d.kgMI>=26000).length,dCol:_v.filter(d=>d.pp!=null&&d.pp>=50).length,dColDato:_v.filter(d=>d.pp!=null).length}, /* resumen de la imagen solo con días desde el inicio */ rh=58, H=420+Math.max(1,r.ds.length)*rh+120, W=1080; const [cv,cx]=lienzo(W,H);
   if(!r.ds.length) tx(cx,'Sin días con cosecha en el mes',60,440,'500 26px Barlow, Arial','#5F6B7A');
   tx(cx,'AGRÍCOLA GUAPA · CUMPLIMIENTO E INCENTIVO',60,56,'600 26px Barlow, Arial',C.gold); tx(cx,nombreMes(mes),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
   tx(cx,tit(c),60,112,'700 50px "Barlow Condensed", Arial','#fff');
@@ -23052,14 +23053,14 @@ function imagen(){
   tx(cx,`${r.dias} días · ${nf(r.kgdia)} kg por día`,W-60,260,'600 28px Barlow, Arial','#1B2430','right');
   tx(cx,`${r.d22} días ≥ 20.000 kg · ${r.d26} en meta`,W-60,300,'500 24px Barlow, Arial','#5F6B7A','right');
   tx(cx,`${r.dCol} de ${r.dColDato} días con color que bonifica`,W-60,336,'500 24px Barlow, Arial','#5F6B7A','right');
-  const y0=380; ['Día','Kg','Rendimiento','Pintón','Por persona'].forEach((t,i)=>tx(cx,t,[60,330,470,700,W-60][i],y0,'600 22px Barlow, Arial','#5F6B7A',i===4?'right':(i===1?'right':'left')));
+  const y0=380; ['Día','Kg','Horas','Rendimiento','Pintón','Por persona'].forEach((t,i)=>tx(cx,t,[60,315,425,450,630,W-60][i],y0,'600 22px Barlow, Arial','#5F6B7A',(i===1||i===2||i===5)?'right':'left'));
   r.ds.forEach((d,i)=>{const y=y0+20+i*rh; cx.fillStyle=i%2?'#FAF8F5':'#fff'; cx.fillRect(40,y,W-80,rh-6); const nv=nivel(d.kgMI), cn=colorNivel(d.pp);
-    tx(cx,fL(d.f),60,y+38,'500 26px Barlow, Arial','#1B2430'); tx(cx,nf(d.kgMI),330,y+38,'600 26px Barlow, Arial','#1B2430','right');
-    cx.fillStyle=nv.c; cx.fillRect(470,y+12,170,32); tx(cx,nv.n,555,y+36,'700 20px Barlow, Arial','#fff','center');
-    cx.fillStyle=cn.c; cx.fillRect(700,y+12,150,32); tx(cx,d.pp==null?'sin dato':nf(d.pp,0)+'%',775,y+36,'700 20px Barlow, Arial','#fff','center');
+    tx(cx,fL(d.f),60,y+38,'500 26px Barlow, Arial','#1B2430'); tx(cx,nf(d.kgMI),315,y+38,'600 26px Barlow, Arial','#1B2430','right'); tx(cx,hrs(d.h),425,y+38,'500 24px Barlow, Arial','#1B2430','right');
+    cx.fillStyle=nv.c; cx.fillRect(450,y+12,150,32); tx(cx,nv.n,525,y+36,'700 20px Barlow, Arial','#fff','center');
+    cx.fillStyle=cn.c; cx.fillRect(630,y+12,140,32); tx(cx,d.pp==null?'sin dato':nf(d.pp,0)+'%',700,y+36,'700 20px Barlow, Arial','#fff','center');
     tx(cx,$(d.porPersona),W-60,y+38,'700 28px "Barlow Condensed", Arial',d.porPersona>0?C.ok:'#8A94A3','right');});
   tx(cx,'Rendimiento: 20.000 = 50 · 24.000 = 75 · 26.000+ = meta · Pintón: 50% a 70%+ · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
-  bajar(cv,'Cuadrilla_'+c.split(' ')[0]+'_'+mes+'.png');
+  bajar(cv,'Cuadrilla_'+c.split(' ')[0]+'_'+mes+'.jpg');
 }
 function mensaje(){
   const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value;
@@ -23068,12 +23069,12 @@ function mensaje(){
     const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
     const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.kgMI-a.kgMI);
     let s=`*Cosecha mecánica inducida · ${fL(ult)}*\nColor del día: ${icc(col?col.pp:null)} pintón ${col?nf(col.pp,0)+'%':'sin dato'}\n\n`;
-    z.forEach(x=>{ const nv=nivel(x.kgMI); s+=`${ic(x.kgMI)} *${tit(x.c)}* (${x.p} personas): ${nf(x.kgMI)} kg · ${nv.n.toLowerCase()} · *${$(x.p?x.inc/x.p:0)}* por persona hoy · ${$(resumen(x.c,mes).porPersona)} en el mes\n`; });
+    z.forEach(x=>{ const nv=nivel(x.kgMI); s+=`${ic(x.kgMI)} *${tit(x.c)}* (${x.p} personas · ⏱ ${hrs(x.h)}): ${nf(x.kgMI)} kg · ${nv.n.toLowerCase()} · *${$(x.p?x.inc/x.p:0)}* por persona hoy · ${$(resumen(x.c,mes).porPersona)} en el mes\n`; });
     s+=`\n🟢 26.000 kg o más · 🟡 20.000 a 25.999 · 🔴 menos de 20.000\nColor: 🟢 pintón 70%+ · 🟡 50–69% · 🔴 menos de 50%`;
     return s; }
   const r=resumen(c,mes);
   let s=`*${tit(c)} · ${nombreMes(mes)}*\n\n`;
-  r.ds.filter(d=>d.vig).forEach(d=>{s+=`${fL(d.f)}: ${ic(d.kgMI)} ${nf(d.kgMI)} kg · ${icc(d.pp)} pintón ${d.pp==null?'sin dato':nf(d.pp,0)+'%'} · *${$(d.porPersona)}* por persona\n`;});
+  r.ds.filter(d=>d.vig).forEach(d=>{s+=`${fL(d.f)}: ${ic(d.kgMI)} ${nf(d.kgMI)} kg · ⏱ ${hrs(d.h)} · ${icc(d.pp)} pintón ${d.pp==null?'sin dato':nf(d.pp,0)+'%'} · *${$(d.porPersona)}* por persona\n`;});
   if(!r.ds.some(d=>d.vig)) s+=`Sin días con cosecha en el mes.\n`;
   s+=`\n*Ganado en el mes por persona: ${$(r.porPersona)}*\n🟢 meta · 🟡 bonifica · 🔴 no bonifica\nRendimiento: 20.000 / 24.000 / 26.000 kg · Color: pintón 50% / 70%`;
   return s;
