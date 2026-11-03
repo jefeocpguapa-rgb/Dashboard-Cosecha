@@ -226,7 +226,7 @@ body.modo-presentacion #btn-presentacion:hover { background: var(--accent-red) !
     <div><h1>Dashboard de Cosecha 2026</h1><p>Análisis de producción · Piña/Fruta</p></div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button id="btn-meta220" onclick="abrirMeta220()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">👷 Cuadrillas</button> <button id="btn-incentivo" onclick="abrirIncentivo()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:#2ecc71;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap;margin-left:6px" onmouseover="this.style.background='#2ecc71';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='#2ecc71'">🏆 Incentivo</button>
+    <button id="btn-meta220" onclick="abrirMeta220()" style="background:rgba(243,156,18,.12);border:1px solid rgba(243,156,18,.35);color:#f39c12;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='#f39c12';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(243,156,18,.12)';this.style.color='#f39c12'">👷 Cuadrillas</button> <button id="btn-incentivo" onclick="abrirIncentivo()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:#2ecc71;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap;margin-left:6px" onmouseover="this.style.background='#2ecc71';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='#2ecc71'">🏆 Incentivo</button> <button id="btn-detalle-inc" onclick="descargarDetalleIncentivo()" title="Descargar Excel del detalle diario del incentivo (requiere clave)" style="background:rgba(52,152,219,.12);border:1px solid rgba(52,152,219,.35);color:#3498db;padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap;margin-left:6px" onmouseover="this.style.background='#3498db';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(52,152,219,.12)';this.style.color='#3498db'">📥 Detalle incentivo</button>
     <button id="btn-presentacion" onclick="togglePresentacion()" style="background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35);color:var(--accent-green);padding:6px 14px;border-radius:6px;font-size:.78rem;font-family:var(--font-main);cursor:pointer;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--accent-green)';this.style.color='#0f1923'" onmouseout="this.style.background='rgba(46,204,113,.12)';this.style.color='var(--accent-green)'">⛶ Modo Presentación</button>
     <div id="last-update">📅 Última actualización: <span id="max-date">—</span></div>
   </div>
@@ -23309,6 +23309,48 @@ function liquidacion(z,nm,bolsa,inc){
   document.getElementById('inc-liq').innerHTML=h;
   document.getElementById('inc-sliq').textContent=`${nm} · se paga ${nf(bolsa?inc/bolsa*100:0,0)}% de la bolsa máxima${sinCol?' · hay días sin dato de color (calidad en $0)':''} · el incentivo reemplaza las horas extra de la última columna`;
 }
+/* ===== Descarga «Detalle diario incentivo» (CC-001.30) ===== */
+const CLAVE_SHA='a6526757227a56f7448da4524dacb3e9e9a20061a6efaa703825a6f1471735d1'; // SHA-256 de la clave
+async function sha256(t){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+function cargarXLSX(){ return new Promise((ok,ko)=>{ if(window.XLSX) return ok(); const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; s.onload=()=>ok(); s.onerror=()=>ko(new Error('No se pudo cargar la librería de Excel (revisa la conexión a internet).')); document.head.appendChild(s); }); }
+async function descargarDetalle(){
+  const k=prompt('Clave para descargar el detalle diario del incentivo:'); if(k==null) return;
+  try{ if(!(window.crypto&&crypto.subtle)) throw new Error('El navegador no permite validar la clave en esta página.');
+       if(await sha256(k.trim())!==CLAVE_SHA){ alert('Clave incorrecta.'); return; } }catch(e){ alert(e.message); return; }
+  try{ await cargarXLSX(); }catch(e){ alert(e.message); return; }
+  if(!listo){ listo=true; reglas(); cargar(); }
+  const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const z=CDm.filter(x=>x.f>='2026-10-01').sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:(a.c<b.c?-1:1));
+  const V=INC.VALOR_KG, PR=INC.PESO_REND, PC=INC.PESO_CALIDAD, PISO=INC.FRANJAS_REND.at(-1).desde, MED=INC.FRANJAS_REND[0].desde, META=INC.META_REND, PM=INC.PINTON_OBJ/100;
+  const head=['Fecha','Mes','Cuadrillero','Kg cosecha mecánica inducida','Personas','Horas','Kg/HH','% pintón del día','Pintón entero','Puntos rendimiento','Puntos calidad','Incentivo rendimiento','Incentivo calidad','Incentivo total','Por persona','Desde el 21/10'];
+  const ws={}, enc=(r,c)=>XLSX.utils.encode_cell({r,c});
+  head.forEach((t,c)=>ws[enc(0,c)]={t:'s',v:t});
+  z.forEach((x,i)=>{ const r=i+1, R=r+1, [y,m,d]=x.f.split('-').map(Number);
+    const col=COL[x.f], pp=col?col.pp/100:null, pe=pp==null?null:Math.round(pp*100)/100;
+    const iR=x.pr>0?x.kgMI*V*PR*x.pr/100:0, iC=(x.pr>0&&x.pc!=null)?x.kgMI*V*PC*x.pc/100:0, tot=iR+iC;
+    const fecha=(Date.UTC(y,m-1,d)-Date.UTC(1899,11,30))/864e5;
+    ws[enc(r,0)]={t:'n',v:fecha,z:'dd/mm/yyyy'}; ws[enc(r,1)]={t:'s',v:MES[m-1].replace(/^./,s=>s.toUpperCase())+' '+y};
+    ws[enc(r,2)]={t:'s',v:x.c.toLowerCase().replace(/(^|\s)\p{L}/gu,s=>s.toUpperCase())};
+    ws[enc(r,3)]={t:'n',v:x.kgMI,z:'#,##0'}; ws[enc(r,4)]={t:'n',v:x.p}; ws[enc(r,5)]={t:'n',v:x.h,z:'0.0'};
+    ws[enc(r,6)]={t:'n',v:(x.p&&x.h)?x.kgMI/(x.p*x.h):0,f:`IFERROR(D${R}/(E${R}*F${R}),0)`,z:'#,##0'};
+    ws[enc(r,7)]=pp==null?{t:'s',v:'NA'}:{t:'n',v:pp,z:'0.0%'};
+    ws[enc(r,8)]=pe==null?{t:'s',v:'NA',f:`IF(H${R}="NA","NA",ROUND(H${R}*100,0)/100)`}:{t:'n',v:pe,f:`IF(H${R}="NA","NA",ROUND(H${R}*100,0)/100)`,z:'0%'};
+    ws[enc(r,9)]={t:'n',v:x.pr,f:`IF(D${R}>=${META},D${R}/${META}*100,IF(D${R}>=${MED},75,IF(D${R}>=${PISO},50,0)))`,z:'0.0'};
+    ws[enc(r,10)]=x.pc==null?{t:'s',v:'NA',f:`IF(I${R}="NA","NA",0)`}:{t:'n',v:x.pc,f:`IF(I${R}="NA","NA",IF(I${R}>=${PM},I${R}/${PM}*100,IF(I${R}>=0.65,75,IF(I${R}>=0.6,50,IF(I${R}>=0.5,25,0)))))`,z:'0.0'};
+    ws[enc(r,11)]={t:'n',v:iR,f:`IF(J${R}>0,D${R}*${V}*${PR}*J${R}/100,0)`,z:'$#,##0'};
+    ws[enc(r,12)]={t:'n',v:iC,f:`IF(AND(J${R}>0,ISNUMBER(K${R})),D${R}*${V}*${PC}*K${R}/100,0)`,z:'$#,##0'};
+    ws[enc(r,13)]={t:'n',v:tot,f:`L${R}+M${R}`,z:'$#,##0'};
+    ws[enc(r,14)]={t:'n',v:x.p?tot/x.p:0,f:`IFERROR(N${R}/E${R},0)`,z:'$#,##0'};
+    ws[enc(r,15)]={t:'s',v:x.f>='2026-10-21'?'Sí':'No'};
+  });
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:z.length,c:head.length-1}});
+  ws['!cols']=[11,15,32,14,9,7,9,11,9,11,10,13,13,13,12,10].map(w=>({wch:w}));
+  ws['!autofilter']={ref:ws['!ref']};
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Detalle diario');
+  const ult=z.length?z.at(-1).f:'';
+  XLSX.writeFile(wb,`Detalle_Diario_Incentivo_al_${ult.split('-').reverse().join('-')}.xlsx`);
+}
+window.descargarDetalleIncentivo=descargarDetalle; // CC-001.31: botón del encabezado
 window.incDatos=function(){ if(!listo){ listo=true; reglas(); cargar(); } return {CDm,COL,INC,ptsRend,ptsCal}; }; // CC-001.17: mismos cálculos para el tablero Cuadrillas
 window.abrirIncentivo=function(){ const m=document.getElementById('inc'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
   if(!listo){ listo=true; reglas(); cargar(); }
