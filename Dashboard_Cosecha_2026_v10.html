@@ -24069,6 +24069,8 @@ function updateSemFruChart() {
     <div class="ctl">
       <label for="cq-mes">Mes</label><select id="cq-mes"></select>
       <label for="cq-cua">Cuadrilla</label><select id="cq-cua"></select>
+      <label for="cq-dia">Día</label><select id="cq-dia"></select>
+      <button id="cq-reglas" onclick="(function(b){const g=document.getElementById('cq-gana');g.hidden=!g.hidden;b.textContent=g.hidden?'ℹ️ Ver reglas':'Ocultar reglas';})(this)">ℹ️ Ver reglas</button>
       <button class="pri" id="cq-img">Imagen para enviar</button>
       <button id="cq-txt">Copiar mensaje</button>
       <button onclick="cerrarMeta220()">✕ Volver al dashboard</button>
@@ -24076,7 +24078,7 @@ function updateSemFruChart() {
   </div></div>
   <div class="cm">
     <div class="sim" id="cq-sim"></div>
-    <section class="panel gana" id="cq-gana"></section>
+    <section class="panel gana" id="cq-gana" hidden></section>
     <div id="cq-vista"></div>
   </div>
 </div>
@@ -24103,6 +24105,7 @@ function cargar(){
   sm.innerHTML=ms.map(k=>{const [y,m]=k.split('-');return `<option value="${k}">${tit(MESL[+m-1])} ${y}</option>`;}).join('');
   sm.onchange=()=>{ llenarCuadrillas(); pintar(); };
   document.getElementById('cq-cua').onchange=pintar;
+  document.getElementById('cq-dia').onchange=pintar;
   document.getElementById('cq-img').onclick=imagen;
   document.getElementById('cq-txt').onclick=async()=>{const s=mensaje();try{await navigator.clipboard.writeText(s);alert('Mensaje copiado. Pégalo en el grupo de WhatsApp.');}catch(e){prompt('Copia el mensaje:',s);}};
   llenarCuadrillas();
@@ -24112,10 +24115,15 @@ function llenarCuadrillas(){
   const cs=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.c))].sort();
   sc.innerHTML='<option value="">Todas las cuadrillas</option>'+cs.map(c=>`<option value="${c}">${tit(c)}</option>`).join('');
   if(cs.includes(prev)) sc.value=prev;
+  // CC-001.37: días del mes con cosecha mecánica inducida
+  const sd=document.getElementById('cq-dia'), pd=sd.value, ds=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().reverse();
+  sd.innerHTML='<option value="">Todo el mes</option>'+ds.map(f=>`<option value="${f}">${fL(f)}</option>`).join('');
+  if(ds.includes(pd)) sd.value=pd;
 }
+const diaSel=()=>{ const e=document.getElementById('cq-dia'); return e?e.value:''; };
 function diasDe(c,mes){ return D.CDm.filter(x=>x.c===c&&x.f.slice(0,7)===mes).sort((a,b)=>a.f<b.f?-1:1).map(x=>{
   const col=D.COL[x.f]||null; return {...x,pp:col?col.pp:null,kghh:(x.p>0&&x.h>0)?x.kgMI/(x.p*x.h):null,porPersona:x.p>0?x.inc/x.p:0}; }); }
-function resumen(c,mes){ const ds=diasDe(c,mes); let acum=0; ds.forEach(d=>{acum+=d.porPersona; d.acum=acum;});
+function resumen(c,mes,dia){ const ds=diasDe(c,mes).filter(d=>!dia||d.f===dia); let acum=0; ds.forEach(d=>{acum+=d.porPersona; d.acum=acum;});
   const kg=ds.reduce((a,d)=>a+d.kgMI,0), inc=ds.reduce((a,d)=>a+d.inc,0);
   return {c,ds,dias:ds.length,kg,kgdia:ds.length?kg/ds.length:0,d22:ds.filter(d=>d.kgMI>=20000).length,d26:ds.filter(d=>d.kgMI>=26000).length,
     dCol:ds.filter(d=>d.pp!=null&&d.pp>=50).length,dColDato:ds.filter(d=>d.pp!=null).length,inc,incR:ds.reduce((a,d)=>a+d.incR,0),incC:ds.reduce((a,d)=>a+d.incC,0),porPersona:acum,
@@ -24134,22 +24142,25 @@ function pintarGana(){
 function pintar(){
   const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value; if(!mes) return;
   document.getElementById('cq-sim').style.display='none';
-  document.getElementById('cq-img').textContent=c?'Imagen para la cuadrilla (mes)':'Imagen del día (todas)';
-  document.getElementById('cq-txt').textContent=c?'Copiar mensaje (mes de la cuadrilla)':'Copiar mensaje del día (todas)';
+  const dd=diaSel();
+  document.getElementById('cq-img').textContent=c?(dd?'Imagen de la cuadrilla (día)':'Imagen para la cuadrilla (mes)'):'Imagen del día (todas)';
+  document.getElementById('cq-txt').textContent=c?(dd?'Copiar mensaje (día de la cuadrilla)':'Copiar mensaje (mes de la cuadrilla)'):'Copiar mensaje del día (todas)';
   Object.values(charts).forEach(ch=>ch&&ch.destroy()); charts={};
   if(!c) vistaTodas(mes); else vistaCuadrilla(c,mes);
 }
 function vistaTodas(mes){
   const cs=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.c))]; const R=cs.map(c=>resumen(c,mes)).sort((a,b)=>b.porPersona-a.porPersona);
-  const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1);
-  let h=`<section class="panel"><h2>Todas las cuadrillas · ${nombreMes(mes)}</h2><p class="sub">Toca una cuadrilla para ver su detalle día a día.</p><div class="crews">`;
+  const ult=diaSel()||[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1);
+  let h=diaSel()?'':`<section class="panel"><h2>Todas las cuadrillas · ${nombreMes(mes)}</h2><p class="sub">Toca una cuadrilla para ver su detalle día a día.</p><div class="crews">`;
+  if(!diaSel()){
   R.forEach(r=>{h+=`<div class="crew" data-c="${r.c}"><h3>${tit(r.c)}</h3><div class="g">${$(r.porPersona)}</div><div class="d">ganado por persona en el mes · total cuadrilla ${$(r.inc)}</div>
     <div class="d">${r.dias} días · ${nf(r.kgdia)} kg por día · ${r.d22} días ≥ 20.000 kg · ${r.dColDato?r.dCol+' de '+r.dColDato+' días con color que bonifica':'color sin dato'}</div>
     <div class="bt"><button data-v="${r.c}">Ver día a día</button></div></div>`;});
   h+='</div></section>';
+  }
   // último día
   const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.inc-a.inc); const col=D.COL[ult];
-  h+=`<section class="panel"><h2>Último día cargado · ${fL(ult)}</h2><p class="sub">Color del día: ${col?nf(col.pp,1)+'% pintón':'sin dato'} · «Copiar mensaje» e «Imagen» con todas las cuadrillas envían esta tabla</p><div class="tw"><table><thead><tr><th>Cuadrilla</th><th>Personas</th><th>Horas</th><th>Kg</th><th>Rendimiento</th><th>Puntos rend.</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado</th><th>Por persona</th><th>Acumulado mes por persona</th></tr></thead><tbody>`;
+  h+=`<section class="panel"><h2>${diaSel()?'Día elegido':'Último día cargado'} · ${fL(ult)}</h2><p class="sub">Color del día: ${col?nf(col.pp,1)+'% pintón':'sin dato'} · «Copiar mensaje» e «Imagen» con todas las cuadrillas envían esta tabla</p><div class="tw"><table><thead><tr><th>Cuadrilla</th><th>Personas</th><th>Horas</th><th>Kg</th><th>Rendimiento</th><th>Puntos rend.</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado</th><th>Por persona</th><th>Acumulado mes por persona</th></tr></thead><tbody>`;
   z.forEach(x=>{const nv=nivel(x.kgMI), cn=colorNivel(col?col.pp:null);
     const ac=resumen(x.c,mes).porPersona;
     h+=`<tr><td>${tit(x.c)}</td><td>${x.p}</td><td>${hrs(x.h)}</td><td>${nf(x.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(x.pr,1)}</td><td><span class="pill" style="background:${cn.c}">${col?nf(col.pp,0)+'%':'—'}</span></td><td>${x.pc==null?'NA':nf(x.pc,1)}</td><td><b>${$(x.inc)}</b></td><td><b>${$(x.p?x.inc/x.p:0)}</b></td><td>${$(ac)}</td></tr>`;});
@@ -24158,14 +24169,14 @@ function vistaTodas(mes){
   document.querySelectorAll('#cq .crew').forEach(el=>el.onclick=()=>{document.getElementById('cq-cua').value=el.dataset.c;pintar();document.getElementById('cq').scrollTop=0;});
 }
 function vistaCuadrilla(c,mes){
-  const r=resumen(c,mes);
+  const r=resumen(c,mes,diaSel());
   const k=(n,v,s,col)=>`<div class="kpi"><div class="n">${n}</div><div class="v" style="color:${col||C.navy}">${v}</div><div class="s">${s}</div></div>`;
-  let h=`<div class="kpis">${k('Ganado por persona',$(r.porPersona),'acumulado del mes',C.ok)}${k('Ganado cuadrilla',$(r.inc),`rendimiento ${$(r.incR)} · color ${$(r.incC)}`)}${k('Días trabajados',r.dias,`${nf(r.pers,1)} personas en promedio`)}${k('Kg por día',nf(r.kgdia),'promedio del mes',nivel(r.kgdia).c)}${k('Días ≥ 20.000 kg',r.d22+' de '+r.dias,`${r.d26} días en meta (≥ 26.000)`,r.d22?C.warn:C.bad)}${k('Días con color que bonifica',r.dColDato?r.dCol+' de '+r.dColDato:'—','pintón de 50% o más',r.dCol?C.warn:C.bad)}</div>`;
-  h+=`<section class="panel"><h2>${tit(c)} · día a día · ${nombreMes(mes)}</h2><p class="sub">Barras = kg de la cuadrilla (color según el nivel) · líneas punteadas = 20.000 / 24.000 / 26.000 kg · línea azul = % pintón del día (eje derecho)</p><div class="cb"><canvas id="cq-ch"></canvas></div></section>`;
+  let h=`<div class="kpis">${k('Ganado por persona',$(r.porPersona),diaSel()?'en el día':'acumulado del mes',C.ok)}${k('Ganado cuadrilla',$(r.inc),`rendimiento ${$(r.incR)} · color ${$(r.incC)}`)}${k('Días trabajados',r.dias,`${nf(r.pers,1)} personas en promedio`)}${k('Kg por día',nf(r.kgdia),'promedio del mes',nivel(r.kgdia).c)}${k('Días ≥ 20.000 kg',r.d22+' de '+r.dias,`${r.d26} días en meta (≥ 26.000)`,r.d22?C.warn:C.bad)}${k('Días con color que bonifica',r.dColDato?r.dCol+' de '+r.dColDato:'—','pintón de 50% o más',r.dCol?C.warn:C.bad)}</div>`;
+  h+=`<section class="panel"><h2>${tit(c)} · ${diaSel()?fL(diaSel()):'día a día · '+nombreMes(mes)}</h2><p class="sub">Barras = kg de la cuadrilla (color según el nivel) · líneas punteadas = 20.000 / 24.000 / 26.000 kg · línea azul = % pintón del día (eje derecho)</p><div class="cb"><canvas id="cq-ch"></canvas></div></section>`;
   h+=`<section class="panel"><h2>Detalle día a día</h2><div class="tw"><table><thead><tr><th>Día</th><th>Kg cuadrilla</th><th>Rendimiento</th><th>Puntos rend.</th><th>Kg/HH (referencia)</th><th>Color (pintón)</th><th>Puntos color</th><th>Ganado rend.</th><th>Ganado color</th><th>Ganado del día</th><th>Personas</th><th>Horas</th><th>Por persona</th><th>Acumulado por persona</th></tr></thead><tbody>`;
   r.ds.forEach(d=>{const nv=nivel(d.kgMI), cn=colorNivel(d.pp);
     h+=`<tr${d.vig?'':' style="opacity:.5" title="Antes de la vigencia del incentivo: solo referencia"'}><td>${fL(d.f)}${d.vig?'':' · antes del inicio'}</td><td>${nf(d.kgMI)}</td><td><span class="pill" style="background:${nv.c}">${nv.n}</span></td><td>${nf(d.pr,1)}</td><td>${d.kghh?nf(d.kghh,0):'—'}</td><td><span class="pill" style="background:${cn.c}">${d.pp==null?'sin dato':nf(d.pp,0)+'%'}</span></td><td>${d.pc==null?'NA':nf(d.pc,1)}</td><td>${$(d.incR)}</td><td>${$(d.incC)}</td><td>${d.vig?'<b>'+$(d.inc)+'</b>':'('+$(d.incRef)+')'}</td><td>${d.p}</td><td>${hrs(d.h)}</td><td>${d.vig?'<b>'+$(d.porPersona)+'</b>':'('+$(d.p?d.incRef/d.p:0)+')'}</td><td>${$(d.acum)}</td></tr>`;});
-  h+=`<tr class="tot"><td>Total ${nombreMes(mes)}</td><td>${nf(r.kg)}</td><td></td><td></td><td></td><td></td><td></td><td>${$(r.incR)}</td><td>${$(r.incC)}</td><td>${$(r.inc)}</td><td></td><td></td><td></td><td>${$(r.porPersona)}</td></tr></tbody></table></div>
+  h+=`<tr class="tot"><td>${diaSel()?'Total del día':'Total '+nombreMes(mes)}</td><td>${nf(r.kg)}</td><td></td><td></td><td></td><td></td><td></td><td>${$(r.incR)}</td><td>${$(r.incC)}</td><td>${$(r.inc)}</td><td></td><td></td><td></td><td>${$(r.porPersona)}</td></tr></tbody></table></div>
     <p class="note">Kg/HH = kg ÷ (personas × horas): referencia de productividad, no cambia el pago. "NA" = día sin dato de color. Filas en gris: antes del inicio del incentivo (${fC(D.INC.VIGENCIA)}), no suman a lo ganado.</p></section>`;
   document.getElementById('cq-vista').innerHTML=h;
   if(typeof Chart==='undefined') return;
@@ -24188,7 +24199,7 @@ function bajar(cv,n){const a=document.createElement('a');a.download=n;a.href=cv.
 function imagen(){
   const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value;
   if(!c){ // CC-001.18: imagen del último día para todas las cuadrillas
-    const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
+    const ult=diaSel()||[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
     const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.kgMI-a.kgMI);
     const W=1080,rh=120,H=330+z.length*rh+110; const [cv,cx]=lienzo(W,H);
     tx(cx,'AGRÍCOLA GUAPA · CUADRILLAS COSECHA MECÁNICA',60,56,'600 26px Barlow, Arial',C.gold); tx(cx,fL(ult),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
@@ -24201,11 +24212,11 @@ function imagen(){
       tx(cx,$(x.p?x.inc/x.p:0),W-60,y+50,'700 44px "Barlow Condensed", Arial',x.inc>0?C.ok:'#8A94A3','right'); tx(cx,'por persona hoy',W-60,y+80,'400 20px Barlow, Arial','#5F6B7A','right');});
     tx(cx,'Rendimiento: 20.000 / 24.000 / 26.000 kg por cuadrilla-día · Color: pintón 50% / 70% · $'+D.INC.VALOR_KG+' por kg',60,H-48,'400 21px Barlow, Arial','#5F6B7A');
     return bajar(cv,'Cuadrillas_'+ult+'.jpg'); }
-  const r0=resumen(c,mes), _v=r0.ds.filter(d=>d.vig), _kg=_v.reduce((s,d)=>s+d.kgMI,0), r={...r0,ds:_v,dias:_v.length,kgdia:_v.length?_kg/_v.length:0,d22:_v.filter(d=>d.kgMI>=20000).length,d26:_v.filter(d=>d.kgMI>=26000).length,dCol:_v.filter(d=>d.pp!=null&&d.pp>=50).length,dColDato:_v.filter(d=>d.pp!=null).length}, /* resumen de la imagen solo con días desde el inicio */ rh=58, H=420+Math.max(1,r.ds.length)*rh+120, W=1080; const [cv,cx]=lienzo(W,H);
+  const r0=resumen(c,mes,diaSel()), _v=r0.ds.filter(d=>d.vig), _kg=_v.reduce((s,d)=>s+d.kgMI,0), r={...r0,ds:_v,dias:_v.length,kgdia:_v.length?_kg/_v.length:0,d22:_v.filter(d=>d.kgMI>=20000).length,d26:_v.filter(d=>d.kgMI>=26000).length,dCol:_v.filter(d=>d.pp!=null&&d.pp>=50).length,dColDato:_v.filter(d=>d.pp!=null).length}, /* resumen de la imagen solo con días desde el inicio */ rh=58, H=420+Math.max(1,r.ds.length)*rh+120, W=1080; const [cv,cx]=lienzo(W,H);
   if(!r.ds.length) tx(cx,'Sin días con cosecha en el mes',60,440,'500 26px Barlow, Arial','#5F6B7A');
-  tx(cx,'AGRÍCOLA GUAPA · CUMPLIMIENTO E INCENTIVO',60,56,'600 26px Barlow, Arial',C.gold); tx(cx,nombreMes(mes),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
+  tx(cx,'AGRÍCOLA GUAPA · CUMPLIMIENTO E INCENTIVO',60,56,'600 26px Barlow, Arial',C.gold); tx(cx,diaSel()?fL(diaSel()):nombreMes(mes),W-60,56,'500 26px Barlow, Arial','#E1D5C6','right');
   tx(cx,tit(c),60,112,'700 50px "Barlow Condensed", Arial','#fff');
-  tx(cx,$(r.porPersona),60,300,'700 96px "Barlow Condensed", Arial',C.ok); tx(cx,'ganado por persona en el mes',60,340,'500 26px Barlow, Arial','#1B2430');
+  tx(cx,$(r.porPersona),60,300,'700 96px "Barlow Condensed", Arial',C.ok); tx(cx,diaSel()?'ganado por persona en el día':'ganado por persona en el mes',60,340,'500 26px Barlow, Arial','#1B2430');
   tx(cx,`${r.dias} días · ${nf(r.kgdia)} kg por día`,W-60,260,'600 28px Barlow, Arial','#1B2430','right');
   tx(cx,`${r.d22} días ≥ 20.000 kg · ${r.d26} en meta`,W-60,300,'500 24px Barlow, Arial','#5F6B7A','right');
   tx(cx,`${r.dCol} de ${r.dColDato} días con color que bonifica`,W-60,336,'500 24px Barlow, Arial','#5F6B7A','right');
@@ -24222,17 +24233,17 @@ function mensaje(){
   const mes=document.getElementById('cq-mes').value, c=document.getElementById('cq-cua').value;
   const ic=kg=>kg>=26000?'🟢':kg>=20000?'🟡':'🔴', icc=p=>p==null?'⚪':p>=70?'🟢':p>=50?'🟡':'🔴';
   if(!c){ // CC-001.18: todas las cuadrillas = resultado del último día + acumulado del mes
-    const ult=[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
+    const ult=diaSel()||[...new Set(D.CDm.filter(x=>x.f.slice(0,7)===mes).map(x=>x.f))].sort().at(-1), col=D.COL[ult];
     const z=D.CDm.filter(x=>x.f===ult).sort((a,b)=>b.kgMI-a.kgMI);
     let s=`*Cosecha mecánica inducida · ${fL(ult)}*\nColor del día: ${icc(col?col.pp:null)} pintón ${col?nf(col.pp,0)+'%':'sin dato'}\n\n`;
     z.forEach(x=>{ const nv=nivel(x.kgMI); s+=`${ic(x.kgMI)} *${tit(x.c)}* (${x.p} personas · ⏱ ${hrs(x.h)}): ${nf(x.kgMI)} kg · ${nv.n.toLowerCase()} · *${$(x.p?x.inc/x.p:0)}* por persona hoy · ${$(resumen(x.c,mes).porPersona)} en el mes\n`; });
     s+=`\n🟢 26.000 kg o más · 🟡 20.000 a 25.999 · 🔴 menos de 20.000\nColor: 🟢 pintón 70%+ · 🟡 50–69% · 🔴 menos de 50%`;
     return s; }
-  const r=resumen(c,mes);
-  let s=`*${tit(c)} · ${nombreMes(mes)}*\n\n`;
+  const r=resumen(c,mes,diaSel());
+  let s=`*${tit(c)} · ${diaSel()?fL(diaSel()):nombreMes(mes)}*\n\n`;
   r.ds.filter(d=>d.vig).forEach(d=>{s+=`${fL(d.f)}: ${ic(d.kgMI)} ${nf(d.kgMI)} kg · ⏱ ${hrs(d.h)} · ${icc(d.pp)} pintón ${d.pp==null?'sin dato':nf(d.pp,0)+'%'} · *${$(d.porPersona)}* por persona\n`;});
   if(!r.ds.some(d=>d.vig)) s+=`Sin días con cosecha en el mes.\n`;
-  s+=`\n*Ganado en el mes por persona: ${$(r.porPersona)}*\n🟢 meta · 🟡 bonifica · 🔴 no bonifica\nRendimiento: 20.000 / 24.000 / 26.000 kg · Color: pintón 50% / 70%`;
+  s+=`\n*Ganado ${diaSel()?'en el día':'en el mes'} por persona: ${$(r.porPersona)}*\n🟢 meta · 🟡 bonifica · 🔴 no bonifica\nRendimiento: 20.000 / 24.000 / 26.000 kg · Color: pintón 50% / 70%`;
   return s;
 }
 window.abrirMeta220=function(){ const m=document.getElementById('cq'); m.style.display='block'; document.body.style.overflow='hidden'; m.scrollTop=0;
@@ -24291,11 +24302,12 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
   <div class="ih"><div class="row">
     <h1>Incentivo cosecha mecánica inducida<small>Esquema de Gerencia General · 50% rendimiento / 50% calidad · igual al simulador de Talento Humano · control de la Jefatura de Operaciones</small></h1>
     <div class="ctl"><label for="inc-mes">Mes</label><select id="inc-mes"></select>
+      <button onclick="(function(bt){const a=document.getElementById('inc-proposito'),r=document.getElementById('inc-reglas');const h=!r.hidden;a.hidden=h;r.hidden=h;bt.textContent=h?'ℹ️ Ver reglas':'Ocultar reglas';})(this)">ℹ️ Ver reglas</button>
       <button onclick="cerrarIncentivo()">✕ Volver al dashboard</button></div>
   </div></div>
   <div class="im">
-    <section class="panel" id="inc-proposito" style="border-left:5px solid var(--gold)"></section>
-    <section class="panel reglas" id="inc-reglas"></section>
+    <section class="panel" id="inc-proposito" style="border-left:5px solid var(--gold)" hidden></section>
+    <section class="panel reglas" id="inc-reglas" hidden></section>
     <div class="kpis" id="inc-kpis"></div>
     <section class="panel"><h2>3 · Participación de la cosecha mecánica en la Inducción</h2><p class="sub" id="inc-s3">% de los kg de Inducción cosechados con mecánica · últimas 12 semanas hasta el mes elegido</p><div class="cb" style="height:260px"><canvas id="inc-ch3"></canvas></div></section>
     <section class="grid2">
