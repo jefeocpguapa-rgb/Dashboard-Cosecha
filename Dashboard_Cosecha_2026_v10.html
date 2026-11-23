@@ -24601,6 +24601,39 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 })();
 </script>
 
+<script>
+/* ===== CC-001.44 · Color oficial = tablero de maduración =====
+   Regla: la columna «0» de la tabla de proceso es VERDE (verde = «0» + «1» + «0,0–1,0»).
+   Si la carga de la nube trae una columna extra de verde (p. ej. Verde0_kg / Cero_kg / 0), se suma a verde.
+   Mientras logística corrige la carga, los días de abajo toman el pintón oficial del tablero de maduración:
+   se agregan como verde los kilos que faltaban (el «0» no contado). Si el dashboard ya coincide, no se ajusta. */
+const MADURACION_OFICIAL={
+  '2026-11-01':{p:47},'2026-11-03':{p:47},'2026-11-05':{p:42},'2026-11-08':{p:37},'2026-11-09':{p:51},'2026-11-10':{p:48},
+  '2026-11-12':{p:64},'2026-11-15':{p:74},'2026-11-17':{p:78},'2026-11-19':{p:56,verde0:2086},'2026-11-22':{p:41}
+};
+window.COLOR_FUENTE={};
+function colorOficial(raw){
+  if(typeof raw!=='string'||!raw.trim()) return raw;
+  const L=raw.trim().split(/\r?\n/); const H=L[0].split(';').map(s=>s.trim());
+  const nrm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  const extraV=H.map((h,i)=>i>3&&(/VERDE|CERO/.test(nrm(h))||h==='0'||/^0[_ ]?KG$/.test(nrm(h)))?i:-1).filter(i=>i>=0);
+  const out=['Fecha;Verde_kg;Pintona_kg;Alto_kg'];
+  for(let k=1;k<L.length;k++){
+    const a=L[k].split(';'); if(!a[0]) continue;
+    let v=+a[1]||0; const p=+a[2]||0, al=+a[3]||0; extraV.forEach(i=>{v+=+a[i]||0});
+    const [d,m,y]=a[0].trim().split('/'); const iso=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const of=MADURACION_OFICIAL[iso]; const t=v+p+al;
+    if(extraV.length) window.COLOR_FUENTE[iso]='Proceso (verde incluye columna 0)';
+    if(of&&t>0&&Math.round(p/t*100)!==of.p){
+      const add=of.verde0!=null?of.verde0:Math.round(p/(of.p/100)-t);
+      if(add>0){ v+=add; window.COLOR_FUENTE[iso]='Tablero de maduración (pintón '+of.p+'% · +'+add.toLocaleString('es-CO')+' kg verde de la columna 0)'; }
+    } else if(of){ window.COLOR_FUENTE[iso]=window.COLOR_FUENTE[iso]||'Proceso = tablero de maduración'; }
+    out.push(a[0].trim()+';'+v+';'+p+';'+al);
+  }
+  return out.join('\n');
+}
+const RAW_COLOR_IND_OF=(typeof RAW_COLOR_IND!=='undefined')?colorOficial(RAW_COLOR_IND):undefined;
+</script>
 <!-- ══ MÓDULO INCENTIVO COSECHA MECÁNICA INDUCIDA (CC-001.13) ══ -->
 <style id="inc-styles">
 #inc{position:fixed;inset:0;z-index:9997;overflow-y:auto;display:none;background:#F3F0EA;color:#1B2430;font-family:'Barlow',Arial,Helvetica,sans-serif;font-size:15px;line-height:1.45;
@@ -24698,7 +24731,7 @@ function fC(k){const [y,m,d]=k.split('-');return (+d)+' '+MESC[+m-1];}
 function isoW(k){const d=new Date(k+'T12:00:00Z');const dia=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-dia+3);const y=d.getUTCFullYear(),f=new Date(Date.UTC(y,0,4));return y+'-W'+String(1+Math.round(((d-f)/864e5-3+((f.getUTCDay()+6)%7))/7)).padStart(2,'0');}
 function cargar(){
   // color de Inducción de proceso
-  if(typeof RAW_COLOR_IND!=='undefined') RAW_COLOR_IND.trim().split(/\r?\n/).slice(1).forEach(l=>{const [f,v,p,a]=l.split(';');const [d,m,y]=f.split('/');const t=+v+ +p+ +a;
+  if(typeof RAW_COLOR_IND_OF!=='undefined') RAW_COLOR_IND_OF.trim().split(/\r?\n/).slice(1).forEach(l=>{ /* CC-001.44: color oficial */const [f,v,p,a]=l.split(';');const [d,m,y]=f.split('/');const t=+v+ +p+ +a;
     COL[y+'-'+m.padStart(2,'0')+'-'+d.padStart(2,'0')]={v:+v,p:+p,a:+a,t,pv:+v/t*100,pp:+p/t*100,pa:+a/t*100};});
   // cuadrilla-día con cosecha mecánica inducida (si el día fue mixto, el costo se reparte por kg)
   const g={};
@@ -24835,7 +24868,7 @@ async function descargarDetalle(){
   const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   const z=CDm.filter(x=>x.f>='2026-10-01').sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:(a.c<b.c?-1:1));
   const V=INC.VALOR_KG, PR=INC.PESO_REND, PC=INC.PESO_CALIDAD, PISO=INC.FRANJAS_REND.at(-1).desde, MED=INC.FRANJAS_REND[0].desde, META=INC.META_REND, PM=INC.PINTON_OBJ/100;
-  const head=['Fecha','Mes','Cuadrillero','Kg cosecha mecánica inducida','Personas','Horas','Kg/HH','% pintón del día','Pintón entero','Puntos rendimiento','Puntos calidad','Incentivo rendimiento','Incentivo calidad','Incentivo total','Por persona','Desde el 21/10'];
+  const head=['Fecha','Mes','Cuadrillero','Kg cosecha mecánica inducida','Personas','Horas','Kg/HH','% pintón del día','Pintón entero','Puntos rendimiento','Puntos calidad','Incentivo rendimiento','Incentivo calidad','Incentivo total','Por persona','Desde el 21/10','Fuente del color'];
   const ws={}, enc=(r,c)=>XLSX.utils.encode_cell({r,c});
   head.forEach((t,c)=>ws[enc(0,c)]={t:'s',v:t});
   z.forEach((x,i)=>{ const r=i+1, R=r+1, [y,m,d]=x.f.split('-').map(Number);
@@ -24855,9 +24888,10 @@ async function descargarDetalle(){
     ws[enc(r,13)]={t:'n',v:tot,f:`L${R}+M${R}`,z:'$#,##0'};
     ws[enc(r,14)]={t:'n',v:x.p?tot/x.p:0,f:`IFERROR(N${R}/E${R},0)`,z:'$#,##0'};
     ws[enc(r,15)]={t:'s',v:x.f>='2026-10-21'?'Sí':'No'};
+    ws[enc(r,16)]={t:'s',v:(window.COLOR_FUENTE&&window.COLOR_FUENTE[x.f])||(col?'Proceso':'Sin dato de color')};
   });
   ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:z.length,c:head.length-1}});
-  ws['!cols']=[11,15,32,14,9,7,9,11,9,11,10,13,13,13,12,10].map(w=>({wch:w}));
+  ws['!cols']=[11,15,32,14,9,7,9,11,9,11,10,13,13,13,12,10,48].map(w=>({wch:w}));
   ws['!autofilter']={ref:ws['!ref']};
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Detalle diario');
   const ult=z.length?z.at(-1).f:'';
@@ -24899,7 +24933,7 @@ function datos(){
       if((a[I.fl]||'').trim()==='Inducción'&&(a[I.tc]||'').trim()==='Mecánica')x.kg+=peso;}}
   const rend=Object.values(g).filter(x=>x.kg>0).map(x=>({f:x.f,c:x.c,kg:Math.round(x.kg),p:x.p,h:x.h}));
   const col=r=>typeof r!=='string'?[]:r.trim().split(/\r?\n/).slice(1).map(l=>{const [f,v,p,a]=l.split(';');const d=isoD(f);return d?{f:d,v:+v||0,p:+p||0,a:+a||0}:null}).filter(x=>x&&x.v+x.p+x.a>0);
-  const ind=col(typeof RAW_COLOR_IND!=='undefined'?RAW_COLOR_IND:null),ad=col(typeof RAW_COLOR_AD!=='undefined'?RAW_COLOR_AD:null);
+  const ind=col(typeof RAW_COLOR_IND_OF!=='undefined'?RAW_COLOR_IND_OF:(typeof RAW_COLOR_IND!=='undefined'?RAW_COLOR_IND:null)),ad=col(typeof RAW_COLOR_AD!=='undefined'?RAW_COLOR_AD:null);
   const S=JSON.parse(JSON.stringify(NOV));S.rend={};rend.forEach(r=>{const m=r.f.slice(0,7);(S.rend[m]=S.rend[m]||{mes:m,rows:[]}).rows.push(r)});
   S.color={ind:{rows:ind},ad:{rows:ad}};const fs=rend.map(r=>r.f).sort(),fc=ind.map(r=>r.f).sort();
   S.cargas_dash={dash:{at:new Date().toISOString(),rendHasta:fs[fs.length-1]||null,colorHasta:fc[fc.length-1]||null}};
